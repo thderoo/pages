@@ -79,11 +79,14 @@ html.juicy-on-crt #juicy-overlay {
 [data-juicy-region="title"] {
   will-change: transform, filter;
 }
+/* tilt cible par défaut le contenu du thème (#juicy-theme-layer, ou la
+   région stage si la couche est vide) et pose sa propre perspective via
+   gsap transformPerspective (effects.js) : pas de perspective/transform-style
+   CSS ici, seulement de quoi composer proprement sur GPU. */
 [data-juicy-tilt],
-.juicy-toggle,
-.juicy-action {
+#juicy-theme-layer,
+[data-juicy-region="stage"] {
   will-change: transform;
-  transform-style: preserve-3d;
 }
 [data-juicy-magnet] {
   will-change: transform;

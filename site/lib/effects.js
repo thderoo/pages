@@ -247,65 +247,83 @@
   });
 
   // ---------------------------------------------------------------------
-  // tilt — bascule 3D au survol
+  // tilt — bascule 3D de la scène, suit le pointeur sur toute la fenêtre
+  // (jamais html/body, voir contrat §11 — même piège que drunk ci-dessous)
   // ---------------------------------------------------------------------
+  // Cible par défaut : le contenu du thème, exactement comme drunk (voir son
+  // commentaire) — #juicy-theme-layer si non vide, sinon la région stage.
+  // C'est la seule cible par défaut dont on sait, par construction du noyau
+  // (contrat §4 : couche plein écran, position fixe, sans marge/bordure),
+  // que la transformer ne casse pas le positionnement de ses descendants
+  // position:fixed (mêmes dimensions que le viewport). Un `selector` ou un
+  // marqueur [data-juicy-tilt] explicite reste prioritaire, mais un candidat
+  // qui serait lui-même position:fixed sans être cette couche connue (donc
+  // sans la garantie ci-dessus) est écarté pour ne jamais poser de transform
+  // sur un ancêtre inattendu d'un élément position:fixed.
+  function resolveTiltTargets(ctx) {
+    function safe(el) {
+      return el === ctx.layer('theme') || getComputedStyle(el).position !== 'fixed';
+    }
+    if (ctx.params.selector) {
+      return Array.from(document.querySelectorAll(ctx.params.selector)).filter(safe);
+    }
+    const marked = document.querySelectorAll('[data-juicy-tilt]');
+    if (marked.length) return Array.from(marked).filter(safe);
+    const layer = ctx.layer('theme');
+    if (layer && layer.childElementCount) return [layer];
+    const stage = document.querySelector('[data-juicy-region="stage"]');
+    return stage ? [stage] : [];
+  }
+
   Juicy.defineEffect({
     id: 'tilt',
     kind: 'continuous',
     label: 'Tilt 3D',
     needs: ['gsap'],
     defaults: {
-      selector: null, // explicite ; sinon [data-juicy-tilt] ; sinon les toggles et actions
-      max: 14, // angle max en degrés
-      perspective: 700, // perspective css en px
-      scale: 1.03, // agrandissement léger au survol
-      duration: 0.3, // durée de la transition en secondes
+      selector: null, // explicite ; sinon [data-juicy-tilt] ; sinon le contenu du thème (voir resolveTiltTargets)
+      max: 8, // angle max en degrés, atteint sur un bord de la fenêtre
+      perspective: 1200, // gsap transformPerspective en px, posé sur la cible elle-même
+      duration: 0.3, // durée de la transition en secondes (suivi et retour à plat)
       ease: 'power2.out' // easing GSAP
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const els = resolveTargets(ctx, 'tilt', '.juicy-toggle, .juicy-action');
+      const els = resolveTiltTargets(ctx);
       ctx.log({ targets: els.length });
       if (!els.length) return;
-      const cleanups = [];
-      els.forEach((el) => {
-        el.style.perspective = ctx.params.perspective + 'px';
-        const move = (e) => {
-          if (reduced(ctx)) return;
-          const r = el.getBoundingClientRect();
-          if (!r.width || !r.height) return;
-          const px = (e.clientX - r.left) / r.width - 0.5;
-          const py = (e.clientY - r.top) / r.height - 0.5;
-          ctx.gsap.to(el, {
-            rotateY: px * ctx.params.max,
-            rotateX: -py * ctx.params.max,
-            scale: ctx.params.scale,
-            duration: ctx.params.duration,
-            ease: ctx.params.ease
-          });
-        };
-        const leave = () => {
-          ctx.gsap.to(el, {
-            rotateX: 0,
-            rotateY: 0,
-            scale: 1,
-            duration: ctx.params.duration,
-            ease: ctx.params.ease
-          });
-        };
-        el.addEventListener('pointermove', move);
-        el.addEventListener('pointerleave', leave);
-        cleanups.push(() => {
-          el.removeEventListener('pointermove', move);
-          el.removeEventListener('pointerleave', leave);
+      ctx.gsap.set(els, { transformPerspective: ctx.params.perspective, rotateX: 0, rotateY: 0 });
+      const move = (e) => {
+        if (reduced(ctx)) return; // mouvement réduit : la cible reste à plat
+        const px = e.clientX / window.innerWidth - 0.5;
+        const py = e.clientY / window.innerHeight - 0.5;
+        ctx.gsap.to(els, {
+          rotateY: px * ctx.params.max,
+          rotateX: -py * ctx.params.max,
+          duration: ctx.params.duration,
+          ease: ctx.params.ease,
+          overwrite: 'auto'
         });
-      });
+      };
+      const leave = () => {
+        ctx.gsap.to(els, {
+          rotateX: 0,
+          rotateY: 0,
+          duration: ctx.params.duration,
+          ease: ctx.params.ease,
+          overwrite: 'auto'
+        });
+      };
+      window.addEventListener('pointermove', move);
+      document.documentElement.addEventListener('pointerleave', leave);
       ctx.onStop(() => {
-        cleanups.forEach((fn) => fn());
-        els.forEach((el) => {
-          ctx.gsap.killTweensOf(el);
-          el.style.transform = '';
-        });
+        window.removeEventListener('pointermove', move);
+        document.documentElement.removeEventListener('pointerleave', leave);
+        // ne tue que rotateX/rotateY : drunk (rotation/skewX) peut tourner
+        // sur le même élément, on ne touche jamais à el.style.transform en
+        // bloc (contrat de ce mandat).
+        ctx.gsap.killTweensOf(els, 'rotateX,rotateY');
+        ctx.gsap.set(els, { rotateX: 0, rotateY: 0 });
       });
     },
     stop() {}

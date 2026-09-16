@@ -126,7 +126,7 @@ ou par les interrupteurs générés dans la région `controls`.
 | `bg` | fond animé de particules | tsParticles (+ `loadSlim`, voir pièges) | `#juicy-bg` (couche fixe du noyau) | `count:60` (ou `density`, alias prioritaire si fourni), `color:null`, `size:6`, `speed:4`, `shape:'circle'`, `links:false`, `opacity:0.75` |
 | `trail` | traînée de particules au pointeur | moteur interne (canvas) | `#juicy-canvas` (couche fixe du noyau) | `color:null`, `size:13`, `life:0.6`, `spacing:8`, `shape:'circle'`, `glyph:'•'`, `fade:true` |
 | `glitch` | sauts visuels périodiques | GSAP | `[data-juicy-glitch]` > région `title` | `interval:0.15`, `jitter:0.4`, `amplitude:8`, `duration:0.12`, `hueShift:50` |
-| `tilt` | bascule 3D au survol | GSAP | `[data-juicy-tilt]` > `.juicy-toggle, .juicy-action` | `max:14`, `perspective:700`, `scale:1.03`, `duration:0.3`, `ease:'power2.out'` |
+| `tilt` | bascule 3D au pointeur (fenêtre entière) | GSAP | `[data-juicy-tilt]` > le contenu de `#juicy-theme-layer` s'il n'est pas vide, sinon `[data-juicy-region="stage"]` (jamais `html`/`body`, même cible que `drunk`) | `max:8`, `perspective:1200` (via `transformPerspective` GSAP, jamais `el.style.perspective`), `duration:0.3`, `ease:'power2.out'` |
 | `sound` | interrupteur global du son | — | — | `confirm:'toggleOn'` (nom du son de confirmation) |
 | `magnet` | éléments attirés par le pointeur | GSAP | `[data-juicy-magnet]` > `.juicy-action` | `radius:90`, `strength:0.4`, `duration:0.25`, `ease:'power2.out'` |
 | `cursor` | curseur personnalisé | GSAP | `#juicy-cursor` (couche fixe du noyau) | `glyph:''`, `size:30`, `color:null`, `smoothing:0.25` |
