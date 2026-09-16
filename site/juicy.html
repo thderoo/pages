@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terrain de jeu</title>
+<style>
+  :root, :root[data-theme="dark"] {
+    --bg: #0b0e1a;
+    --panel: rgba(255,255,255,0.06);
+    --panel-border: rgba(255,255,255,0.14);
+    --text: #f4f6ff;
+    --muted: rgba(244,246,255,0.7);
+    --accent: #7c5cff;
+    --accent2: #00e5c7;
+    --accent3: #ff5e7a;
+    --grad1: #0f2027; --grad2: #2c5364; --grad3: #6a3093; --grad4: #1e3c72;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f5fb;
+    --panel: rgba(20,20,45,0.05);
+    --panel-border: rgba(20,20,45,0.14);
+    --text: #171826;
+    --muted: rgba(23,24,38,0.68);
+    --accent: #6247ff;
+    --accent2: #00a893;
+    --accent3: #e0456b;
+    --grad1: #ffe29f; --grad2: #ffa99f; --grad3: #ff719a; --grad4: #a18cd1;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    position: relative;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background .4s ease, color .4s ease;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #fx {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+  }
+  .bg-gradient {
+    position: fixed;
+    inset: -15%;
+    z-index: -2;
+    background: linear-gradient(120deg, var(--grad1), var(--grad2), var(--grad3), var(--grad4));
+    background-size: 320% 320%;
+    animation: gradientShift 14s ease infinite;
+    animation-play-state: paused;
+    opacity: .55;
+    transition: opacity .5s ease;
+  }
+  .bg-gradient.on { animation-play-state: running; opacity: 1; }
+  @keyframes gradientShift {
+    0% { background-position: 0% 40%; }
+    50% { background-position: 100% 60%; }
+    100% { background-position: 0% 40%; }
+  }
+  .shock-layer { position: fixed; inset: 0; z-index: 25; pointer-events: none; overflow: hidden; }
+  .shock {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid var(--accent2);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: .85;
+  }
+
+  header { position: relative; z-index: 2; text-align: center; padding: 3.2rem 1.2rem 1.6rem; }
+  h1 {
+    position: relative;
+    display: inline-block;
+    margin: 0 0 .7rem;
+    font-size: clamp(2.1rem, 8vw, 3.4rem);
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3), var(--accent));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 6s linear infinite;
+  }
+  @keyframes shine { to { background-position: 300% center; } }
+  h1.glitching::before, h1.glitching::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: var(--bg);
+    background-color: var(--bg);
+  }
+  h1.glitching::before {
+    color: var(--accent3);
+    background: none;
+    -webkit-text-fill-color: var(--accent3);
+    clip-path: inset(0 0 70% 0);
+    transform: translate(2px, 0);
+    animation: glitchTop 2.2s infinite steps(2, end);
+  }
+  h1.glitching::after {
+    color: var(--accent2);
+    -webkit-text-fill-color: var(--accent2);
+    clip-path: inset(60% 0 0 0);
+    transform: translate(-2px, 0);
+    animation: glitchBottom 2.6s infinite steps(2, end);
+  }
+  @keyframes glitchTop {
+    0%, 100% { clip-path: inset(0 0 85% 0); transform: translate(2px,0); }
+    20% { clip-path: inset(10% 0 60% 0); transform: translate(-3px,0); }
+    40% { clip-path: inset(30% 0 40% 0); transform: translate(3px,0); }
+    60% { clip-path: inset(5% 0 80% 0); transform: translate(-2px,0); }
+    80% { clip-path: inset(50% 0 20% 0); transform: translate(2px,0); }
+  }
+  @keyframes glitchBottom {
+    0%, 100% { clip-path: inset(80% 0 0 0); transform: translate(-2px,0); }
+    25% { clip-path: inset(55% 0 10% 0); transform: translate(3px,0); }
+    50% { clip-path: inset(70% 0 5% 0); transform: translate(-3px,0); }
+    75% { clip-path: inset(40% 0 30% 0); transform: translate(2px,0); }
+  }
+  .intro { margin: 0 auto; max-width: 34rem; color: var(--muted); font-size: clamp(1rem, 2.6vw, 1.15rem); line-height: 1.5; }
+
+  main { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; padding: 0 1.2rem 4rem; }
+  .panel { margin-top: 2.2rem; }
+  .panel h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin: 0 0 .9rem;
+  }
+
+  .switch-grid, .button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .8rem;
+  }
+  .button-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+  .switch-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: .9rem 1.1rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .switch-label { font-size: .95rem; font-weight: 600; }
+  .switch-hint { display: block; font-size: .78rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+
+  .switch {
+    --w: 52px; --h: 30px;
+    width: var(--w); height: var(--h);
+    flex: none;
+    border: none;
+    border-radius: 999px;
+    background: rgba(127,127,127,.35);
+    padding: 3px;
+    cursor: pointer;
+    transition: background .25s ease;
+  }
+  .switch .knob {
+    display: block;
+    width: calc(var(--h) - 6px);
+    height: calc(var(--h) - 6px);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    transform: translateX(0);
+    transition: transform .25s cubic-bezier(.3,1.5,.5,1);
+  }
+  .switch[aria-checked="true"] { background: var(--accent); }
+  .switch[aria-checked="true"] .knob { transform: translateX(calc(var(--w) - var(--h))); }
+  .switch:active .knob { transform: scale(.9) translateX(var(--kx, 0)); }
+
+  .fx-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 1.2rem .8rem;
+    font-size: .95rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: box-shadow .15s ease;
+  }
+  .fx-btn .btn-icon { font-size: 1.5rem; line-height: 1; }
+  .fx-btn:active { box-shadow: 0 4px 10px rgba(0,0,0,.22); }
+  .fx-btn:active:not([style*="translate"]) { transform: scale(.95); }
+  .fx-btn.reset-btn { background: transparent; border: 2px solid var(--panel-border); color: var(--text); box-shadow: none; }
+  .fx-btn.all-btn {
+    background: linear-gradient(120deg, var(--accent3), var(--accent), var(--accent2), var(--accent3));
+    background-size: 260% 260%;
+    animation: allShine 5s linear infinite;
+  }
+  @keyframes allShine { to { background-position: 260% center; } }
+
+  .counter-value { display: inline-block; }
+  .counter-value.spring { animation: spring .5s cubic-bezier(.2,1.5,.4,1) both; }
+  @keyframes spring {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.45); }
+    55% { transform: scale(.85); }
+    78% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  .combo {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: .7rem;
+    font-weight: 800;
+    background: rgba(0,0,0,.35);
+    padding: .15rem .45rem;
+    border-radius: 999px;
+  }
+  .combo.pop { animation: pop .4s ease both; }
+  @keyframes pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px,0,0); }
+    20%, 80% { transform: translate3d(2px,0,0); }
+    30%, 50%, 70% { transform: translate3d(-5px,0,0); }
+    40%, 60% { transform: translate3d(5px,0,0); }
+  }
+  body.shake-active { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes flashPulse { 0%, 100% { filter: none; } 50% { filter: brightness(1.18); } }
+  body.flash-active { animation: flashPulse .3s ease; }
+
+  footer { position: relative; z-index: 2; text-align: center; padding-bottom: 2rem; color: var(--muted); font-size: .82rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bg-gradient.on { animation: none; background-position: 30% 65%; }
+    h1 { animation: none; }
+    h1.glitching::before, h1.glitching::after { animation: none; }
+    .fx-btn.all-btn { animation: none; }
+  }
+
+  @media (max-width: 480px) {
+    .switch-grid, .button-grid { grid-template-columns: repeat(auto-fill, minmax(46%, 1fr)); }
+    header { padding-top: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg-gradient" id="bgGradient" aria-hidden="true"></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="shock-layer" id="shockLayer" aria-hidden="true"></div>
+
+  <header>
+    <h1 id="title" data-text="Terrain de jeu">Terrain de jeu</h1>
+    <p class="intro">Page de test de thderoo&nbsp;: un terrain de jeu d'effets visuels. Clique sur tout, bascule tout, rien ne casse.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-label="Effets permanents">
+      <h2>Interrupteurs</h2>
+      <div class="switch-grid">
+        <label class="switch-card tiltable">
+          <span class="switch-label">Fond animé<span class="switch-hint">dégradé qui tourne</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="gradient"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Traînée magique<span class="switch-hint">particules au curseur</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="trail"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Thème clair<span class="switch-hint">bascule sombre / clair</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="theme"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Titre glitché<span class="switch-hint">effet cyberpunk</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="glitch"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Tilt 3D<span class="switch-hint">cartes qui s'inclinent</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="tilt"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Bips sonores<span class="switch-hint">désactivé par défaut</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="sound"><span class="knob"></span></button>
+        </label>
+        <label class="switch-card tiltable">
+          <span class="switch-label">Boutons magnétiques<span class="switch-hint">attirés par le curseur</span></span>
+          <button type="button" role="switch" aria-checked="false" class="switch" data-toggle="magnetic"><span class="knob"></span></button>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Effets ponctuels">
+      <h2>Boutons</h2>
+      <div class="button-grid">
+        <button type="button" class="fx-btn tiltable" data-action="confetti"><span class="btn-icon">🎉</span>Confettis</button>
+        <button type="button" class="fx-btn tiltable" data-action="shake"><span class="btn-icon">📳</span>Secousse</button>
+        <button type="button" class="fx-btn tiltable" data-action="emoji"><span class="btn-icon">🌧️</span>Pluie d'emojis</button>
+        <button type="button" class="fx-btn tiltable" data-action="fireworks"><span class="btn-icon">🎆</span>Feu d'artifice</button>
+        <button type="button" class="fx-btn tiltable" data-action="shockwave"><span class="btn-icon">💫</span>Onde de choc</button>
+        <button type="button" class="fx-btn tiltable counter-btn" data-action="counter">
+          <span class="btn-icon">➕</span>
+          <span>Compteur : <span class="counter-value">0</span></span>
+          <span class="combo" hidden></span>
+        </button>
+        <button type="button" class="fx-btn tiltable all-btn" data-action="all"><span class="btn-icon">💥</span>Tout en même temps</button>
+        <button type="button" class="fx-btn tiltable reset-btn" data-action="reset"><span class="btn-icon">↺</span>Reset</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>Zéro dépendance, zéro requête réseau. Que du CSS, du JS et du canvas.</footer>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, el) { return (el || document).querySelector(s); };
+  var $$ = function (s, el) { return Array.prototype.slice.call((el || document).querySelectorAll(s)); };
+
+  var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+  var body = document.body;
+  var h1 = $('#title');
+  var bgGradient = $('#bgGradient');
+  var shockLayer = $('#shockLayer');
+  var canvas = $('#fx');
+  var ctx = canvas.getContext('2d');
+
+  var state = { gradient: false, trail: false, glitch: false, tilt: false, sound: false, magnetic: false };
+
+  /* ---------- canvas sizing ---------- */
+  var W, H;
+  function resize() {
+    var dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  /* ---------- particle engine ---------- */
+  var particles = [];
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.update();
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      p.draw(ctx);
+    }
+    if (particles.length > 1400) particles.length = 1400;
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function spawnTrail(x, y) {
+    particles.push({
+      x: x, y: y,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      size: 4 + Math.random() * 4,
+      hue: (performance.now() / 8) % 360,
+      life: 1, decay: 0.035,
+      update: function () { this.x += this.vx; this.y += this.vy; this.life -= this.decay; },
+      draw: function (ctx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(this.life, 0);
+        ctx.fillStyle = 'hsl(' + this.hue + ' 90% 65%)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+  }
+
+  function confettiBurst(cx, cy, count) {
+    count = count || 150;
+    var colors = ['#ff5e5b', '#ffd23f', '#3bceac', '#4d9de0', '#e15fed', '#ff8fa3'];
+    for (var i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 4 + Math.random() * 9;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed * (0.3 + Math.random()),
+        vy: Math.sin(angle) * speed - 6,
+        size: 5 + Math.random() * 6,
+        color: colors[i % colors.length],
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.4,
+        life: 1, decay: 0.007 + Math.random() * 0.007,
+        shape: Math.random() < 0.5 ? 'rect' : 'circle',
+        update: function () {
+          this.vy += 0.18;
+          this.vx *= 0.995;
+          this.x += this.vx; this.y += this.vy;
+          this.rot += this.vr;
+          this.life -= this.decay;
+        },
+        draw: function (ctx) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(this.life, 0);
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rot);
+          ctx.fillStyle = this.color;
+          if (this.shape === 'rect') ctx.fillRect(-this.size / 2, -this.size * 0.3, this.size, this.size * 0.6);
+          else { ctx.beginPath(); ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2); ctx.fill(); }
+          ctx.restore();
+        }
+      });
+    }
+  }
+
+  function emojiRain(count) {
+    count = count || 36;
+    var emojis = ['🎉', '✨', '🔥', '💥', '🌈', '⭐', '🍕', '🚀', '🎈', '😂'];
+    for (var i = 0; i < count; i++) {
+      (function () {
+        var delay = Math.random() * 700;
+        setTimeout(function () {
+          particles.push({
+            x: Math.random() * W, y: -40,
+            vy: 2 + Math.random() * 3,
+            sway: Math.random() * 18 + 6,
+            phase: Math.random() * Math.PI * 2,
+            rot: Math.random() * Math.PI * 2,
+            vr: (Math.random() - 0.5) * 0.05,
+            size: 22 + Math.random() * 16,
+            emoji: emojis[(Math.random() * emojis.length) | 0],
+            life: 1,
+            update: function () {
+              this.y += this.vy;
+              this.phase += 0.05;
+              this.rot += this.vr;
+              if (this.y > H + 40) this.life = 0;
+            },
+            draw: function (ctx) {
+              ctx.save();
+              ctx.translate(this.x + Math.sin(this.phase) * this.sway, this.y);
+              ctx.rotate(this.rot);
+              ctx.font = this.size + 'px serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(this.emoji, 0, 0);
+              ctx.restore();
+            }
+          });
+        }, delay);
+      })();
+    }
+  }
+
+  function explode(x, y) {
+    var hue = Math.random() * 360;
+    var n = 44;
+    for (var i = 0; i < n; i++) {
+      var angle = (Math.PI * 2 * i) / n + Math.random() * 0.15;
+      var speed = 2.4 + Math.random() * 3.2;
+      particles.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1, decay: 0.013 + Math.random() * 0.01,
+        hue: hue + Math.random() * 30 - 15,
+        size: 2 + Math.random() * 2,
+        update: function () {
+          this.vy += 0.05; this.vx *= 0.98; this.vy *= 0.98;
+          this.x += this.vx; this.y += this.vy;
+          this.life -= this.decay;
+        },
+        draw: function (ctx) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(this.life, 0);
+          ctx.fillStyle = 'hsl(' + this.hue + ' 95% 60%)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+    }
+  }
+  function fireworksBurst() {
+    var bursts = 3 + ((Math.random() * 2) | 0);
+    for (var i = 0; i < bursts; i++) {
+      (function (i) {
+        setTimeout(function () {
+          var x = W * (0.2 + Math.random() * 0.6);
+          var y = H * (0.15 + Math.random() * 0.35);
+          explode(x, y);
+        }, i * 250);
+      })(i);
+    }
+  }
+
+  function shockwave(x, y) {
+    var el = document.createElement('div');
+    el.className = 'shock';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    var size = Math.max(W, H) * 2.3;
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    shockLayer.appendChild(el);
+    requestAnimationFrame(function () {
+      el.style.transition = reduceMotion ? 'opacity .35s ease' : 'transform .8s cubic-bezier(.2,.7,.3,1), opacity .8s ease-out';
+      if (!reduceMotion) el.style.transform = 'translate(-50%,-50%) scale(1)';
+      el.style.opacity = '0';
+    });
+    setTimeout(function () { el.remove(); }, 900);
+  }
+
+  function shakeScreen() {
+    body.classList.remove('shake-active', 'flash-active');
+    void body.offsetWidth;
+    body.classList.add(reduceMotion ? 'flash-active' : 'shake-active');
+  }
+
+  /* ---------- counter ---------- */
+  var count = 0, combo = 0, lastClick = 0;
+  var counterEl = $('.counter-value');
+  var comboEl = $('.combo');
+  function bumpCounter() {
+    var now = performance.now();
+    combo = (now - lastClick < 600) ? combo + 1 : 1;
+    lastClick = now;
+    count++;
+    counterEl.textContent = count;
+    if (!reduceMotion) {
+      counterEl.classList.remove('spring');
+      void counterEl.offsetWidth;
+      counterEl.classList.add('spring');
+    }
+    if (combo > 1) {
+      comboEl.hidden = false;
+      comboEl.textContent = 'combo ×' + combo;
+      if (!reduceMotion) { comboEl.classList.remove('pop'); void comboEl.offsetWidth; comboEl.classList.add('pop'); }
+      clearTimeout(comboEl._t);
+      comboEl._t = setTimeout(function () { comboEl.hidden = true; combo = 0; }, 900);
+    }
+  }
+
+  /* ---------- sound ---------- */
+  var audioCtx;
+  var FREQ = {
+    gradient: 392, trail: 440, theme: 349, glitch: 466, tilt: 523, sound: 587, magnetic: 415,
+    confetti: 660, shake: 220, emoji: 740, fireworks: 830, shockwave: 494, counter: 988, all: 1046, reset: 196
+  };
+  function beep(key) {
+    if (!state.sound) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var freq = FREQ[key] || 440;
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + 0.2);
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- tilt + magnetic on fx-btn ---------- */
+  var fxButtons = $$('.fx-btn');
+  document.addEventListener('pointermove', function (e) {
+    if (state.trail && !reduceMotion) spawnTrail(e.clientX, e.clientY);
+    fxButtons.forEach(function (btn) {
+      var rect = btn.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      var dx = e.clientX - cx, dy = e.clientY - cy;
+      var dist = Math.hypot(dx, dy);
+      var tx = 0, ty = 0, rx = 0, ry = 0, scale = 1;
+      if (state.magnetic) {
+        var R = 110;
+        if (dist < R) { var pull = Math.pow(1 - dist / R, 2) * 0.4; tx = dx * pull; ty = dy * pull; }
+      }
+      var inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      if (state.tilt && inside) {
+        var px = (e.clientX - rect.left) / rect.width, py = (e.clientY - rect.top) / rect.height;
+        rx = (py - 0.5) * -16; ry = (px - 0.5) * 16; scale = 1.04;
+      }
+      if (tx || ty || rx || ry || scale !== 1) {
+        btn.style.transition = 'none';
+        btn.style.transform = 'translate(' + tx + 'px,' + ty + 'px) perspective(700px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale(' + scale + ')';
+      } else if (btn.style.transform) {
+        btn.style.transition = 'transform .4s cubic-bezier(.2,.8,.2,1)';
+        btn.style.transform = '';
+      }
+    });
+  }, { passive: true });
+
+  /* switch-cards: tilt only */
+  $$('.switch-card.tiltable').forEach(function (card) {
+    card.addEventListener('pointermove', function (e) {
+      if (!state.tilt) return;
+      var rect = card.getBoundingClientRect();
+      var px = (e.clientX - rect.left) / rect.width, py = (e.clientY - rect.top) / rect.height;
+      var rx = (py - 0.5) * -10, ry = (px - 0.5) * 10;
+      card.style.transition = 'none';
+      card.style.transform = 'perspective(700px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale(1.02)';
+    }, { passive: true });
+    card.addEventListener('pointerleave', function () {
+      card.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)';
+      card.style.transform = '';
+    });
+  });
+
+  /* ---------- toggles ---------- */
+  $$('.switch[data-toggle]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var key = btn.dataset.toggle;
+      if (key === 'theme') {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        btn.setAttribute('aria-checked', String(next === 'light'));
+      } else {
+        state[key] = !state[key];
+        btn.setAttribute('aria-checked', String(state[key]));
+        if (key === 'gradient') bgGradient.classList.toggle('on', state.gradient);
+        if (key === 'glitch') h1.classList.toggle('glitching', state.glitch);
+      }
+      beep(key);
+    });
+  });
+
+  /* ---------- action buttons ---------- */
+  $('.button-grid').addEventListener('click', function (e) {
+    var btn = e.target.closest('.fx-btn');
+    if (!btn) return;
+    var action = btn.dataset.action;
+    var rect = btn.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+    beep(action);
+    switch (action) {
+      case 'confetti': confettiBurst(cx, cy); break;
+      case 'shake': shakeScreen(); break;
+      case 'emoji': emojiRain(); break;
+      case 'fireworks': fireworksBurst(); break;
+      case 'shockwave': shockwave(cx, cy); break;
+      case 'counter': bumpCounter(); break;
+      case 'all':
+        confettiBurst(cx, cy);
+        fireworksBurst();
+        emojiRain(24);
+        shockwave(cx, cy);
+        shakeScreen();
+        bumpCounter();
+        break;
+      case 'reset': resetAll(); break;
+    }
+  });
+
+  function resetAll() {
+    Object.keys(state).forEach(function (k) { state[k] = false; });
+    $$('.switch[data-toggle]').forEach(function (b) { b.setAttribute('aria-checked', 'false'); });
+    root.setAttribute('data-theme', 'dark');
+    bgGradient.classList.remove('on');
+    h1.classList.remove('glitching');
+    particles.length = 0;
+    count = 0; combo = 0;
+    counterEl.textContent = '0';
+    comboEl.hidden = true;
+    body.classList.remove('shake-active', 'flash-active');
+    fxButtons.forEach(function (b) { b.style.transform = ''; b.style.transition = ''; });
+    $$('.switch-card').forEach(function (c) { c.style.transform = ''; c.style.transition = ''; });
+  }
+})();
+</script>
+</body>
+</html>
