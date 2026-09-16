@@ -89,6 +89,22 @@
   var themeOrder = [];
   var inst = null;
 
+  // Une exception dans un effet ne disparaît plus dans la console : elle est
+  // comptée (`juicy.errors`), écrite au journal et émise sur `error`, pour
+  // qu'un harnais qui n'écoute que la console ne croie pas que tout va bien
+  // pendant qu'un effet meurt. Le `console.warn` reste.
+  var effectErrors = [];
+
+  function effectError(id, phase, e) {
+    effectErrors.push({
+      effect: id, phase: phase, error: e,
+      at: (global.performance ? performance.now() : Date.now()) - T0
+    });
+    console.warn('[juicy] effet ' + id + ' ' + phase + ' :', e);
+    log('effect ' + id + ' failed in ' + phase + ': ' + ((e && e.message) || e));
+    if (inst) inst.emit('error', { effect: id, phase: phase, error: e });
+  }
+
   var effects = {
     /** define(id, def) ou define(def) avec def.id. */
     define: function (id, def) {
@@ -108,7 +124,7 @@
     fire: function (id, opts) {
       var def = effectDefs[id];
       if (!def || typeof def.fire !== 'function') { log('fire ' + id + ' effect=absent'); return false; }
-      try { def.fire(inst, opts || {}); } catch (e) { console.warn('[juicy] effet ' + id + ' fire :', e); return false; }
+      try { def.fire(inst, opts || {}); } catch (e) { effectError(id, 'fire', e); return false; }
       log('fire ' + id);
       return true;
     }
@@ -126,7 +142,7 @@
         if (typeof r === 'number') targets = r;
         else if (isObj(r) && typeof r.targets === 'number') targets = r.targets;
       } catch (e) {
-        console.warn('[juicy] effet ' + id + (on ? ' start' : ' stop') + ' :', e);
+        effectError(id, on ? 'start' : 'stop', e);
         return false;
       }
     }
@@ -476,12 +492,40 @@
     slot.rect = { x: x, y: y, width: w, height: h };
   }
 
+  // ------------------------------------------------------ extension de l'UI
+  //
+  // `applyTheme` reconstruit `juicy.ui` à chaque thème : une affectation de
+  // `juicy.ui` après `create()` serait perdue au premier changement de thème.
+  // `Juicy.ui.extend(map)` enregistre des fabriques durables, fusionnées
+  // après celles du noyau et avant le `ui` du thème actif — un thème garde
+  // donc le dernier mot sur une fabrique qu'il redéfinit.
+
+  var uiExtras = {};
+
+  var uiRegistry = {
+    extend: function (map) {
+      if (!isObj(map)) { console.warn('[juicy] ui.extend : objet attendu'); return uiRegistry; }
+      Object.keys(map).forEach(function (k) {
+        uiExtras[k] = map[k];
+        uiRegistry[k] = map[k];
+      });
+      if (inst) inst.ui = composeUI(inst);
+      return uiRegistry;
+    }
+  };
+
+  /** Fabriques du noyau, puis celles de `ui.extend`, puis celles du thème. */
+  function composeUI(j) {
+    return merge(merge(makeUI(j), uiExtras), j.theme && j.theme.ui);
+  }
+
   // --------------------------------------------------------------- création
 
   var Juicy = {
     version: '2.0.0-pixi',
     effects: effects,
     themes: themes,
+    ui: uiRegistry,
     get instance() { return inst; },
     create: createInstance
   };
@@ -517,6 +561,7 @@
       camera: null,
       slots: slots,
       state: state,
+      errors: effectErrors,
       content: content,
       theme: null,
       tokens: DEFAULT_TOKENS,
@@ -739,7 +784,7 @@
       juicy.theme = def;
       juicy.tokens = merge(DEFAULT_TOKENS, def.tokens);
       juicy.skin = merge(defaultSkin(juicy.tokens), def.skin);
-      juicy.ui = merge(makeUI(juicy), def.ui);
+      juicy.ui = composeUI(juicy);
       try { app.renderer.background.color = juicy.tokens.colors.bg; } catch (e) { /* ignore */ }
       relayout(true, true);
     }
@@ -868,7 +913,7 @@
         if (!effectOn[id]) return;
         var def = effectDefs[id];
         if (!def || typeof def.update !== 'function') return;
-        try { def.update(juicy, dt); } catch (e) { console.warn('[juicy] effet ' + id + ' update :', e); effectOn[id] = false; }
+        try { def.update(juicy, dt); } catch (e) { effectError(id, 'update', e); effectOn[id] = false; }
       });
       if (juicy.theme && typeof juicy.theme.update === 'function') {
         try { juicy.theme.update(juicy, dt); } catch (e) { console.warn('[juicy] update du thème :', e); }
@@ -914,19 +959,30 @@
       app.canvas.setAttribute('aria-label', content.title || 'Juicy');
       document.body.appendChild(app.canvas);
 
+      // `scene` groupe tout ce qui se projette : un effet qui remplace l'image
+      // (perspective, post-traitement en RenderTexture) rend un seul
+      // conteneur au lieu d'en composer deux. L'ordre d'empilement est
+      // inchangé : background et world d'abord, puis ui, overlay, cursor.
       var layers = {
+        scene: new PIXI.Container(),
         background: new PIXI.Container(),
         world: new PIXI.Container(),
         ui: new PIXI.Container(),
         overlay: new PIXI.Container(),
         cursor: new PIXI.Container()
       };
-      Object.keys(layers).forEach(function (k) { layers[k].label = k; app.stage.addChild(layers[k]); });
-      layers.overlay.eventMode = 'none';
+      Object.keys(layers).forEach(function (k) { layers[k].label = k; });
+      layers.scene.addChild(layers.background, layers.world);
+      app.stage.addChild(layers.scene, layers.ui, layers.overlay, layers.cursor);
+      // `overlay` reste traversé par le système d'événements : une modale ou
+      // un composant posé là reçoit ses clics sans que personne n'ait à
+      // basculer la couche. Ses enfants décoratifs, non interactifs, ne
+      // deviennent pas des cibles pour autant.
+      layers.overlay.eventMode = 'passive';
       layers.cursor.eventMode = 'none';
       juicy.layers = layers;
       juicy.camera = camera;
-      juicy.ui = makeUI(juicy);
+      juicy.ui = composeUI(juicy);
 
       try {
         if (app.renderer.accessibility && app.renderer.accessibility.init) { /* activé au Tab */ }

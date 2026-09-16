@@ -523,10 +523,11 @@
   });
 
   // ---------------------------------------------------------------- tilt
-  // Vraie perspective : `layers.world` est rendu dans une `RenderTexture`
-  // projetée sur un `PerspectiveMesh` dont les quatre coins suivent le
-  // pointeur. Le monde reste en place (alpha 0.001) pour que les clics et le
-  // test de contact continuent de porter exactement là où ils portaient.
+  // Vraie perspective : `layers.scene` (le décor et le monde réunis par le
+  // noyau) est rendu dans une `RenderTexture` projetée sur un
+  // `PerspectiveMesh` dont les quatre coins suivent le pointeur. La scène
+  // reste en place (alpha 0.001) pour que les clics et le test de contact
+  // continuent de porter exactement là où ils portaient.
 
   var tilt = null;
   function tiltTexture(j) {
@@ -556,8 +557,7 @@
     stop: function (j) {
       if (!tilt) return;
       offLayout(tilt.relay);
-      j.layers.world.alpha = 1;
-      j.layers.background.visible = true;
+      j.layers.scene.alpha = 1;
       try { tilt.mesh.destroy(); } catch (e) { /* ignore */ }
       try { tilt.rt.destroy(true); } catch (e) { /* ignore */ }
       tilt = null;
@@ -586,21 +586,18 @@
       var x3 = mx - ex - sk, y3 = h - my + ey + sy2;
       if (tilt.mesh.setCorners) tilt.mesh.setCorners(x0, y0, x1, y1, x2, y2, x3, y3);
       else { tilt.mesh.x0 = x0; tilt.mesh.y0 = y0; tilt.mesh.x1 = x1; tilt.mesh.y1 = y1; tilt.mesh.x2 = x2; tilt.mesh.y2 = y2; tilt.mesh.x3 = x3; tilt.mesh.y3 = y3; }
-      // Capture du décor puis du monde, à pleine opacité, dans la même texture :
-      // les cadres des panneaux vivent dans `background` et doivent basculer
-      // avec leur contenu, sinon la page se plie derrière des cadres restés
-      // plats. Les deux couches sont ensuite effacées pour le rendu final,
-      // seul le maillage est visible à l'écran.
-      var world = j.layers.world, back = j.layers.background;
+      // Capture de la scène entière (décor + monde) à pleine opacité dans la
+      // texture : les cadres des panneaux vivent dans `background` et doivent
+      // basculer avec leur contenu, sinon la page se plie derrière des cadres
+      // restés plats. La scène est ensuite effacée pour le rendu final, seul
+      // le maillage est visible à l'écran.
+      var scene = j.layers.scene;
       tilt.mesh.visible = false;
-      world.alpha = 1;
-      back.visible = true;
+      scene.alpha = 1;
       try {
-        j.app.renderer.render({ container: back, target: tilt.rt, clear: true });
-        j.app.renderer.render({ container: world, target: tilt.rt, clear: false });
+        j.app.renderer.render({ container: scene, target: tilt.rt, clear: true });
       } catch (e) { /* ignore */ } finally {
-        back.visible = false;
-        world.alpha = 0.001;
+        scene.alpha = 0.001;
         tilt.mesh.visible = true;
       }
     }

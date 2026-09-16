@@ -10,11 +10,9 @@
  *                                              remplacées ici)
  *   juicy.ui.panel / badge / card / scores / modal / cursor
  *
- * Installation : le noyau reconstruit `juicy.ui` à chaque changement de thème
- * (`merge(makeUI(juicy), theme.ui)`). Ce fichier pose donc ses fabriques sur
- * `theme.ui` de chaque thème — enregistré avant ou après lui — ce qui est le
- * seul point d'accroche public ; les fabriques d'un thème restent
- * prioritaires sur les nôtres. Voir `install()` en bas de fichier.
+ * Installation : `Juicy.ui.extend(UI)` en bas de fichier. Le noyau
+ * reconstruit `juicy.ui` à chaque changement de thème et y refusionne les
+ * fabriques étendues, avant celles du thème actif — qui restent prioritaires.
  */
 (function (global) {
   'use strict';
@@ -818,9 +816,6 @@
     node.dialog = dialog;
     node.scrim = scrim;
 
-    // `layers.overlay` est en `eventMode: 'none'` dans le noyau : sans ce
-    // passage en `passive`, aucun clic n'atteindrait la modale.
-    j.layers.overlay.eventMode = 'passive';
     j.layers.overlay.addChild(node);
 
     scrim.eventMode = 'static';
@@ -1144,24 +1139,7 @@
     clampToScreen: clampToScreen, draggable: draggable
   };
 
-  /**
-   * Le noyau refait `juicy.ui = merge(makeUI(juicy), theme.ui)` à chaque
-   * thème : poser nos fabriques sur chaque définition de thème est le seul
-   * moyen de les rendre permanentes sans toucher au noyau. Ce qu'un thème
-   * définit lui-même reste prioritaire.
-   */
-  function install(def) {
-    if (!def) return def;
-    def.ui = merge(UI, def.ui);
-    return def;
-  }
-
-  Juicy.themes.list().forEach(function (id) { install(Juicy.themes.get(id)); });
-  var register = Juicy.themes.register;
-  Juicy.themes.register = function (def) {
-    install(def);
-    return register.call(Juicy.themes, def);
-  };
-  if (Juicy.instance) Juicy.instance.ui = merge(Juicy.instance.ui, UI);
-  Juicy.ui = UI;
+  // Point d'extension du noyau : les fabriques survivent aux changements de
+  // thème, et celles qu'un thème redéfinit restent prioritaires.
+  Juicy.ui.extend(UI);
 })(window);
