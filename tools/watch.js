@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 /*
- * tools/watch.js — ouvre une page de site/ sous Chromium (playwright-core),
- * active le journal Juicy par l'URL (?juicy-log), relaie chaque ligne de
- * console au terminal telle quelle, et rejoue un scénario d'actions passé en
- * arguments par de vrais clics souris. Outil de dev, jamais publié (hors
- * site/, voir .gitignore).
+ * tools/watch.js — ouvre une page de site/ (Juicy sur PixiJS 8) sous
+ * Chromium (playwright-core), active le journal de la lib par l'URL
+ * (?juicy-log), relaie chaque ligne de console au terminal telle quelle, et
+ * rejoue un scénario d'actions passé en arguments par de vrais clics souris
+ * sur les objets Pixi. Outil de dev, jamais publié (hors site/, voir
+ * .gitignore).
+ *
+ * Un contrôle (interrupteur, bouton d'action, bouton de nav) se trouve par
+ * son id via `juicy.slots` (bornes globales `getBounds()`) et s'atteint par
+ * `juicy.app.renderer.events.rootBoundary.hitTest(cx, cy)` en son centre —
+ * même mécanique que le harnais du noyau (mandat pixi.core), voir
+ * `.swarm/pages/findings/pixi-concept.md`.
  *
  * Usage : node tools/watch.js <page.html> [options] [actions...]
  * node tools/watch.js --help pour le détail.
@@ -21,10 +28,13 @@ const { spawn } = require('child_process');
 const SITE_DIR = path.resolve(__dirname, '..', 'site');
 const CHROMIUM_PATH = '/opt/pw-browsers/chromium';
 
+// Fichiers attendus dans --cdn-cache : les libs chargées par les pages Juicy
+// (voir pixi-concept.md « Pile ») + la CSS Google Fonts.
 const CDN_FILES = {
-  'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js': 'gsap.min.js',
-  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js': 'confetti.browser.min.js',
-  'https://cdn.jsdelivr.net/npm/@tsparticles/slim@3/tsparticles.slim.bundle.min.js': 'tsparticles.slim.bundle.min.js',
+  'https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js': 'pixi.min.js',
+  'https://cdn.jsdelivr.net/npm/pixi-filters@6/dist/pixi-filters.min.js': 'pixi-filters.min.js',
+  'https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js': 'gsap.min.js',
+  'https://cdn.jsdelivr.net/npm/gsap@3/dist/PixiPlugin.min.js': 'PixiPlugin.min.js',
   'https://cdn.jsdelivr.net/npm/tone@15/build/Tone.js': 'Tone.js',
 };
 
@@ -34,44 +44,56 @@ node tools/watch.js <page.html> [options] [actions...]
 
 Ouvre <page.html> (relatif à site/) sous Chromium (/opt/pw-browsers/chromium,
 via playwright-core), servi par python3 -m http.server (jamais file://).
-Active le journal Juicy par l'URL (?juicy-log) sauf --no-log, relaie chaque
-ligne de console au terminal telle quelle, puis rejoue les actions dans
-l'ordre où elles apparaissent sur la ligne de commande, par de vrais clics
-souris (page.mouse.click au centre de la cible, document.elementFromPoint
-vérifié avant le clic).
+Ajoute ?juicy-log à l'URL, relaie chaque ligne du journal de la lib (et toute
+autre ligne de console) au terminal, attend que \`Juicy.instance\` existe,
+puis rejoue les actions dans l'ordre où elles apparaissent sur la ligne de
+commande.
+
+Un contrôle se trouve par son id dans \`juicy.content.controls\` /
+\`.actions\` / \`.nav\`, à l'index correspondant dans \`juicy.slots.<nom>.items\`
+(même ordre). Ses bornes globales viennent de \`getBounds()\`, le clic réel
+(page.mouse.click) vise leur centre, et la cible n'est considérée atteinte
+que si ce centre est dans la fenêtre et si
+\`juicy.app.renderer.events.rootBoundary.hitTest(cx, cy)\` rend le contrôle ou
+un de ses enfants — sinon le clic est annulé et signalé, jamais fait à
+l'aveugle.
 
 Options globales (n'importe où sur la ligne) :
-  --cdn-cache <dossier>   sert les libs CDN + Google Fonts depuis ce dossier
-                          (contournement TLS du bac à sable ; fichiers
-                          attendus : gsap.min.js, confetti.browser.min.js,
-                          tsparticles.slim.bundle.min.js, Tone.js, fonts.css)
-  --diff                  imprime le nombre de pixels changés (screenshot
+  --cdn-cache <dossier>   sert pixi.min.js, pixi-filters.min.js, gsap.min.js,
+                          PixiPlugin.min.js, Tone.js et la CSS Google Fonts
+                          depuis ce dossier (contournement TLS du bac à
+                          sable ; aucune URL n'est changée dans la page)
+  --diff                  imprime le nombre de pixels changés (capture
                           avant/après) pour chaque action ; pour un clic
                           (toggle/fire/switch), imprime changed (total) et
-                          changedOutsideControl (hors la boîte englobante du
-                          contrôle cliqué, agrandie de 8px — un toggle ou un
+                          changedOutsideControl (hors les bornes du contrôle
+                          cliqué, agrandies de 8px — un interrupteur ou un
                           bouton change lui-même d'apparence au clic, ce
                           n'est pas l'effet qu'il déclenche)
   --viewport <LxH>        taille de viewport, ex. 375x812 (défaut 1280x800)
   --reduced-motion        émule prefers-reduced-motion: reduce
-  --no-log                n'ajoute pas ?juicy-log (pour vérifier le silence
-                          par défaut du journal)
   --help, -h              affiche cette aide
 
 Actions (exécutées dans l'ordre d'apparition) :
   --theme <id>            bascule le thème initial si différent du défaut
-  --toggle <a,b,c>        clique le toggle de chaque effet continu, un par un
-  --fire <a,b,c>          clique le bouton de chaque action ponctuelle (id
-                          d'action, ex. confetti, ou id d'effet alias vers
-                          son bouton par défaut, ex. burst -> confetti)
-  --switch <id>           clique le bouton de nav pour basculer de thème
+                          (appel direct à juicy.setTheme, pas un clic)
+  --toggle <a,b,c>        clique l'interrupteur de chaque id de
+                          juicy.content.controls, un par un
+  --fire <a,b,c>          clique le bouton de chaque id de
+                          juicy.content.actions, un par un
+  --switch <id>           clique le bouton de nav du thème <id>
   --wait <ms>             attend ms millisecondes
   --screenshot <chemin>   capture le viewport dans <chemin>
+  --reach                 liste chaque contrôle (controls + actions) avec
+                          ses bornes globales, le résultat du hitTest, et un
+                          total « atteints/total » en dernière ligne
 
-Exemple :
-  node tools/watch.js juicy.html --cdn-cache /chemin/vers/cdn-cache \\
-    --theme rpg --toggle bg,glitch --wait 1000 --fire burst --switch neon \\
-    --screenshot out.png --diff
+Exemples :
+  node tools/watch.js juicy.html --theme plain --reach \\
+    --viewport 375x812 --cdn-cache /chemin/vers/cdn-cache
+
+  node tools/watch.js juicy.html --toggle crt --wait 800 --fire confetti \\
+    --diff --cdn-cache /chemin/vers/cdn-cache
 `);
 }
 
@@ -79,7 +101,6 @@ function parseArgs(argv) {
   let page = null;
   let cdnCache = null;
   let diff = false;
-  let noLog = false;
   let viewport = { width: 1280, height: 800 };
   let reducedMotion = false;
   const actions = [];
@@ -93,8 +114,6 @@ function parseArgs(argv) {
       cdnCache = argv[++i];
     } else if (a === '--diff') {
       diff = true;
-    } else if (a === '--no-log') {
-      noLog = true;
     } else if (a === '--reduced-motion') {
       reducedMotion = true;
     } else if (a === '--viewport') {
@@ -113,6 +132,8 @@ function parseArgs(argv) {
       actions.push({ type: 'wait', value: Number(argv[++i]) });
     } else if (a === '--screenshot') {
       actions.push({ type: 'screenshot', value: argv[++i] });
+    } else if (a === '--reach') {
+      actions.push({ type: 'reach' });
     } else if (!a.startsWith('--') && page === null) {
       page = a;
     } else {
@@ -126,7 +147,7 @@ function parseArgs(argv) {
     process.exit(1);
   }
 
-  return { page, cdnCache, diff, noLog, viewport, reducedMotion, actions };
+  return { page, cdnCache, diff, viewport, reducedMotion, actions };
 }
 
 function sleep(ms) {
@@ -174,12 +195,12 @@ async function installCdnCache(context, cacheDir) {
   }
   const fontsCssPath = path.join(cacheDir, 'fonts.css');
   if (fs.existsSync(fontsCssPath)) {
-    // On retire les url(...gstatic...) : les octets de police eux-mêmes ne
-    // sont pas mis en cache, et laisser le navigateur les requêter échouerait
-    // contre le certificat invalide du bac à sable, avec une ligne "Failed to
-    // load resource" comptée comme erreur console. Sans src valide, aucune
-    // requête n'est émise : le thème retombe sur sa police de repli, sans
-    // conséquence pour ce qui est vérifié ici (interactions, journal, diffs).
+    // Les octets de police eux-mêmes ne sont pas en cache : on retire les
+    // @font-face pour qu'aucune requête ne parte vers fonts.gstatic.com (le
+    // certificat du bac à sable la ferait échouer, comptée comme erreur
+    // console). Sans src valide, le thème retombe sur sa police système —
+    // sans conséquence pour ce que watch.js vérifie (interactions, journal,
+    // diffs de pixels).
     const raw = fs.readFileSync(fontsCssPath, 'utf8');
     const body = raw.replace(/@font-face\s*\{[^}]*\}/g, '');
     await context.route('https://fonts.googleapis.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/css', body }));
@@ -187,9 +208,9 @@ async function installCdnCache(context, cacheDir) {
   await context.route('https://fonts.gstatic.com/**', (route) => route.abort());
 }
 
-// excludeRect (optionnel, en px CSS viewport) : boîte englobante du contrôle
-// qui vient d'être cliqué, agrandie de 8px. Un toggle ou un bouton d'action
-// change lui-même d'apparence au clic (état actif, voyant, etc.) — sans
+// excludeRect (optionnel, en px CSS viewport) : bornes globales du contrôle
+// qui vient d'être cliqué, agrandies de 8px. Un interrupteur ou un bouton
+// change lui-même d'apparence au clic (voyant, état actif…) — sans
 // l'exclure, le diff compte ce changement du contrôle, pas celui de l'effet
 // qu'il déclenche. `changed` reste le total ; `changedOutsideControl` est ce
 // qui reste hors de cette boîte, seul chiffre comparé au seuil du Done si.
@@ -230,16 +251,10 @@ function diffPixelCount(bufA, bufB, excludeRect) {
   return { changed, changedOutsideControl };
 }
 
-async function waitSwitchDone(page) {
-  await page
-    .waitForFunction(() => !document.documentElement.classList.contains('juicy-switching'), { timeout: 2000 })
-    .catch(() => {});
-}
-
 async function withDiff(page, enabled, run) {
   const before = enabled ? await page.screenshot() : null;
-  // `run` peut retourner la boîte englobante (px CSS) du contrôle cliqué,
-  // à exclure du diff (voir diffPixelCount).
+  // `run` peut retourner les bornes globales (px CSS) du contrôle cliqué, à
+  // exclure du diff (voir diffPixelCount).
   const excludeRect = await run();
   if (enabled) {
     const after = await page.screenshot();
@@ -252,79 +267,88 @@ async function withDiff(page, enabled, run) {
   }
 }
 
+// Trouve le nœud Pixi d'un contrôle par son id et rend ses bornes globales,
+// le point testé et le résultat du hitTest. kind : 'control' | 'action' | 'nav'.
+// Même mécanique que le harnais du mandat pixi.core (rootBoundary.hitTest,
+// bornes >0 et dans la fenêtre, hit sur le contrôle ou un de ses enfants).
+async function locate(page, kind, id) {
+  return page.evaluate(({ kind, id }) => {
+    const j = window.Juicy && window.Juicy.instance;
+    if (!j) return { ok: false, error: "pas d'instance Juicy" };
+    let list, slot;
+    if (kind === 'control') { list = (j.content.controls || []).map((c) => c.id); slot = j.slots.controls; }
+    else if (kind === 'action') { list = (j.content.actions || []).map((a) => a.id); slot = j.slots.actions; }
+    else if (kind === 'nav') { list = Array.isArray(j.content.nav) ? j.content.nav : j.themes.list(); slot = j.slots.nav; }
+    else return { ok: false, error: 'genre de contrôle inconnu : ' + kind };
+    const idx = list.indexOf(id);
+    if (idx < 0 || !slot || !slot.items[idx]) return { ok: false, error: 'contrôle introuvable : ' + kind + ' ' + id };
+    const node = slot.items[idx];
+    const b = node.getBounds();
+    const rect = { x: b.x, y: b.y, width: b.width, height: b.height };
+    const cx = rect.x + rect.width / 2;
+    const cy = rect.y + rect.height / 2;
+    const screen = j.screen;
+    const within = rect.width > 0 && rect.height > 0 &&
+      rect.x >= -1 && rect.y >= -1 &&
+      rect.x + rect.width <= screen.width + 1 && rect.y + rect.height <= screen.height + 1;
+    let hitNode = null;
+    try { hitNode = j.app.renderer.events.rootBoundary.hitTest(cx, cy); } catch (e) { hitNode = null; }
+    let hit = false, n = hitNode;
+    while (n) { if (n === node) { hit = true; break; } n = n.parent; }
+    return { ok: true, rect, cx, cy, within, hit, reachable: within && hit };
+  }, { kind, id });
+}
+
+// Pixi n'installe la racine de son arbre d'événements (celle que hitTest
+// interroge) qu'au premier pointeur réel reçu par la page : sans ce
+// déplacement, rootBoundary.hitTest ne rend jamais rien, même sur une cible
+// par ailleurs correcte. Un vrai mouvement de souris avant tout hitTest ou
+// clic, une fois par page.
+async function primeEvents(page, viewport) {
+  await page.mouse.move(Math.round(viewport.width / 2), Math.round(viewport.height - 4));
+  await page.mouse.move(2, 2);
+  await sleep(120);
+}
+
+async function armThemeWait(page) {
+  await page.evaluate(() => {
+    window.__juicyThemeDone = false;
+    const j = window.Juicy && window.Juicy.instance;
+    if (!j) return;
+    let off = null;
+    off = j.on('theme', () => { window.__juicyThemeDone = true; if (off) off(); });
+  });
+}
+
+async function waitThemeDone(page) {
+  await page.waitForFunction(() => window.__juicyThemeDone === true, { timeout: 3000 }).catch(() => {});
+}
+
 async function doTheme(page, diff, id) {
   console.log(`> theme ${id}`);
   await withDiff(page, diff, async () => {
     await page.evaluate((themeId) => {
-      if (window.Juicy && window.Juicy.state.theme !== themeId) window.Juicy.setTheme(themeId);
+      const j = window.Juicy && window.Juicy.instance;
+      if (j && (!j.theme || j.theme.id !== themeId)) return j.setTheme(themeId);
+      return Promise.resolve(true);
     }, id);
-    await waitSwitchDone(page);
     await page.waitForTimeout(150);
   });
 }
 
-async function measureAndVerify(page, selector) {
-  // La cible peut encore bouger juste après l'action précédente (transform
-  // GSAP en cours de résorption) : on remesure et on revérifie juste avant
-  // de cliquer, plutôt que de cliquer sur des coordonnées obsolètes.
-  let box, hit;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    box = await page.evaluate((sel) => {
-      const el = document.querySelector(sel);
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2, left: r.left, top: r.top, width: r.width, height: r.height };
-    }, selector);
-    if (!box) return { box: null, hit: false };
-    hit = await page.evaluate(
-      ({ x, y, sel }) => {
-        const el = document.elementFromPoint(x, y);
-        return !!(el && el.closest(sel));
-      },
-      { x: box.x, y: box.y, sel: selector }
-    );
-    if (hit) break;
-    await page.waitForTimeout(150);
-  }
-  return { box, hit };
-}
+async function doClick(page, diff, label, kind, id, waitTheme) {
+  console.log(`> ${label} ${id}`);
+  const loc = await locate(page, kind, id);
+  if (!loc.ok) { console.log(`  ! ${loc.error}`); return; }
+  if (!loc.within) { console.log(`  ! bornes hors fenêtre : ${JSON.stringify(loc.rect)}`); return; }
+  if (!loc.hit) { console.log(`  ! hitTest ne trouve pas la cible en (${Math.round(loc.cx)},${Math.round(loc.cy)}) — clic annulé`); return; }
 
-async function doClick(page, diff, kind, id, selector, isThemeSwitch) {
-  console.log(`> ${kind} ${id}`);
-  const found = await page.evaluate((sel) => {
-    const el = document.querySelector(sel);
-    if (!el) return false;
-    el.scrollIntoView({ block: 'center', inline: 'center' });
-    return true;
-  }, selector);
-  if (!found) {
-    console.log(`  ! cible introuvable : ${selector}`);
-    return;
-  }
-  await page.waitForTimeout(50);
-
+  if (waitTheme) await armThemeWait(page);
   await withDiff(page, diff, async () => {
-    // Mesure et vérification faites ici, juste avant le clic : la capture
-    // "before" de withDiff prend elle-même du temps, pendant lequel une
-    // cible mesurée trop tôt pourrait avoir bougé.
-    const { box, hit } = await measureAndVerify(page, selector);
-    if (!box) {
-      console.log(`  ! cible disparue : ${selector}`);
-      return;
-    }
-    if (!hit) {
-      // Cliquer quand même risquerait de toucher un tout autre élément à ces
-      // coordonnées (vu en pratique : un raté sur un toggle a fini par
-      // cliquer un bouton de thème voisin, en 375px). Ne pas cliquer à
-      // l'aveugle : signaler le raté et ne rien faire plutôt que fausser la
-      // suite du scénario.
-      console.log(`  ! elementFromPoint ne trouve pas la cible en (${box.x.toFixed(0)},${box.y.toFixed(0)}) après 3 essais — clic annulé`);
-      return;
-    }
-    await page.mouse.click(box.x, box.y);
-    if (isThemeSwitch) await waitSwitchDone(page);
+    await page.mouse.click(loc.cx, loc.cy);
+    if (waitTheme) await waitThemeDone(page);
     await page.waitForTimeout(300);
-    return { x: box.left, y: box.top, width: box.width, height: box.height };
+    return loc.rect;
   });
 }
 
@@ -341,29 +365,46 @@ async function doScreenshot(page, dest) {
   console.log(`> screenshot ${resolved}`);
 }
 
-// Les boutons d'action générés portent l'id de l'action (ex. "confetti"),
-// pas celui de l'effet ponctuel qu'ils déclenchent (ex. "burst" avec le
-// preset "confetti", cf. CLAUDE.md « Les 9 actions par défaut »). --fire
-// accepte les deux : id d'action direct, ou id d'effet via cet alias vers
-// son bouton par défaut.
-const FIRE_ID_ALIASES = { burst: 'confetti' };
+async function doReach(page) {
+  console.log('> reach');
+  const ids = await page.evaluate(() => {
+    const j = window.Juicy && window.Juicy.instance;
+    if (!j) return { controls: [], actions: [] };
+    return {
+      controls: (j.content.controls || []).map((c) => c.id),
+      actions: (j.content.actions || []).map((a) => a.id),
+    };
+  });
+  let ok = 0, total = 0;
+  const row = async (kind, prefix, id) => {
+    const loc = await locate(page, kind, id);
+    total++;
+    const reachable = loc.ok && loc.reachable;
+    if (reachable) ok++;
+    const size = loc.ok ? `${Math.round(loc.rect.width)}x${Math.round(loc.rect.height)}` : '?';
+    console.log(`  ${prefix}:${id} ${size} ${reachable ? 'ok' : 'KO'}${loc.ok ? '' : ' (' + loc.error + ')'}`);
+  };
+  for (const id of ids.controls) await row('control', 't', id);
+  for (const id of ids.actions) await row('action', 'a', id);
+  console.log(`  reach ${ok}/${total}`);
+}
 
 async function performAction(page, diff, action) {
   switch (action.type) {
     case 'theme':
       return doTheme(page, diff, action.value);
     case 'toggle':
-      return doClick(page, diff, 'toggle', action.value, `[data-juicy-toggle="${action.value}"]`, false);
-    case 'fire': {
-      const buttonId = FIRE_ID_ALIASES[action.value] || action.value;
-      return doClick(page, diff, 'fire', action.value, `[data-juicy-action="${buttonId}"]`, false);
-    }
+      return doClick(page, diff, 'toggle', 'control', action.value, false);
+    case 'fire':
+      return doClick(page, diff, 'fire', 'action', action.value, false);
     case 'switch':
-      return doClick(page, diff, 'switch', action.value, `[data-juicy-theme-btn="${action.value}"]`, true);
+      return doClick(page, diff, 'switch', 'nav', action.value, true);
     case 'wait':
       return doWait(page, diff, action.value);
     case 'screenshot':
       return doScreenshot(page, action.value);
+    case 'reach':
+      return doReach(page);
     default:
       return undefined;
   }
@@ -394,6 +435,7 @@ async function main() {
     browser = await chromium.launch({ executablePath: CHROMIUM_PATH, headless: true });
     const context = await browser.newContext({
       viewport: opts.viewport,
+      deviceScaleFactor: 1,
       reducedMotion: opts.reducedMotion ? 'reduce' : 'no-preference',
     });
 
@@ -418,10 +460,10 @@ async function main() {
       console.log('[pageerror] ' + err.message);
     });
 
-    const url = `http://127.0.0.1:${port}/${opts.page}` + (opts.noLog ? '' : '?juicy-log');
+    const url = `http://127.0.0.1:${port}/${opts.page}?juicy-log`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => window.Juicy && window.Juicy.state, { timeout: 5000 }).catch(() => {});
-    await waitSwitchDone(page);
+    await page.waitForFunction(() => window.Juicy && window.Juicy.instance && window.Juicy.instance.theme, { timeout: 5000 }).catch(() => {});
+    await primeEvents(page, opts.viewport);
 
     for (const action of opts.actions) {
       await performAction(page, opts.diff, action);
