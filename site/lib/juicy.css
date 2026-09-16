@@ -1,0 +1,164 @@
+/*
+ * Juicy — noyau (juicy.css)
+ * Structurel et neutre : positionnement des couches, markup des contrôles,
+ * accessibilité. Aucune identité visuelle — c'est le rôle des thèmes.
+ * Voir .swarm/pages/contrat-lib.md, §4 et §6.
+ */
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ---------- couches fixes du noyau (§4) ---------- */
+
+#juicy-bg,
+#juicy-canvas,
+#juicy-theme-layer,
+#juicy-overlay,
+#juicy-cursor,
+#juicy-toasts {
+  position: fixed;
+  pointer-events: none;
+}
+
+#juicy-bg,
+#juicy-canvas,
+#juicy-theme-layer,
+#juicy-overlay {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+#juicy-bg { z-index: -1; }
+#juicy-canvas { z-index: 1; }
+#juicy-theme-layer { z-index: 2; }
+#juicy-overlay { z-index: 40; }
+
+#juicy-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#juicy-cursor {
+  top: 0;
+  left: 0;
+  z-index: 9000;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+#juicy-toasts {
+  top: auto;
+  right: 16px;
+  bottom: 16px;
+  left: auto;
+  z-index: 8000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  max-width: min(90vw, 360px);
+}
+
+html.juicy-on-cursor,
+html.juicy-on-cursor * {
+  cursor: none;
+}
+
+/* Pendant une bascule de thème (400 ms) : on évite les doubles clics sur les
+   régions le temps que le thème entrant reconstruise son chrome. */
+html.juicy-switching [data-juicy-region] {
+  pointer-events: none;
+}
+
+/* ---------- contrôles génériques (§6) : structure et états, pas de style ---------- */
+
+.juicy-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.juicy-toggle-control {
+  position: relative;
+  display: inline-block;
+  width: 2.4em;
+  height: 1.4em;
+  flex: none;
+}
+
+.juicy-toggle-thumb {
+  position: absolute;
+  top: 0.1em;
+  left: 0.1em;
+  width: 1.2em;
+  height: 1.2em;
+  transition: transform 0.2s ease;
+}
+
+.juicy-toggle[data-on="true"] .juicy-toggle-thumb {
+  transform: translateX(1em);
+}
+
+.juicy-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.juicy-action[disabled] {
+  cursor: not-allowed;
+}
+
+/* Remplissage de cooldown : décroît de 1 à 0 via --cooldown, posé par le noyau. */
+.juicy-action[data-cooldown="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0.25;
+  transform: scaleX(var(--cooldown, 0));
+  transform-origin: left;
+  pointer-events: none;
+}
+
+.juicy-theme-btn {
+  min-height: 44px;
+  min-width: 44px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.juicy-toggle:focus-visible,
+.juicy-action:focus-visible,
+.juicy-theme-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ---------- prefers-reduced-motion (§11) ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .juicy-toggle-thumb,
+  .juicy-action[data-cooldown="true"]::after {
+    transition: none !important;
+  }
+}

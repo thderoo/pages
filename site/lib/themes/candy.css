@@ -1,0 +1,459 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap');
+
+/*
+ * Theme "candy" — étal de desserts, présentoir à étages, page qui défile.
+ * Toutes les règles sont préfixées html[data-juicy-theme="candy"].
+ * Toutes les variables et @keyframes sont préfixées candy-.
+ */
+
+html[data-juicy-theme="candy"] {
+  --candy-cream: #fff8f1;
+  --candy-cream-2: #ffeef5;
+  --candy-pink: #ffc2d6;
+  --candy-strawberry: #ff8fab;
+  --candy-mint: #bdf2e6;
+  --candy-lemon: #ffe8a3;
+  --candy-lilac: #ddc9f2;
+  --candy-choco: #8a5a45;
+  --candy-ink: #5c3a52;
+  --candy-cherry: #e8446b;
+  --candy-shadow: rgba(122, 75, 58, 0.22);
+  --candy-radius-lg: 48px;
+  --candy-radius-md: 28px;
+  --candy-radius-sm: 16px;
+  --candy-gap: clamp(28px, 6vw, 64px);
+  --candy-offset: 72px;
+  color: var(--candy-ink);
+  font-family: 'Baloo 2', 'Fredoka', system-ui, sans-serif;
+  scroll-behavior: smooth;
+}
+
+html[data-juicy-theme="candy"] body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 15% 10%, var(--candy-cream-2) 0, transparent 45%),
+    radial-gradient(circle at 85% 30%, var(--candy-mint) 0, transparent 40%),
+    repeating-linear-gradient(135deg, var(--candy-cream) 0 42px, #fff2e4 42px 84px);
+  overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Structure : comptoir + étages                                          */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] .candy-counter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: calc(var(--candy-gap) * 1.4) 16px calc(var(--candy-gap) * 2.4);
+  gap: var(--candy-gap);
+  box-sizing: border-box;
+}
+
+html[data-juicy-theme="candy"] .candy-tier {
+  position: relative;
+  width: min(92vw, 620px);
+  display: flex;
+  justify-content: center;
+  transform: translateX(0) rotate(0deg);
+  transition: transform 0.25s ease;
+}
+
+/* Décalages horizontaux alternés (quinconce) + légères rotations */
+html[data-juicy-theme="candy"] .candy-tier:nth-of-type(odd) {
+  transform: translateX(calc(var(--candy-offset) * -1)) rotate(-2.2deg);
+}
+html[data-juicy-theme="candy"] .candy-tier:nth-of-type(even) {
+  transform: translateX(var(--candy-offset)) rotate(2deg);
+}
+
+/* Le sundae grandit à droite : décalage supplémentaire pour la scène */
+html[data-juicy-theme="candy"] .candy-tier--scene {
+  align-self: flex-end;
+  margin-right: max(2vw, 12px);
+}
+html[data-juicy-theme="candy"] .candy-tier--scene:nth-of-type(odd),
+html[data-juicy-theme="candy"] .candy-tier--scene:nth-of-type(even) {
+  transform: translateX(calc(var(--candy-offset) * 1.4)) rotate(3deg);
+}
+
+html[data-juicy-theme="candy"] .candy-plate {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(180deg, #ffffff 0%, var(--candy-cream) 100%);
+  border: 3px solid #ffffff;
+  border-radius: 44px 44px 20px 20px;
+  box-shadow:
+    0 18px 0 -6px var(--candy-shadow),
+    0 24px 32px var(--candy-shadow),
+    inset 0 -6px 0 rgba(255, 255, 255, 0.6);
+  padding: clamp(18px, 3vw, 32px);
+  box-sizing: border-box;
+}
+
+html[data-juicy-theme="candy"] .candy-plate::before {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -14px;
+  height: 22px;
+  border-radius: 40px;
+  background: radial-gradient(ellipse at center, var(--candy-shadow), transparent 70%);
+  z-index: -1;
+}
+
+/* Nappage qui coule d'un étage au suivant */
+html[data-juicy-theme="candy"] .candy-drip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--candy-gap) * -1 + 6px);
+  transform: translateX(-50%);
+  width: 64px;
+  height: var(--candy-gap);
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 0%, var(--candy-strawberry) 0 10px, transparent 11px) 0 0/32px 100%,
+    radial-gradient(circle at 70% 0%, var(--candy-pink) 0 8px, transparent 9px) 0 0/32px 100%;
+  filter: drop-shadow(0 4px 0 var(--candy-cream));
+  border-radius: 20px;
+  animation: candy-drip-flow 3.2s ease-in-out infinite;
+}
+
+@keyframes candy-drip-flow {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Régions : title / tagline                                              */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="title"] {
+  font-family: 'Fredoka', 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 46px);
+  text-align: center;
+  color: var(--candy-cherry);
+  text-shadow: 0 3px 0 #fff, 0 6px 0 var(--candy-shadow);
+  margin: 0 0 8px;
+}
+
+html[data-juicy-theme="candy"] [data-juicy-region="tagline"] {
+  text-align: center;
+  font-size: clamp(14px, 2.4vw, 18px);
+  color: var(--candy-choco);
+  opacity: 0.85;
+  margin: 0;
+}
+
+html[data-juicy-theme="candy"] .candy-tier--sign .candy-plate {
+  background: linear-gradient(180deg, #fff 0%, var(--candy-lemon) 120%);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Nav (bascule de thème) — macarons                                      */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="nav"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+html[data-juicy-theme="candy"] .juicy-theme-btn {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 22px;
+  min-height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff, var(--candy-pink));
+  color: var(--candy-ink);
+  box-shadow: 0 6px 0 var(--candy-strawberry), 0 10px 14px var(--candy-shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+html[data-juicy-theme="candy"] .juicy-theme-btn:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 var(--candy-strawberry), 0 8px 10px var(--candy-shadow);
+}
+html[data-juicy-theme="candy"] .juicy-theme-btn:active,
+html[data-juicy-theme="candy"] .juicy-theme-btn[data-juicy-theme-btn="candy"] {
+  background: linear-gradient(180deg, var(--candy-strawberry), var(--candy-cherry));
+  color: #fff;
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--candy-cherry);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Controls — cuillères qui basculent                                     */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="controls"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 22px;
+  justify-content: center;
+}
+
+html[data-juicy-theme="candy"] .juicy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 999px;
+  background: var(--candy-cream-2);
+  cursor: pointer;
+  user-select: none;
+  min-height: 44px;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
+}
+html[data-juicy-theme="candy"] .juicy-toggle:hover {
+  background: var(--candy-mint);
+}
+
+/* La cuillère : manche + cuilleron */
+html[data-juicy-theme="candy"] .juicy-toggle-control {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff, var(--candy-lilac));
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  box-sizing: border-box;
+  transition: background 0.25s ease;
+}
+html[data-juicy-theme="candy"] .juicy-toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--candy-strawberry) 75%);
+  box-shadow: 0 2px 4px var(--candy-shadow);
+  transform: translateX(0) rotate(-25deg);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html[data-juicy-theme="candy"] .juicy-toggle[data-on="true"] .juicy-toggle-control {
+  background: linear-gradient(180deg, var(--candy-mint), var(--candy-lemon));
+}
+html[data-juicy-theme="candy"] .juicy-toggle[data-on="true"] .juicy-toggle-thumb {
+  transform: translateX(20px) rotate(25deg);
+}
+html[data-juicy-theme="candy"] .juicy-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Actions — macarons / donuts qui s'écrasent mollement                   */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="actions"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+}
+
+html[data-juicy-theme="candy"] .juicy-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 84px;
+  height: 84px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 40px;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--candy-pink) 70%, var(--candy-strawberry) 100%);
+  box-shadow: 0 8px 0 var(--candy-shadow), 0 12px 16px var(--candy-shadow);
+  color: var(--candy-ink);
+  font-weight: 700;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-radius 0.12s ease;
+}
+html[data-juicy-theme="candy"] .juicy-action::after {
+  content: '';
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  width: 30%;
+  height: 14%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(-50%);
+}
+html[data-juicy-theme="candy"] .juicy-action:hover {
+  transform: translateY(2px);
+}
+/* Écrasement mou au clic */
+html[data-juicy-theme="candy"] .juicy-action[data-armed="true"] {
+  transform: scaleX(1.12) scaleY(0.82) translateY(6px);
+  border-radius: 60px 60px 30px 30px;
+  box-shadow: 0 3px 0 var(--candy-shadow), 0 5px 8px var(--candy-shadow);
+}
+html[data-juicy-theme="candy"] .juicy-action[data-firing="true"] {
+  background: radial-gradient(circle at 35% 30%, #fff, var(--candy-lemon) 70%, var(--candy-cherry) 100%);
+}
+html[data-juicy-theme="candy"] .juicy-action[data-cooldown="true"] {
+  opacity: 0.55;
+}
+html[data-juicy-theme="candy"] .juicy-action:disabled {
+  cursor: not-allowed;
+}
+html[data-juicy-theme="candy"] .juicy-action-label {
+  line-height: 1.15;
+}
+
+html[data-juicy-theme="candy"] .candy-tier--actions .candy-plate,
+html[data-juicy-theme="candy"] .candy-tier--controls .candy-plate {
+  background: linear-gradient(180deg, #fff 0%, var(--candy-mint) 130%);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scene — sundae qui grandit (brique prop)                               */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="scene"] {
+  display: flex;
+  justify-content: center;
+  min-height: 120px;
+}
+
+html[data-juicy-theme="candy"] .candy-tier--scene .candy-plate {
+  background: linear-gradient(180deg, #fff 0%, var(--candy-lilac) 140%);
+}
+
+html[data-juicy-theme="candy"] .candy-prop {
+  font-size: 56px;
+  line-height: 1;
+  transform-origin: 50% 100%;
+  transform: scale(1);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 6px 4px var(--candy-shadow));
+}
+html[data-juicy-theme="candy"] .candy-prop[data-candy-state="big"] {
+  transform: scale(1.4);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Narration — bulle de chantilly                                         */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="narration"] {
+  position: relative;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 15px;
+  min-height: 1.4em;
+}
+
+html[data-juicy-theme="candy"] .candy-tier--narration .candy-plate {
+  border-radius: 46px 46px 46px 12px;
+  background: linear-gradient(180deg, #fff 0%, var(--candy-cream-2) 100%);
+}
+html[data-juicy-theme="candy"] .candy-tier--narration .candy-plate::after {
+  content: '';
+  position: absolute;
+  left: 40px;
+  bottom: -16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: -18px 8px 0 -4px #fff;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Meta                                                                    */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] [data-juicy-region="meta"] {
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--candy-cherry);
+}
+html[data-juicy-theme="candy"] .candy-tier--meta .candy-plate {
+  background: linear-gradient(180deg, #fff 0%, var(--candy-lemon) 130%);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Curseur personnalisé                                                   */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"] #juicy-cursor {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Bascule de thème : fondu + léger "melt" sur des éléments feuilles       */
+/* (jamais de filter/transform sur un ancêtre d'un position:fixed)        */
+/* ---------------------------------------------------------------------- */
+
+html[data-juicy-theme="candy"].juicy-switching [data-juicy-region="title"] {
+  animation: candy-melt-in 0.4s ease;
+}
+@keyframes candy-melt-in {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Accessibilité : mouvement réduit                                       */
+/* ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-juicy-theme="candy"] .candy-drip {
+    animation: none;
+  }
+  html[data-juicy-theme="candy"] * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Mobile : on annule le décalage horizontal pour éviter tout débordement */
+/* ---------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  html[data-juicy-theme="candy"] {
+    --candy-offset: 0px;
+  }
+  html[data-juicy-theme="candy"] .candy-tier {
+    width: min(86vw, 400px);
+  }
+  html[data-juicy-theme="candy"] .candy-tier:nth-of-type(odd) {
+    transform: rotate(-1.2deg);
+  }
+  html[data-juicy-theme="candy"] .candy-tier:nth-of-type(even) {
+    transform: rotate(1.2deg);
+  }
+  html[data-juicy-theme="candy"] .candy-tier--scene {
+    margin-right: 0;
+  }
+  html[data-juicy-theme="candy"] .candy-tier--scene:nth-of-type(odd),
+  html[data-juicy-theme="candy"] .candy-tier--scene:nth-of-type(even) {
+    transform: rotate(1.2deg);
+  }
+  html[data-juicy-theme="candy"] .juicy-action {
+    width: 72px;
+    height: 72px;
+  }
+}

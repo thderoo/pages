@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Juicy — exemple</title>
+<link rel="stylesheet" href="lib/juicy.css">
+<link rel="stylesheet" href="lib/bursts.css">
+<link rel="stylesheet" href="lib/themes/neon.css">
+</head>
+<body>
+
+<div data-juicy-region="stage">
+  <h1 data-juicy-region="title">Ma page</h1>
+</div>
+
+<script defer src="lib/juicy.js"></script>
+<script defer src="lib/bursts.js"></script>
+<script defer src="lib/themes/neon.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  Juicy.init({ theme: 'neon', controls: false }).fire('burst');
+});
+</script>
+</body>
+</html>
