@@ -125,6 +125,47 @@
     right.appendChild(actionsTitle);
     api.mount('actions', right);
 
+    // La hauteur du bandeau n'est fixe (--neon-header-h, neon.css) qu'au-delà
+    // de 640px ; en dessous il passe sur deux lignes (mobile, neon.css) dont
+    // la hauteur dépend du texte réellement rendu. panneaux/scène/tiroirs
+    // s'alignent sur cette variable : la mesurer en JS plutôt que la figer
+    // en dur est ce que demande le mandat lib.fix4 (clamp mesuré, jamais de
+    // valeur en dur), et c'est la seule façon de rester juste des deux
+    // côtés du seuil des 640px.
+    function fitHeader() {
+      root.style.setProperty('--neon-header-h', header.getBoundingClientRect().height + 'px');
+    }
+
+    // fitHeader() avant fitPanels() : les panneaux se dimensionnent en CSS
+    // via top:var(--neon-header-h) (neon.css), donc fitPanels() doit mesurer
+    // après que cette variable reflète la vraie hauteur du bandeau, sinon il
+    // calcule sur l'ancienne valeur (mandat lib.fix4, débordement mesuré sur
+    // .neon-panel après le passage du bandeau sur deux lignes en mobile).
+    fitHeader();
+    fitPanels(left, right);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        if (session && session.left === left) { fitHeader(); fitPanels(left, right); }
+      });
+    }
+    var resizeTimer = null;
+    var resizeHandler = function () {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () { fitHeader(); fitPanels(left, right); }, 120);
+    };
+    window.addEventListener('resize', resizeHandler);
+
+    // layout() tourne avant que le noyau peuple réellement les interrupteurs/
+    // boutons (mountControls/mountThemeNav, appelés après incoming.layout()
+    // dans setTheme()) : un fitPanels() lancé ici mesure des panneaux encore
+    // vides et ne déclenche jamais la réduction d'échelle. 'juicy:theme' est
+    // déclenché par le noyau juste après ce peuplement — c'est le bon moment
+    // pour re-mesurer (mandat lib.fix4).
+    var themeEventHandler = function (e) {
+      if (session && session.left === left && e.detail && e.detail.id === 'neon') { fitHeader(); fitPanels(left, right); }
+    };
+    document.addEventListener('juicy:theme', themeEventHandler);
+
     // Cadrans radiaux : un dial (brique `gauge`, mode radial) par module
     // d'armement, dont la valeur suit la variable --cooldown posée par le
     // noyau sur le bouton lui-même pendant son temps de recharge.
@@ -212,6 +253,11 @@
       narrationRegion.classList.add('neon-telemetry');
       narrationRegion.textContent = '';
       var tickerHost = el('div', 'neon-ticker-host');
+      // Bandeau défilant en boucle, volontairement plus large que sa fenêtre
+      // visible (piste dupliquée, clip via overflow:hidden) : hors du champ
+      // du garde-fou anti-défilement de page, marqué pour que checkFit()
+      // l'ignore (mandat lib.fix4).
+      tickerHost.setAttribute('data-juicy-marquee', 'true');
       narrationRegion.appendChild(tickerHost);
       tickerWidget = api.widget('ticker', tickerHost, {
         items: [(theme.lines && theme.lines.theme) || 'CONSOLE NEON-HUD EN LIGNE'],
@@ -275,8 +321,53 @@
           clearTimeout(alertTimer);
           alertTimer = null;
         }
+      },
+      clearResizeHandler: function () {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        window.removeEventListener('resize', resizeHandler);
+        document.removeEventListener('juicy:theme', themeEventHandler);
       }
     };
+  }
+
+  // ---------------------------------------------------------------------
+  // fitPanel / fitPanels — mandat lib.fix4 : jamais de défilement. Les deux
+  // panneaux ont déjà une hauteur bornée par le CSS (position fixed,
+  // top/bottom), donc panelEl.clientHeight est correct sans mesure JS
+  // supplémentaire ; on réduit --neon-item-scale par dichotomie jusqu'à ce
+  // que panelEl.scrollHeight tienne dedans, puis on bascule la liste en
+  // deux colonnes si l'échelle minimale ne suffit toujours pas.
+  // ---------------------------------------------------------------------
+  function fitPanel(panelEl) {
+    if (!panelEl) return;
+    var wrapper = panelEl.querySelector('[data-juicy-region]');
+    panelEl.style.removeProperty('--neon-item-scale');
+    if (wrapper) wrapper.classList.remove('neon-list--grid');
+    if (panelEl.scrollHeight <= panelEl.clientHeight + 1) return;
+
+    var lo = 0.55;
+    var hi = 1;
+    var best = lo;
+    for (var i = 0; i < 12; i++) {
+      var mid = (lo + hi) / 2;
+      panelEl.style.setProperty('--neon-item-scale', mid.toFixed(3));
+      if (panelEl.scrollHeight <= panelEl.clientHeight + 1) {
+        best = mid;
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    panelEl.style.setProperty('--neon-item-scale', best.toFixed(3));
+
+    if (panelEl.scrollHeight > panelEl.clientHeight + 1 && wrapper) {
+      wrapper.classList.add('neon-list--grid');
+    }
+  }
+
+  function fitPanels(left, right) {
+    fitPanel(left);
+    fitPanel(right);
   }
 
   function destroySession(api, s) {
@@ -286,6 +377,7 @@
     s.handleLeft.removeEventListener('click', s.onHandleLeft);
     s.handleRight.removeEventListener('click', s.onHandleRight);
     s.clearAlertTimer();
+    s.clearResizeHandler();
     for (var id in s.gauges) {
       if (Object.prototype.hasOwnProperty.call(s.gauges, id)) {
         s.gauges[id].gauge.destroy();

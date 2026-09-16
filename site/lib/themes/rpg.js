@@ -44,12 +44,15 @@
     hpGauge: null,
     mpGauge: null,
     keydownHandler: null,
-    windows: { options: null, skills: null }, // { el, body, items: [], updateMore() }
+    windows: { options: null, skills: null }, // { el, body, items: [] }
     activeWindow: 'options',
     selectedIndex: 0,
     battle: null,       // { monster, hero, gauge, caption, defeated }
     monsterHp: 100,
-    metaEl: null
+    metaEl: null,
+    resizeHandler: null, // ajustement des fenêtres de menu (fitMenus), retiré en cleanup
+    themeEventHandler: null, // ré-ajuste après mountControls/mountThemeNav (mandat lib.fix4)
+    readyEventHandler: null // idem, cas du tout premier chargement (mandat lib.fix4)
   };
 
   function clearTimers() {
@@ -85,6 +88,18 @@
     clearTimers();
     clearWidgets();
     stopMusic();
+    if (state.resizeHandler) {
+      window.removeEventListener('resize', state.resizeHandler);
+      state.resizeHandler = null;
+    }
+    if (state.themeEventHandler) {
+      document.removeEventListener('juicy:theme', state.themeEventHandler);
+      state.themeEventHandler = null;
+    }
+    if (state.readyEventHandler) {
+      document.removeEventListener('juicy:ready', state.readyEventHandler);
+      state.readyEventHandler = null;
+    }
     if (state.screen && state.screen.parentNode) {
       state.screen.parentNode.removeChild(state.screen);
     }
@@ -125,9 +140,6 @@
     var item = items[state.selectedIndex];
     item.classList.add('rpg-selected');
     item.insertBefore(state.cursorEl, item.firstChild);
-    try { item.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* noop */ }
-    var activeWin = state.windows[state.activeWindow];
-    if (activeWin && typeof activeWin.updateMore === 'function') activeWin.updateMore();
   }
 
   function switchWindow(dir) {
@@ -208,20 +220,104 @@
       items = Array.prototype.slice.call(body.querySelectorAll(selector));
     }
 
-    var more = owned('span', 'rpg-scroll-more');
-    more.textContent = '▼';
-    more.setAttribute('aria-hidden', 'true');
-    win.appendChild(more);
+    return { el: win, body: body, items: items };
+  }
 
-    var updateMore = function () {
-      var overflow = body.scrollHeight - body.clientHeight - body.scrollTop > 1;
-      more.classList.toggle('rpg-scroll-more--visible', overflow);
-    };
-    body.addEventListener('scroll', updateMore);
-    var t = setTimeout(updateMore, 0);
-    state.timers.push(t);
+  // ---------------------------------------------------------------------
+  // fitMenus / fitWindow — mandat lib.fix4 : jamais de défilement. La
+  // hauteur disponible se mesure en JS (bandeau de statut + dialogue,
+  // getBoundingClientRect, jamais une valeur en dur), se répartit entre les
+  // deux fenêtres selon leur nombre d'items, puis --rpg-item-scale (lu par
+  // rpg.css) est réduit par recherche dichotomique jusqu'à ce que le corps
+  // ne déborde plus (scrollHeight <= clientHeight + 1) ; si l'échelle
+  // minimale ne suffit toujours pas, la liste bascule en deux colonnes.
+  // ---------------------------------------------------------------------
+  function fitWindow(win, boxHeight) {
+    if (!win || !win.el || !win.body) return;
+    var el = win.el;
+    var body = win.body;
+    var wrapper = body.querySelector('[data-juicy-region]');
+    el.style.height = boxHeight + 'px';
+    el.style.removeProperty('--rpg-item-scale');
+    if (wrapper) wrapper.classList.remove('rpg-window-body--grid');
+    if (!body.querySelector('.juicy-toggle, .juicy-action')) return;
+    if (body.scrollHeight <= body.clientHeight + 1) return;
 
-    return { el: win, body: body, items: items, updateMore: updateMore };
+    // Le floor de la recherche descend plus bas en grille (0.05 contre
+    // 0.55) : padding/gap/min-height continuent de se réduire sous ce
+    // floor, mais font-size est déjà à son plancher clamp(6px, ...) dès
+    // 0.667, donc la lisibilité du texte ne se dégrade plus en dessous —
+    // seul l'espacement se resserre, ce qui est justement ce qu'il faut
+    // pour caser deux colonnes sur une petite hauteur (mandat lib.fix4,
+    // débordement mesuré aux petits viewports même en grille à floor 0.55).
+    function shrinkToFit(floor) {
+      var lo = floor;
+      var hi = 1;
+      var best = lo;
+      for (var i = 0; i < 12; i++) {
+        var mid = (lo + hi) / 2;
+        el.style.setProperty('--rpg-item-scale', mid.toFixed(3));
+        if (body.scrollHeight <= body.clientHeight + 1) {
+          best = mid;
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      el.style.setProperty('--rpg-item-scale', best.toFixed(3));
+      return body.scrollHeight <= body.clientHeight + 1;
+    }
+
+    if (shrinkToFit(0.55)) return;
+
+    // Repli deux colonnes : la recherche dichotomique ci-dessus a déjà donné
+    // sa meilleure réponse pour une seule colonne (échelle minimale, encore
+    // trop grand) — passer en grille change la hauteur nécessaire (moitié
+    // moins de lignes) et appelle donc sa propre recherche, pas la réponse
+    // de la colonne unique (mandat lib.fix4, débordement mesuré aux petits
+    // viewports où même la grille à l'échelle minimale d'origine débordait
+    // encore).
+    if (wrapper) {
+      wrapper.classList.add('rpg-window-body--grid');
+      shrinkToFit(0.05);
+    }
+  }
+
+  // items est capturé une fois dans buildWindow(), à un moment (layout(),
+  // avant mountControls/mountThemeNav) où la région est encore vide : sans
+  // ce rafraîchissement, la liste reste figée à vide pour de bon (ni le
+  // garde-fou ci-dessous, ni la navigation clavier — qui lit ce même
+  // state.windows.X.items — ne voient jamais les interrupteurs/actions
+  // réels) (mandat lib.fix4, débordement mesuré une fois le contenu réel en
+  // place).
+  function refreshWindowItems() {
+    ['options', 'skills'].forEach(function (k) {
+      var w = state.windows[k];
+      if (!w || !w.body) return;
+      var selector = k === 'options' ? '[data-juicy-toggle]' : '[data-juicy-action]';
+      w.items = Array.prototype.slice.call(w.body.querySelectorAll(selector));
+    });
+  }
+
+  function fitMenus() {
+    refreshWindowItems();
+    var wins = ['options', 'skills']
+      .map(function (k) { return state.windows[k]; })
+      .filter(function (w) { return w && w.items.length; });
+    if (!wins.length) return;
+    var statusEl = document.querySelector('html[data-juicy-theme="rpg"] .rpg-statusbar');
+    var dialogueEl = document.querySelector('html[data-juicy-theme="rpg"] [data-juicy-region="narration"]');
+    var statusH = statusEl ? statusEl.getBoundingClientRect().height : 0;
+    var dialogueH = dialogueEl ? dialogueEl.getBoundingClientRect().height : 0;
+    var available = window.innerHeight - statusH - dialogueH - 32;
+    var gapTotal = 12 * Math.max(wins.length - 1, 0);
+    var usable = Math.max(available - gapTotal, 80);
+    var totalItems = wins.reduce(function (s, w) { return s + w.items.length; }, 0);
+    wins.forEach(function (w) {
+      var share = totalItems ? w.items.length / totalItems : 1 / wins.length;
+      var h = Math.max(Math.round(usable * share), 70);
+      fitWindow(w, h);
+    });
   }
 
   function spawnDamageNumber(api) {
@@ -388,6 +484,42 @@
     attachKeyboard(api);
     narrate(getLine('theme', api) || 'Une quête pixel commence…', api);
     updateMeta(api);
+
+    fitMenus();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        if (state.screen === screen) fitMenus();
+      });
+    }
+    var resizeTimer = null;
+    state.resizeHandler = function () {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fitMenus, 120);
+      state.timers.push(resizeTimer);
+    };
+    window.addEventListener('resize', state.resizeHandler);
+
+    // layout() tourne avant que le noyau peuple réellement les interrupteurs/
+    // boutons (mountControls/mountThemeNav, appelés après incoming.layout()
+    // dans setTheme()) : un fitMenus() lancé ici mesure des fenêtres encore
+    // vides et ne déclenche jamais la réduction d'échelle. 'juicy:theme' est
+    // déclenché par le noyau juste après ce peuplement — c'est le bon moment
+    // pour re-mesurer (mandat lib.fix4).
+    state.themeEventHandler = function (e) {
+      if (state.screen === screen && e.detail && e.detail.id === 'rpg') fitMenus();
+    };
+    document.addEventListener('juicy:theme', state.themeEventHandler);
+    // Cas particulier du tout premier chargement de page : rpg est le thème
+    // initial, donc ce tout premier setTheme() déclenche 'juicy:theme' AVANT
+    // que init() n'appelle mountControls()/mountThemeNav() (ces deux appels,
+    // non gardés pour cette toute première fois, arrivent seulement après le
+    // retour de setTheme()) — mesuré : fenêtres de menu encore vides à ce
+    // moment, débordement une fois réellement peuplées. 'juicy:ready', tout à
+    // la fin de init(), est le bon moment pour ce cas précis (mandat lib.fix4).
+    state.readyEventHandler = function () {
+      if (state.screen === screen) fitMenus();
+    };
+    document.addEventListener('juicy:ready', state.readyEventHandler);
   }
 
   function teardown() {

@@ -95,6 +95,58 @@
     return Juicy;
   }
 
+  // ---- garde-fou anti-défilement (mandat lib.fix4) ----
+  // Après chaque layout de thème et à chaque redimensionnement : rien ne
+  // doit dépasser la fenêtre, ni la page entière ni un élément de la couche
+  // thème. Une ligne console.warn "overflow <sélecteur> <scroll>/<client>"
+  // par débordement trouvé, "fit ok" sinon. Silencieux comme le reste du
+  // journal tant que logEnabled est faux.
+  function describeFitTarget(el) {
+    if (el === document.documentElement) return 'html';
+    if (el.id) return '#' + el.id;
+    var region = el.getAttribute && el.getAttribute('data-juicy-region');
+    if (region) return '[data-juicy-region="' + region + '"]';
+    var cls = (el.className && typeof el.className === 'string') ? el.className.trim().split(/\s+/)[0] : '';
+    if (cls) return el.tagName.toLowerCase() + '.' + cls;
+    return el.tagName.toLowerCase();
+  }
+
+  function checkFit() {
+    if (!logEnabled) return;
+    var html = document.documentElement;
+    var overflowed = false;
+    if (html.scrollHeight > window.innerHeight) {
+      logEvent('overflow html ' + html.scrollHeight + '/' + window.innerHeight, true);
+      overflowed = true;
+    }
+    if (html.scrollWidth > window.innerWidth) {
+      logEvent('overflow html ' + html.scrollWidth + '/' + window.innerWidth, true);
+      overflowed = true;
+    }
+    var themeLayer = layer('theme');
+    if (themeLayer) {
+      var all = themeLayer.querySelectorAll('*');
+      // Un élément marqué data-juicy-marquee (ou l'un de ses descendants)
+      // est un bandeau défilant en boucle volontairement plus large que sa
+      // fenêtre visible (ex. la brique ticker) : un vrai débordement par
+      // conception, jamais un défilement de page, donc hors du champ de ce
+      // garde-fou (mandat lib.fix4).
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (el.closest('[data-juicy-marquee]')) continue;
+        if (el.scrollHeight > el.clientHeight + 1) {
+          overflowed = true;
+          logEvent('overflow ' + describeFitTarget(el) + ' ' + el.scrollHeight + '/' + el.clientHeight, true);
+        }
+        if (el.scrollWidth > el.clientWidth + 1) {
+          overflowed = true;
+          logEvent('overflow ' + describeFitTarget(el) + ' ' + el.scrollWidth + '/' + el.clientWidth, true);
+        }
+      }
+    }
+    if (!overflowed) logEvent('fit ok');
+  }
+
   var controlsMounted = false;
   var lastControlsOpts = null;
   var navMounted = false;
@@ -627,6 +679,13 @@
     window.setTimeout(function () {
       document.documentElement.classList.remove('juicy-switching');
     }, 400);
+    // Un contenu tout juste monté (mountControls/mountThemeNav ci-dessus, ou
+    // le fitTiers() d'un thème sur 'juicy:theme') peut ne pas avoir de layout
+    // définitivement établi au tick synchrone courant (mesuré : un bouton
+    // d'action montre un scrollHeight transitoirement gonflé, disparu dès
+    // qu'on le relit un peu plus tard) — un court setTimeout laisse le
+    // layout se stabiliser avant la mesure du garde-fou (mandat lib.fix4).
+    window.setTimeout(checkFit, 60);
     return Juicy;
   }
 
@@ -828,6 +887,12 @@
     setupReducedMotion();
     setupAudioUnlock();
     setupThemeKeys();
+
+    var fitResizeTimer = null;
+    window.addEventListener('resize', function () {
+      if (fitResizeTimer) clearTimeout(fitResizeTimer);
+      fitResizeTimer = setTimeout(checkFit, 150);
+    });
 
     initialized = true;
 

@@ -282,7 +282,11 @@
     needs: ['gsap'],
     defaults: {
       selector: null, // explicite ; sinon [data-juicy-tilt] ; sinon le contenu du thème (voir resolveTiltTargets)
-      max: 8, // angle max en degrés, atteint sur un bord de la fenêtre
+      max: 6, // angle max en degrés, atteint sur un bord de la fenêtre (mandat lib.fix4 : contenu jamais hors fenêtre)
+      scale: 0.94, // retrait pendant l'inclinaison, même but que max réduit ; mesuré
+      // (getBoundingClientRect des 4 coins, #juicy-theme-layer, 1440×900) :
+      // 0.96 laissait ~4px hors fenêtre à angle max, 0.94 garde ~6px de marge
+      // (mandat lib.fix4)
       perspective: 1200, // gsap transformPerspective en px, posé sur la cible elle-même
       duration: 0.3, // durée de la transition en secondes (suivi et retour à plat)
       ease: 'power2.out' // easing GSAP
@@ -292,7 +296,7 @@
       const els = resolveTiltTargets(ctx);
       ctx.log({ targets: els.length });
       if (!els.length) return;
-      ctx.gsap.set(els, { transformPerspective: ctx.params.perspective, rotateX: 0, rotateY: 0 });
+      ctx.gsap.set(els, { transformPerspective: ctx.params.perspective, rotateX: 0, rotateY: 0, scale: 1 });
       const move = (e) => {
         if (reduced(ctx)) return; // mouvement réduit : la cible reste à plat
         const px = e.clientX / window.innerWidth - 0.5;
@@ -300,6 +304,7 @@
         ctx.gsap.to(els, {
           rotateY: px * ctx.params.max,
           rotateX: -py * ctx.params.max,
+          scale: ctx.params.scale,
           duration: ctx.params.duration,
           ease: ctx.params.ease,
           overwrite: 'auto'
@@ -309,6 +314,7 @@
         ctx.gsap.to(els, {
           rotateX: 0,
           rotateY: 0,
+          scale: 1,
           duration: ctx.params.duration,
           ease: ctx.params.ease,
           overwrite: 'auto'
@@ -319,11 +325,11 @@
       ctx.onStop(() => {
         window.removeEventListener('pointermove', move);
         document.documentElement.removeEventListener('pointerleave', leave);
-        // ne tue que rotateX/rotateY : drunk (rotation/skewX) peut tourner
-        // sur le même élément, on ne touche jamais à el.style.transform en
-        // bloc (contrat de ce mandat).
-        ctx.gsap.killTweensOf(els, 'rotateX,rotateY');
-        ctx.gsap.set(els, { rotateX: 0, rotateY: 0 });
+        // ne tue que rotateX/rotateY/scale : drunk (rotation/skewX) peut
+        // tourner sur le même élément, on ne touche jamais à
+        // el.style.transform en bloc (contrat de ce mandat).
+        ctx.gsap.killTweensOf(els, 'rotateX,rotateY,scale');
+        ctx.gsap.set(els, { rotateX: 0, rotateY: 0, scale: 1 });
       });
     },
     stop() {}

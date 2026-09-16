@@ -126,7 +126,7 @@ ou par les interrupteurs générés dans la région `controls`.
 | `bg` | fond animé de particules | tsParticles (+ `loadSlim`, voir pièges) | `#juicy-bg` (couche fixe du noyau) | `count:60` (ou `density`, alias prioritaire si fourni), `color:null`, `size:6`, `speed:4`, `shape:'circle'`, `links:false`, `opacity:0.75` |
 | `trail` | traînée de particules au pointeur | moteur interne (canvas) | `#juicy-canvas` (couche fixe du noyau) | `color:null`, `size:13`, `life:0.6`, `spacing:8`, `shape:'circle'`, `glyph:'•'`, `fade:true` |
 | `glitch` | sauts visuels périodiques | GSAP | `[data-juicy-glitch]` > région `title` | `interval:0.15`, `jitter:0.4`, `amplitude:8`, `duration:0.12`, `hueShift:50` |
-| `tilt` | bascule 3D au pointeur (fenêtre entière) | GSAP | `[data-juicy-tilt]` > le contenu de `#juicy-theme-layer` s'il n'est pas vide, sinon `[data-juicy-region="stage"]` (jamais `html`/`body`, même cible que `drunk`) | `max:8`, `perspective:1200` (via `transformPerspective` GSAP, jamais `el.style.perspective`), `duration:0.3`, `ease:'power2.out'` |
+| `tilt` | bascule 3D au pointeur (fenêtre entière) | GSAP | `[data-juicy-tilt]` > le contenu de `#juicy-theme-layer` s'il n'est pas vide, sinon `[data-juicy-region="stage"]` (jamais `html`/`body`, même cible que `drunk`) | `max:6`, `scale:0.94` (mesurés aux 4 coins par `getBoundingClientRect` : la cible reste dans la fenêtre à l'angle max, voir « Contraintes de rendu »), `perspective:1200` (via `transformPerspective` GSAP, jamais `el.style.perspective`), `duration:0.3`, `ease:'power2.out'` |
 | `sound` | interrupteur global du son | — | — | `confirm:'toggleOn'` (nom du son de confirmation) |
 | `magnet` | éléments attirés par le pointeur | GSAP | `[data-juicy-magnet]` > `.juicy-action` | `radius:90`, `strength:0.4`, `duration:0.25`, `ease:'power2.out'` |
 | `cursor` | curseur personnalisé | GSAP | `#juicy-cursor` (couche fixe du noyau) | `glyph:''`, `size:30`, `color:null`, `smoothing:0.25` |
@@ -220,14 +220,17 @@ pour `scene` (réticule). `narration` en barre de télémétrie défilante
 deviennent des tiroirs qui se déplient au clic, jamais empilés en colonne.
 Tout en majuscules, police Orbitron / Share Tech Mono.
 
-### `candy` — étal de desserts, page qui défile
+### `candy` — étal de desserts, présentoir à étages
 
-Défilement vertical assumé (pas de plein écran forcé) : chaque région posée
-sur une assiette/un plateau, présentoir à étages en quinconce, tout en
-rondeurs. `scene` est toujours un sundae (brique `prop`) qui grandit, même
-sans région `scene` déclarée par la page. `narration` en bulle de chantilly.
-Contrôles répartis sur les présentoirs plutôt qu'alignés en grille. Polices
-Fredoka / Baloo 2.
+Plein écran, sans défilement (comme les deux autres thèmes, voir
+« Contraintes de rendu ») : chaque région posée sur une assiette/un plateau,
+présentoir à étages, tout en rondeurs, mis à l'échelle par étage
+(`--candy-item-scale`, mesuré en JS) pour toujours tenir dans la fenêtre.
+`scene` est toujours un sundae (brique `prop`) qui grandit, même sans région
+`scene` déclarée par la page. `narration` en bulle de chantilly. Contrôles
+répartis sur les présentoirs plutôt qu'alignés en grille ; en dessous de
+600px, deux onglets (Réglages / Actions) remplacent l'affichage simultané
+des deux présentoirs de contrôles. Polices Fredoka / Baloo 2.
 
 ### Ajouter un thème
 
@@ -285,6 +288,46 @@ un habillage de couleurs sur une structure commune.
   `body` (couleur ou dégradé opaque) le pose visuellement au-dessus de
   `#juicy-bg` et rend l'effet `bg` invisible sous l'habillage du thème, même
   quand il fonctionne correctement.
+- Un `transform` CSS (y compris une animation qui anime `transform`, ex.
+  `rotate()`) posé sur un descendant gonfle le `scrollHeight`/`scrollWidth`
+  rapporté par ses ANCÊTRES sous Chromium, même sous `overflow:hidden` — ce
+  n'est pas un vrai débordement visuel, mais ça déclenche à tort le garde-fou
+  `checkFit()` (mesuré : le balayage radial de `neon`, en `rotate()`). Pour un
+  élément décoratif animé en boucle (aiguille, balayage, curseur…), animer une
+  autre propriété que `transform` — ex. une variable personnalisée typée par
+  `@property` (`syntax: '<angle>'`) pilotant un `conic-gradient`, comme le
+  fait `neon.css` pour `.neon-radar-sweep`.
+
+## Contraintes de rendu
+
+Tout tient sur la page, dans les trois thèmes : jamais de défilement, ni de
+la page ni d'un conteneur interne (un thème peut border ses propres
+sous-zones en `overflow:hidden`/`clip`, jamais en `overflow:auto`/`scroll`
+qui laisserait apparaître une scrollbar). Un thème qui reçoit plus de
+contenu que sa mise en page ne prévoit se redimensionne (mesuré en JS,
+jamais en dur) plutôt que de déborder : voir les `clamp()` CSS et les
+recherches par dichotomie sur une variable personnalisée d'échelle
+(`--rpg-item-scale`, `--candy-item-scale`, `--neon-item-scale`) dans les
+thèmes existants.
+
+Le noyau vérifie ça lui-même : `checkFit()` (`lib/juicy.js`) compare, pour
+`html` et pour chaque élément de `#juicy-theme-layer`, `scrollHeight`/
+`scrollWidth` à `clientHeight`/`clientWidth` (+1px de tolérance), après
+chaque bascule de thème et sur un redimensionnement débounce (150ms). Une
+ligne `overflow <sélecteur> <scroll>/<client>` (`console.warn`) par
+dépassement trouvé, `fit ok` sinon — seulement si le journal est actif
+(`Juicy.init({log:true})` ou `?juicy-log`). Un élément volontairement plus
+large que sa fenêtre visible (bandeau défilant en boucle, clippé par
+`overflow:hidden` — ex. la brique `ticker`) n'est pas un débordement de
+page : le marquer, lui ou son conteneur direct, avec
+`data-juicy-marquee="true"` l'exempte du garde-fou (voir `neon.js`, la
+région `narration`).
+
+À vérifier avant de considérer un changement de mise en page terminé : les
+trois viewports 1440×900 (desktop), 1280×720 (desktop réduit) et 375×812
+(mobile), dans les trois thèmes, `fit ok` partout — `tools/watch.js
+--viewport <LxH> --switch <id>` (voir plus bas) relaie directement les
+lignes du journal.
 
 ## Suivre les effets
 

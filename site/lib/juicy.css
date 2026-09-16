@@ -6,8 +6,15 @@
  */
 
 html, body {
+  height: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+/* La marge par défaut de body (8px UA) dépasse du html figé : mesurée par
+   scrollHeight même sous overflow:hidden (mandat lib.fix4). */
+body {
+  margin: 0;
 }
 
 /* ---------- couches fixes du noyau (§4) ---------- */
@@ -119,6 +126,18 @@ html.juicy-switching [data-juicy-region] {
   color: inherit;
   cursor: pointer;
   overflow: hidden;
+}
+
+/* Un libellé (interrupteur ou action) ne doit jamais forcer son contrôle à
+   dépasser la largeur que lui donne le thème : un mot long sans point de
+   coupure (measuré : "gourmandise", bouton candy) reste sinon plus large que
+   la boîte, débordement invisible à l'œil (overflow:hidden côté .juicy-action)
+   mais bien réel pour scrollWidth/le garde-fou checkFit() (mandat lib.fix4).
+   Structure, pas de style : la présentation du libellé reste au thème. */
+.juicy-toggle-label,
+.juicy-action-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .juicy-action[disabled] {

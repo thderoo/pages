@@ -33,7 +33,11 @@
     timers: [],        // setTimeout/setInterval à annuler
     musicPart: null,   // référence Tone à stopper/disposer
     propEl: null,       // élément DOM de la brique prop (le sundae)
-    metaEl: null         // élément DOM de la région meta (compteur/combo)
+    metaEl: null,        // élément DOM de la région meta (compteur/combo)
+    tabButtons: null,    // { controls, actions } — boutons d'onglets mobile
+    tabHandlers: null,   // { controls, actions } — listeners à détacher
+    resizeHandler: null, // ajustement des plaques (fitTiers), retiré en teardown
+    themeEventHandler: null // ré-ajuste après mountControls/mountThemeNav (mandat lib.fix4)
   };
 
   function clearTimers() {
@@ -65,12 +69,67 @@
     plate.setAttribute('data-juicy-owner', 'candy');
     tier.appendChild(plate);
 
-    var drip = document.createElement('div');
-    drip.className = 'candy-drip';
-    drip.setAttribute('data-juicy-owner', 'candy');
-    tier.appendChild(drip);
-
     return { tier: tier, plate: plate };
+  }
+
+  // ---------------------------------------------------------------------
+  // fitTiers — mandat lib.fix4 : jamais de défilement. Chaque plaque a une
+  // hauteur bornée par la grille (CSS) ; on réduit --candy-item-scale (posé
+  // sur .candy-tier, lu par candy.css) par dichotomie jusqu'à ce que la
+  // plaque ne déborde plus (scrollHeight <= clientHeight + 1). Le
+  // quadrillage flex-wrap des contrôles/actions absorbe déjà l'essentiel :
+  // cette passe ne fait qu'un ajustement fin, plaque par plaque.
+  // ---------------------------------------------------------------------
+  // Une région (controls/actions/nav) porte son propre overflow:hidden et
+  // max-height:100% : elle peut déborder (scrollHeight > clientHeight) sans
+  // que la plaque qui la contient déborde à son tour, puisque sa boîte
+  // extérieure reste bornée par max-height. Il faut donc vérifier la
+  // plaque ET ses régions, pas la plaque seule. Un macaron individuel
+  // (.juicy-action, .juicy-toggle) est en hauteur libre (height:auto) : un
+  // libellé de plusieurs mots peut le faire déborder de sa propre boîte
+  // sans que le flex-wrap parent (dont la ligne se dimensionne déjà sur ce
+  // même contenu) ne le révèle au niveau plaque/région — vérifié aussi
+  // (mandat lib.fix4, débordement mesuré sur button.juicy-action).
+  function fits(plate) {
+    if (plate.scrollHeight > plate.clientHeight + 1) return false;
+    var regions = plate.querySelectorAll('[data-juicy-region]');
+    for (var i = 0; i < regions.length; i++) {
+      if (regions[i].scrollHeight > regions[i].clientHeight + 1) return false;
+    }
+    var controls = plate.querySelectorAll('.juicy-action, .juicy-toggle');
+    for (var j = 0; j < controls.length; j++) {
+      if (controls[j].scrollHeight > controls[j].clientHeight + 1) return false;
+    }
+    return true;
+  }
+
+  function fitTier(tierEl) {
+    if (!tierEl) return;
+    tierEl.style.removeProperty('--candy-item-scale');
+    var plate = tierEl.querySelector('.candy-plate');
+    if (!plate || plate.hasAttribute('hidden') || plate.hidden) return;
+    if (fits(plate)) return;
+
+    var lo = 0.35;
+    var hi = 1;
+    var best = lo;
+    for (var i = 0; i < 12; i++) {
+      var mid = (lo + hi) / 2;
+      tierEl.style.setProperty('--candy-item-scale', mid.toFixed(3));
+      if (fits(plate)) {
+        best = mid;
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    tierEl.style.setProperty('--candy-item-scale', best.toFixed(3));
+  }
+
+  function fitTiers() {
+    if (!state.root) return;
+    var tiers = state.root.querySelectorAll('.candy-tier');
+    for (var i = 0; i < tiers.length; i++) fitTier(tiers[i]);
   }
 
   function layout(api) {
@@ -121,9 +180,71 @@
       }
     });
 
+    // --- onglets mobiles (réglages / macarons), CSS ne les affiche qu'en
+    // dessous de 600px ; au clic (jamais de survol), voir candy.css. ------
+    var texts = (api.theme && api.theme.texts) || {};
+    var tabs = document.createElement('div');
+    tabs.className = 'candy-tabs';
+    tabs.setAttribute('data-juicy-owner', 'candy');
+    tabs.setAttribute('role', 'tablist');
+
+    var tabControls = document.createElement('button');
+    tabControls.type = 'button';
+    tabControls.className = 'candy-tab-btn';
+    tabControls.setAttribute('role', 'tab');
+    tabControls.textContent = texts.controlsTitle || 'Réglages';
+
+    var tabActions = document.createElement('button');
+    tabActions.type = 'button';
+    tabActions.className = 'candy-tab-btn';
+    tabActions.setAttribute('role', 'tab');
+    tabActions.textContent = texts.actionsTitle || 'Actions';
+
+    tabs.appendChild(tabControls);
+    tabs.appendChild(tabActions);
+    counter.appendChild(tabs);
+
+    function setTab(id) {
+      counter.setAttribute('data-candy-tab', id);
+      tabControls.setAttribute('aria-selected', id === 'controls' ? 'true' : 'false');
+      tabActions.setAttribute('aria-selected', id === 'actions' ? 'true' : 'false');
+    }
+    var onTabControls = function () { setTab('controls'); };
+    var onTabActions = function () { setTab('actions'); };
+    tabControls.addEventListener('click', onTabControls);
+    tabActions.addEventListener('click', onTabActions);
+    setTab('controls');
+    state.tabButtons = { controls: tabControls, actions: tabActions };
+    state.tabHandlers = { controls: onTabControls, actions: onTabActions };
+
     api.themeLayer.appendChild(counter);
     state.root = counter;
     updateMeta(api);
+
+    fitTiers();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        if (state.root === counter) fitTiers();
+      });
+    }
+    var resizeTimer = null;
+    state.resizeHandler = function () {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fitTiers, 120);
+      state.timers.push(resizeTimer);
+    };
+    window.addEventListener('resize', state.resizeHandler);
+
+    // layout() tourne avant que le noyau peuple réellement les interrupteurs/
+    // boutons (mountControls/mountThemeNav, appelés après incoming.layout()
+    // dans setTheme()) : un fitTiers() lancé ici mesure des régions encore
+    // vides et conclut à tort que tout tient. 'juicy:theme' est déclenché par
+    // le noyau juste après ce peuplement, avant checkFit() — c'est le bon
+    // moment pour re-mesurer (mandat lib.fix4).
+    state.themeEventHandler = function (e) {
+      if (state.root === counter && e.detail && e.detail.id === 'candy') fitTiers();
+    };
+    document.addEventListener('juicy:theme', state.themeEventHandler);
   }
 
   function updateMeta(api) {
@@ -140,6 +261,20 @@
       try { state.musicPart.dispose && state.musicPart.dispose(); } catch (e) { /* noop */ }
       state.musicPart = null;
     }
+    if (state.resizeHandler) {
+      window.removeEventListener('resize', state.resizeHandler);
+      state.resizeHandler = null;
+    }
+    if (state.themeEventHandler) {
+      document.removeEventListener('juicy:theme', state.themeEventHandler);
+      state.themeEventHandler = null;
+    }
+    if (state.tabButtons && state.tabHandlers) {
+      state.tabButtons.controls.removeEventListener('click', state.tabHandlers.controls);
+      state.tabButtons.actions.removeEventListener('click', state.tabHandlers.actions);
+    }
+    state.tabButtons = null;
+    state.tabHandlers = null;
     if (state.root && state.root.parentNode) {
       state.root.parentNode.removeChild(state.root);
     }

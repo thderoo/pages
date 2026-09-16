@@ -198,7 +198,10 @@ html[data-juicy-theme="rpg"] .rpg-battle-caption {
 
 html[data-juicy-theme="rpg"] .rpg-hero {
   font-size: clamp(40px, 7vw, 72px);
-  line-height: 1;
+  /* 1 (pas 1.15) coupait le glyphe emoji : la boîte de ligne d'une police
+     couleur dépasse la hauteur nominale de la police (mandat lib.fix4,
+     aucun débordement mesuré). */
+  line-height: 1.15;
   filter: drop-shadow(2px 2px 0 var(--rpg-shadow));
   margin-bottom: clamp(24px, 8vh, 72px);
 }
@@ -217,7 +220,7 @@ html[data-juicy-theme="rpg"] .rpg-monster-gauge-slot {
 
 html[data-juicy-theme="rpg"] .rpg-monster {
   font-size: clamp(56px, 10vw, 96px);
-  line-height: 1;
+  line-height: 1.15; /* voir .rpg-hero */
   filter: drop-shadow(3px 3px 0 var(--rpg-shadow));
 }
 
@@ -249,17 +252,19 @@ html[data-juicy-theme="rpg"] .rpg-menus {
   gap: 12px;
   max-width: min(92vw, 360px);
   max-height: calc(100vh - var(--rpg-statusbar-h) - var(--rpg-dialogue-h) - 32px);
+  overflow: hidden;
   z-index: 4;
   pointer-events: auto;
 }
 
 html[data-juicy-theme="rpg"] .rpg-window {
+  --rpg-item-scale: 1;
   padding: 10px;
   position: relative;
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   min-height: 0;
-  max-height: 38vh;
   overflow: hidden;
 }
 
@@ -271,51 +276,45 @@ html[data-juicy-theme="rpg"] .rpg-window-title {
   flex: 0 0 auto;
 }
 
-/* Le corps défilant de la fenêtre : la molette et le curseur clavier
-   (scrollIntoView) y font défiler le contenu qui dépasse. */
+/* Corps de la fenêtre : jamais de défilement (mandat lib.fix4). La hauteur
+   de la fenêtre est fixée en JS (fitMenus/fitWindow, rpg.js) à la part
+   d'espace disponible qui lui revient ; ce corps consomme le reste via
+   flex:1 1 auto, et --rpg-item-scale (posé sur .rpg-window par le même JS)
+   réduit police/espacements jusqu'à ce que tout tienne sans dépasser. */
 html[data-juicy-theme="rpg"] .rpg-window-body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   padding-right: 4px;
-  padding-bottom: 10px;
+  padding-bottom: 4px;
+}
+
+/* Repli si même à l'échelle minimale la liste dépasse : deux colonnes. */
+html[data-juicy-theme="rpg"] .rpg-window-body--grid [data-juicy-region] {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: row;
+  column-gap: 10px;
+  row-gap: calc(4px * var(--rpg-item-scale, 1));
 }
 
 html[data-juicy-theme="rpg"] .rpg-window [data-juicy-region] {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(6px * var(--rpg-item-scale, 1));
 }
 
-/* Indicateur "il reste du contenu en dessous", façon menu de RPG. */
-html[data-juicy-theme="rpg"] .rpg-scroll-more {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  text-align: center;
-  font-size: 9px;
-  color: var(--rpg-gold);
-  text-shadow: 1px 1px 0 var(--rpg-shadow);
-  opacity: 0;
-  pointer-events: none;
-  animation: rpg-blink 1.2s steps(1) infinite;
-}
-html[data-juicy-theme="rpg"] .rpg-scroll-more--visible {
-  opacity: 1;
-}
-
-/* toggles skinnés en items de menu d'options */
+/* toggles skinnés en items de menu d'options ; taille pilotée par
+   --rpg-item-scale (posé par rpg.js, jamais de défilement, mandat lib.fix4) */
 html[data-juicy-theme="rpg"] .juicy-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 4px 4px 18px;
+  gap: calc(8px * var(--rpg-item-scale, 1));
+  padding: calc(4px * var(--rpg-item-scale, 1)) 4px calc(4px * var(--rpg-item-scale, 1)) calc(18px * var(--rpg-item-scale, 1));
   position: relative;
-  font-size: 9px;
+  font-size: clamp(6px, calc(9px * var(--rpg-item-scale, 1)), 9px);
   cursor: pointer;
-  min-height: 24px;
+  min-height: calc(24px * var(--rpg-item-scale, 1));
   color: var(--rpg-ink);
 }
 
@@ -355,16 +354,16 @@ html[data-juicy-theme="rpg"] .juicy-action {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 5px 6px 5px 18px;
+  padding: calc(5px * var(--rpg-item-scale, 1)) 6px calc(5px * var(--rpg-item-scale, 1)) calc(18px * var(--rpg-item-scale, 1));
   position: relative;
   font-family: inherit;
-  font-size: 9px;
+  font-size: clamp(6px, calc(9px * var(--rpg-item-scale, 1)), 9px);
   color: var(--rpg-ink);
   background: var(--rpg-panel-alt);
   border: 2px solid var(--rpg-ink);
   cursor: pointer;
   overflow: hidden;
-  min-height: 24px;
+  min-height: calc(24px * var(--rpg-item-scale, 1));
 }
 
 html[data-juicy-theme="rpg"] .juicy-action[data-armed="true"] {
@@ -479,10 +478,6 @@ html[data-juicy-theme="rpg"] #juicy-cursor {
   html[data-juicy-theme="rpg"] .rpg-menus {
     left: 8px;
     max-width: calc(100vw - 16px);
-  }
-
-  html[data-juicy-theme="rpg"] .rpg-window {
-    max-height: 30vh;
   }
 
   html[data-juicy-theme="rpg"] .rpg-scene-slot--empty {
