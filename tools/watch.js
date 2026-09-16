@@ -51,7 +51,9 @@ commande.
 
 Un contrôle se trouve par son id dans \`juicy.content.controls\` /
 \`.actions\` / \`.nav\`, à l'index correspondant dans \`juicy.slots.<nom>.items\`
-(même ordre). Ses bornes globales viennent de \`getBounds()\`, le clic réel
+(même ordre). Ses bornes viennent de \`getBounds()\` passées par
+\`juicy.layers.project()\` — identité tant qu'aucun effet ne déforme l'image
+de la scène, bornes réellement affichées quand \`tilt\` est actif. Le clic réel
 (page.mouse.click) vise leur centre, et la cible n'est considérée atteinte
 que si ce centre est dans la fenêtre et si
 \`juicy.app.renderer.events.rootBoundary.hitTest(cx, cy)\` rend le contrôle ou
@@ -267,7 +269,8 @@ async function withDiff(page, enabled, run) {
   }
 }
 
-// Trouve le nœud Pixi d'un contrôle par son id et rend ses bornes globales,
+// Trouve le nœud Pixi d'un contrôle par son id et rend ses bornes affichées
+// (bornes globales passées par la projection de la scène, cf. juicy.layers),
 // le point testé et le résultat du hitTest. kind : 'control' | 'action' | 'nav'.
 // Même mécanique que le harnais du mandat pixi.core (rootBoundary.hitTest,
 // bornes >0 et dans la fenêtre, hit sur le contrôle ou un de ses enfants).
@@ -284,9 +287,28 @@ async function locate(page, kind, id) {
     if (idx < 0 || !slot || !slot.items[idx]) return { ok: false, error: 'contrôle introuvable : ' + kind + ' ' + id };
     const node = slot.items[idx];
     const b = node.getBounds();
-    const rect = { x: b.x, y: b.y, width: b.width, height: b.height };
-    const cx = rect.x + rect.width / 2;
-    const cy = rect.y + rect.height / 2;
+    const scene = { x: b.x, y: b.y, width: b.width, height: b.height };
+    // Un effet peut projeter l'image de la scène (perspective du tilt) : les
+    // bornes rendues par getBounds() sont celles de la scène, pas celles de
+    // l'image affichée. `juicy.layers.project` les ramène à l'écran — identité
+    // tant qu'aucun effet ne déclare de projection.
+    const project = (p) => (j.layers && typeof j.layers.project === 'function') ? j.layers.project(p) : p;
+    const corners = [
+      project({ x: scene.x, y: scene.y }),
+      project({ x: scene.x + scene.width, y: scene.y }),
+      project({ x: scene.x + scene.width, y: scene.y + scene.height }),
+      project({ x: scene.x, y: scene.y + scene.height }),
+    ];
+    const xs = corners.map((p) => p.x);
+    const ys = corners.map((p) => p.y);
+    const rect = {
+      x: Math.min.apply(null, xs), y: Math.min.apply(null, ys),
+      width: Math.max.apply(null, xs) - Math.min.apply(null, xs),
+      height: Math.max.apply(null, ys) - Math.min.apply(null, ys),
+    };
+    const mid = project({ x: scene.x + scene.width / 2, y: scene.y + scene.height / 2 });
+    const cx = mid.x;
+    const cy = mid.y;
     const screen = j.screen;
     const within = rect.width > 0 && rect.height > 0 &&
       rect.x >= -1 && rect.y >= -1 &&
@@ -295,7 +317,7 @@ async function locate(page, kind, id) {
     try { hitNode = j.app.renderer.events.rootBoundary.hitTest(cx, cy); } catch (e) { hitNode = null; }
     let hit = false, n = hitNode;
     while (n) { if (n === node) { hit = true; break; } n = n.parent; }
-    return { ok: true, rect, cx, cy, within, hit, reachable: within && hit };
+    return { ok: true, rect, scene, cx, cy, within, hit, reachable: within && hit };
   }, { kind, id });
 }
 

@@ -526,8 +526,57 @@
   // Vraie perspective : `layers.scene` (le décor et le monde réunis par le
   // noyau) est rendu dans une `RenderTexture` projetée sur un
   // `PerspectiveMesh` dont les quatre coins suivent le pointeur. La scène
-  // reste en place (alpha 0.001) pour que les clics et le test de contact
-  // continuent de porter exactement là où ils portaient.
+  // reste en place (alpha 0.001), mais elle n'est plus là où on la voit :
+  // l'effet déclare donc sa projection au noyau (`layers.setProjection`), qui
+  // ramène chaque point de l'écran dans la scène avant de chercher la cible.
+  // Un clic sur un bouton *là où il est affiché* touche ce bouton.
+
+  /*
+   * Homographie du rectangle (0,0,w,h) vers le quadrilatère des quatre coins
+   * du maillage, dans l'ordre haut-gauche, haut-droit, bas-droit, bas-gauche :
+   * c'est exactement la projection que `PerspectiveMesh` applique à l'image
+   * (`PerspectivePlaneGeometry.updateProjection`). Rendue sous la forme
+   *   [A,B,C, D,E,F, G,H,1] avec  X = (A·x + B·y + C) / (G·x + H·y + 1)
+   * pour que la matrice s'applique directement à un point de scène en pixels.
+   */
+  function quadMatrix(w, h, c) {
+    var x0 = c[0], y0 = c[1], x1 = c[2], y1 = c[3], x2 = c[4], y2 = c[5], x3 = c[6], y3 = c[7];
+    var dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3;
+    var dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3;
+    var A, B, C, D, E, F, G, H;
+    if (Math.abs(dx3) < 1e-9 && Math.abs(dy3) < 1e-9) {
+      A = x1 - x0; B = x3 - x0; C = x0;
+      D = y1 - y0; E = y3 - y0; F = y0;
+      G = 0; H = 0;
+    } else {
+      var den = dx1 * dy2 - dx2 * dy1;
+      if (!den) return null;
+      G = (dx3 * dy2 - dx2 * dy3) / den;
+      H = (dx1 * dy3 - dx3 * dy1) / den;
+      A = x1 - x0 + G * x1; B = x3 - x0 + H * x3; C = x0;
+      D = y1 - y0 + G * y1; E = y3 - y0 + H * y3; F = y0;
+    }
+    if (!w || !h) return null;
+    return [A / w, B / h, C, D / w, E / h, F, G / w, H / h, 1];
+  }
+  /** Inverse d'une homographie 3×3 par sa comatrice (le facteur d'échelle ne change pas le point). */
+  function invMatrix(m) {
+    if (!m) return null;
+    var a = m[0], b = m[1], c = m[2], d = m[3], e = m[4], f = m[5], g = m[6], h = m[7], i = m[8];
+    var det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+    if (!det || !isFinite(det)) return null;
+    return [
+      e * i - f * h, c * h - b * i, b * f - c * e,
+      f * g - d * i, a * i - c * g, c * d - a * f,
+      d * h - e * g, b * g - a * h, a * e - b * d
+    ];
+  }
+  function applyMatrix(m, p) {
+    if (!m) return { x: p.x, y: p.y };
+    var wq = m[6] * p.x + m[7] * p.y + m[8];
+    if (!wq) return { x: p.x, y: p.y };
+    return { x: (m[0] * p.x + m[1] * p.y + m[2]) / wq, y: (m[3] * p.x + m[4] * p.y + m[5]) / wq };
+  }
 
   var tilt = null;
   function tiltTexture(j) {
@@ -541,22 +590,35 @@
     start: function (j) {
       install(j);
       if (typeof PIXI.PerspectiveMesh !== 'function') return 0;
-      tilt = { rt: null, mesh: null, ax: 0, ay: 0, w: 0, h: 0, t: 0 };
+      tilt = { rt: null, mesh: null, ax: 0, ay: 0, w: 0, h: 0, t: 0, fwd: null, inv: null };
       tiltTexture(j);
       tilt.mesh = new PIXI.PerspectiveMesh({
         texture: tilt.rt, verticesX: 14, verticesY: 14,
         x0: 0, y0: 0, x1: tilt.w, y1: 0, x2: tilt.w, y2: tilt.h, x3: 0, y3: tilt.h
       });
+      // Le maillage couvre tout l'écran : laissé testable, il avalerait chaque
+      // test de contact (`hitTestRecursive` s'arrête au premier enfant dont
+      // `containsPoint` répond, même non interactif) et rendrait la page
+      // entière insensible. C'est la projection déclarée plus bas qui porte
+      // les clics, pas lui.
+      tilt.mesh.eventMode = 'none';
       j.layers.overlay.addChild(tilt.mesh);
       tilt.relay = onLayout(function (jj) {
         tiltTexture(jj);
         if (tilt.mesh.parent !== jj.layers.overlay) jj.layers.overlay.addChild(tilt.mesh);
       });
+      if (j.layers.setProjection) {
+        j.layers.setProjection({
+          project: function (p) { return applyMatrix(tilt && tilt.fwd, p); },
+          unproject: function (p) { return applyMatrix(tilt && tilt.inv, p); }
+        });
+      }
       return 4;
     },
     stop: function (j) {
       if (!tilt) return;
       offLayout(tilt.relay);
+      if (j.layers.setProjection) j.layers.setProjection(null);
       j.layers.scene.alpha = 1;
       try { tilt.mesh.destroy(); } catch (e) { /* ignore */ }
       try { tilt.rt.destroy(true); } catch (e) { /* ignore */ }
@@ -586,6 +648,10 @@
       var x3 = mx - ex - sk, y3 = h - my + ey + sy2;
       if (tilt.mesh.setCorners) tilt.mesh.setCorners(x0, y0, x1, y1, x2, y2, x3, y3);
       else { tilt.mesh.x0 = x0; tilt.mesh.y0 = y0; tilt.mesh.x1 = x1; tilt.mesh.y1 = y1; tilt.mesh.x2 = x2; tilt.mesh.y2 = y2; tilt.mesh.x3 = x3; tilt.mesh.y3 = y3; }
+      // La projection suit les coins : le noyau s'en sert pour porter les
+      // clics là où l'image est affichée (scène -> écran et retour).
+      tilt.fwd = quadMatrix(w, h, [x0, y0, x1, y1, x2, y2, x3, y3]);
+      tilt.inv = invMatrix(tilt.fwd);
       // Capture de la scène entière (décor + monde) à pleine opacité dans la
       // texture : les cadres des panneaux vivent dans `background` et doivent
       // basculer avec leur contenu, sinon la page se plie derrière des cadres

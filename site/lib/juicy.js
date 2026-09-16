@@ -551,7 +551,7 @@
     var COMBO_MS = 1400;
     var transitioning = false;
     var pixelate = null;
-    var fpsFrames = 0, fpsSince = 0, frameT0 = 0, frameMs = 0;
+    var fpsFrames = 0, fpsWindowT0 = 0, frameT0 = 0, frameMs = 0;
 
     var juicy = {
       version: Juicy.version,
@@ -899,6 +899,81 @@
       else log('fit ok ' + w + 'x' + h + ' · ' + parts.join(' · '));
     }
 
+    // -- projection de la scène -------------------------------------------
+    // Un effet peut remplacer l'image de `layers.scene` par une image
+    // déformée (perspective rendue dans une `RenderTexture` puis projetée sur
+    // un maillage). L'image bouge, pas les objets : un bouton reste là où la
+    // mise en page l'a posé, et le test de contact de Pixi, qui ne connaît que
+    // des transformations affines, continue de le chercher à cet endroit.
+    // Résultat : un clic *là où le bouton est affiché* ne touche plus rien.
+    //
+    // Le noyau tient donc une projection facultative, déclarée par l'effet qui
+    // déforme l'image, et s'en sert pour ramener un point de l'écran dans la
+    // scène avant de chercher la cible. Les couches hors `scene` (`ui`,
+    // `overlay`, `cursor`) sont dessinées telles quelles : elles se testent au
+    // point réel, d'où les deux passes.
+    var projection = null;
+    var PASSTHROUGH = function (p) { return { x: p.x, y: p.y }; };
+
+    function setProjection(p) {
+      if (!p) { projection = null; return juicy; }
+      if (typeof p.project !== 'function' || typeof p.unproject !== 'function') {
+        console.warn('[juicy] setProjection : { project, unproject } attendus');
+        return juicy;
+      }
+      projection = p;
+      return juicy;
+    }
+    function projectPoint(p) {
+      if (!p) return p;
+      if (!projection) return PASSTHROUGH(p);
+      try { return projection.project(p) || PASSTHROUGH(p); } catch (e) { return PASSTHROUGH(p); }
+    }
+    function unprojectPoint(p) {
+      if (!p) return p;
+      if (!projection) return PASSTHROUGH(p);
+      try { return projection.unproject(p) || PASSTHROUGH(p); } catch (e) { return PASSTHROUGH(p); }
+    }
+
+    /** Rend `hitTest` (donc tout clic réel) conscient de la projection. */
+    function installProjectionBridge() {
+      var events = app.renderer && app.renderer.events;
+      var boundary = events && events.rootBoundary;
+      if (!boundary || boundary.juicyProjected) return;
+      var original = boundary.hitTest;
+      if (typeof original !== 'function') return;
+      boundary.juicyProjected = true;
+      boundary.hitTest = function (x, y) {
+        if (!projection) return original.call(this, x, y);
+        var L = juicy.layers;
+        var flat = hitPass(this, original, x, y, [L.scene]);
+        if (flat && flat !== app.stage) return flat;
+        var p = unprojectPoint({ x: x, y: y });
+        var deep = hitPass(this, original, p.x, p.y, [L.ui, L.overlay, L.cursor]);
+        dedupe(this._allInteractiveElements);
+        return (deep && deep !== app.stage) ? deep : flat;
+      };
+    }
+    /** Un test de contact avec `mute` mis hors jeu le temps de la passe. */
+    function hitPass(boundary, original, x, y, mute) {
+      var saved = mute.map(function (c) { return c ? c.eventMode : null; });
+      mute.forEach(function (c) { if (c) c.eventMode = 'none'; });
+      try { return original.call(boundary, x, y); } catch (e) { return null; } finally {
+        mute.forEach(function (c, i) { if (c) c.eventMode = saved[i]; });
+      }
+    }
+    /** Deux passes remplissent deux fois la liste des cibles de `globalpointermove`. */
+    function dedupe(list) {
+      if (!list || !list.length) return;
+      var seen = [], n = 0;
+      for (var i = 0; i < list.length; i++) {
+        if (seen.indexOf(list[i]) >= 0) continue;
+        seen.push(list[i]);
+        list[n++] = list[i];
+      }
+      list.length = n;
+    }
+
     // -- boucle -----------------------------------------------------------
     function tick(ticker) {
       var dt = ticker.deltaMS;
@@ -919,13 +994,24 @@
         try { juicy.theme.update(juicy, dt); } catch (e) { console.warn('[juicy] update du thème :', e); }
       }
       if (juicy.audio.enabled) juicy.audio.sample();
+      // Fenêtre mesurée en temps mur, jamais en cumul de `deltaMS` : le
+      // ticker de Pixi plafonne `deltaMS` à `maxElapsedMS` (100 ms, soit
+      // `minFPS = 10`), donc une page qui tourne à 2 images par seconde
+      // cumule 100 ms par image et n'atteint 5 000 qu'après 50 images, soit
+      // des dizaines de secondes. C'est aussi ce plafond qui faisait écrire
+      // `fps=10` quelle que soit la cadence réelle : `frames / (Σ deltaMS)`
+      // vaut mécaniquement `1000 / maxElapsedMS` dès que les images sont
+      // lentes. Avec `performance.now()` la fenêtre dure bien 5 s et `fps`
+      // dit la cadence réelle.
       if (LOG) {
+        var now = global.performance ? performance.now() : Date.now();
+        if (!fpsWindowT0) fpsWindowT0 = now;
         fpsFrames++;
-        fpsSince += dt;
-        if (fpsSince >= 5000) {
-          log('fps=' + Math.round(fpsFrames / (fpsSince / 1000)) +
+        var span = now - fpsWindowT0;
+        if (span >= 5000) {
+          log('fps=' + Math.round(fpsFrames / (span / 1000)) +
             ' frame=' + (frameMs / Math.max(1, fpsFrames)).toFixed(2) + 'ms');
-          fpsFrames = 0; fpsSince = 0; frameMs = 0;
+          fpsFrames = 0; fpsWindowT0 = now; frameMs = 0;
         }
       }
     }
@@ -980,6 +1066,10 @@
       // deviennent pas des cibles pour autant.
       layers.overlay.eventMode = 'passive';
       layers.cursor.eventMode = 'none';
+      // Projection de `scene` : identité tant qu'aucun effet n'en déclare une.
+      layers.setProjection = setProjection;
+      layers.project = projectPoint;
+      layers.unproject = unprojectPoint;
       juicy.layers = layers;
       juicy.camera = camera;
       juicy.ui = composeUI(juicy);
@@ -991,6 +1081,7 @@
       makeSlots();
       app.stage.eventMode = 'static';
       app.stage.hitArea = app.screen;
+      installProjectionBridge();
 
       var themeId = themeDefs[wantedTheme] ? wantedTheme : (themeOrder[0] || 'plain');
       if (themeId !== wantedTheme) console.warn('[juicy] thème « ' + wantedTheme + ' » inconnu, repli sur ' + themeId);
