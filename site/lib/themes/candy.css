@@ -469,6 +469,10 @@ html[data-juicy-theme="candy"].juicy-switching [data-juicy-region="title"] {
 /* Mobile : une seule colonne ; réglages/macarons passent par des onglets
    au clic (jamais empilés en plus de la scène/narration/meta, jamais de
    défilement — voir candy.js pour le montage des onglets). */
+html[data-juicy-theme="candy"] .candy-tabs {
+  display: none;
+}
+
 @media (max-width: 600px) {
   html[data-juicy-theme="candy"] .candy-counter {
     grid-template-columns: 1fr;
@@ -519,8 +523,4 @@ html[data-juicy-theme="candy"].juicy-switching [data-juicy-region="title"] {
     color: #fff;
   }
 
-}
-
-html[data-juicy-theme="candy"] .candy-tabs {
-  display: none;
 }
