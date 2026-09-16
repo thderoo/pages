@@ -85,6 +85,7 @@
     start(ctx) {
       if (!ctx.tsParticles || typeof ctx.tsParticles.load !== 'function') return;
       const el = ctx.layer('bg');
+      ctx.log({ layer: 'bg', targets: el ? 1 : 0 });
       if (!el) return;
       const palette =
         (ctx.theme && ctx.theme.palette && ctx.theme.palette[0]) || '#ffffff';
@@ -181,6 +182,7 @@
         });
       };
       window.addEventListener('pointermove', onMove, { passive: true });
+      ctx.log({ layer: 'canvas' });
       ctx.onStop(() => {
         window.removeEventListener('pointermove', onMove);
         ctx.canvas.clear('trail');
@@ -212,6 +214,7 @@
     start(ctx) {
       if (!ctx.gsap) return;
       const els = resolveTargets(ctx, 'glitch', '[data-juicy-region="title"]');
+      ctx.log({ targets: els.length });
       if (!els.length) return;
       if (reduced(ctx)) return; // état neutre statique, pas de boucle
       let acc = 0;
@@ -262,6 +265,7 @@
     start(ctx) {
       if (!ctx.gsap) return;
       const els = resolveTargets(ctx, 'tilt', '.juicy-toggle, .juicy-action');
+      ctx.log({ targets: els.length });
       if (!els.length) return;
       const cleanups = [];
       els.forEach((el) => {
@@ -347,6 +351,7 @@
     start(ctx) {
       if (!ctx.gsap) return;
       const els = Array.from(resolveTargets(ctx, 'magnet', '.juicy-action'));
+      ctx.log({ targets: els.length });
       if (!els.length) return;
       const move = (e) => {
         if (reduced(ctx)) return;
@@ -402,6 +407,7 @@
     },
     start(ctx) {
       const el = ctx.layer('cursor');
+      ctx.log({ layer: 'cursor', targets: el ? 1 : 0 });
       if (!el) return;
       el.textContent = ctx.params.glyph || '';
       el.style.width = el.style.height = ctx.params.size + 'px';
@@ -490,6 +496,7 @@
     defaults: RAIN_DEFAULTS,
     start(ctx) {
       var p = resolveRainParams(ctx.params);
+      ctx.log({ layer: 'canvas' });
       if (reduced(ctx)) return; // pluie continue = animation, neutralisée
       var dirVec = { down: [0, 1], up: [0, -1], left: [-1, 0], right: [1, 0] }[p.direction] || [0, 1];
       var horizontal = dirVec[1] === 0;
@@ -552,6 +559,7 @@
         'shaketext',
         '[data-juicy-region="title"], [data-juicy-region="tagline"], .juicy-toggle-label, .juicy-action-label'
       );
+      ctx.log({ targets: els.length });
       if (!els.length) return;
       if (reduced(ctx)) return;
       const interval = 1 / ctx.params.frequency;
@@ -608,6 +616,7 @@
     },
     start(ctx) {
       const overlay = ctx.layer('overlay');
+      ctx.log({ layer: 'overlay', targets: overlay ? 1 : 0 });
       if (!overlay) return;
       overlay.style.setProperty('--juicy-crt-scanline', String(ctx.params.scanlineOpacity));
       overlay.style.setProperty('--juicy-crt-vignette', String(ctx.params.vignette));
@@ -675,6 +684,7 @@
         const themeLayer = ctx.layer('theme');
         el = themeLayer && themeLayer.childElementCount ? themeLayer : document.querySelector('[data-juicy-region="stage"]');
       }
+      ctx.log({ targets: el ? 1 : 0 });
       if (!el || reduced(ctx)) return;
       const tween = ctx.gsap.to(el, {
         rotation: ctx.params.angle,

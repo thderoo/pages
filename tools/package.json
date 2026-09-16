@@ -1,0 +1,9 @@
+{
+  "name": "pages-tools",
+  "private": true,
+  "description": "Outils de dev pour projects/pages, non publiés (hors site/).",
+  "dependencies": {
+    "playwright-core": "^1.48.0",
+    "pngjs": "^7.0.0"
+  }
+}

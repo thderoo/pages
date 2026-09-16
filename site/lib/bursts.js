@@ -63,6 +63,7 @@
       duration: null,
     },
     fire: function (ctx) {
+      ctx.log({ layer: 'canvas' });
       var p = ctx.params;
       var preset = BURST_PRESETS[p.preset] || BURST_PRESETS.confetti;
       var count = p.count != null ? p.count : preset.count;
@@ -167,6 +168,7 @@
     defaults: { intensity: 18, duration: 0.5 },
     fire: function (ctx) {
       var target = ctx.layer('theme');
+      ctx.log({ layer: 'theme', targets: target ? 1 : 0 });
       if (!target) return;
       ctx.sound('shake');
       if (ctx.state.reduceMotion) return;
@@ -201,6 +203,7 @@
     label: "Pluie d'emojis",
     defaults: { glyphs: ['✨', '🎉', '⭐'], count: 24, duration: 2.2, size: 26 },
     fire: function (ctx) {
+      ctx.log({ layer: 'canvas' });
       var p = ctx.params;
       var glyphs = ctx.theme && ctx.theme.emojis && ctx.theme.emojis.length ? ctx.theme.emojis : p.glyphs;
       var w = ctx.root.clientWidth;
@@ -300,6 +303,7 @@
     }
     ctx.state.timeScale = 1;
     timewarpHandle = null;
+    Juicy.log('timewarp back to scale=1');
   }
 
   Juicy.defineEffect({

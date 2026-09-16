@@ -59,6 +59,42 @@
   var lastAppliedTimeScale = 1;
   var initParams = {};
 
+  /* ---------------- journal (activé par init({log:true}) ou ?juicy-log) ---------------- */
+
+  var logEnabled = false;
+  var initPerfTime = 0;
+
+  function urlHasLogFlag() {
+    try {
+      return /(?:^|[?&])juicy-log(?:=|&|$)/.test(window.location.search);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Une ligne par événement, horodatée en secondes depuis init(), trois
+  // décimales : `[juicy +12.345s] message`. Silencieux tant que le journal
+  // n'est pas activé. `warn` bascule console.warn (cible=0, lib manquante) ;
+  // sinon console.info.
+  function logEvent(message, warn) {
+    if (!logEnabled) return;
+    var t = ((performance.now() - initPerfTime) / 1000).toFixed(3);
+    var line = '[juicy +' + t + 's] ' + message;
+    if (warn) console.warn(line);
+    else console.info(line);
+  }
+
+  // API publique : offerte aux thèmes et aux pages, même format, silencieuse
+  // par défaut.
+  function publicLog() {
+    if (!logEnabled) return Juicy;
+    var parts = Array.prototype.slice.call(arguments).map(function (a) {
+      return typeof a === 'string' ? a : JSON.stringify(a);
+    });
+    logEvent(parts.join(' '));
+    return Juicy;
+  }
+
   var controlsMounted = false;
   var lastControlsOpts = null;
   var navMounted = false;
@@ -72,6 +108,7 @@
       return fn.apply(null, args);
     } catch (e) {
       console.warn('[Juicy] hook error:', e);
+      logEvent('error: ' + (e && e.message ? e.message : e), true);
       return undefined;
     }
   }
@@ -298,7 +335,7 @@
   /* ---------------- ctx / api (§7, §9) ---------------- */
 
   function buildCtx(id, params) {
-    return {
+    var ctx = {
       id: id,
       params: params,
       layer: layer,
@@ -324,6 +361,14 @@
       tsParticles: has('tsParticles') ? window.tsParticles : null,
       Tone: has('Tone') ? window.Tone : null,
     };
+    // Canal facultatif par lequel un effet (effects.js/bursts.js) signale au
+    // noyau le nombre de cibles trouvées et/ou la couche utilisée, lu par
+    // onEffect/fireEffect juste après start()/fire() pour composer la ligne
+    // de journal. N'affecte rien si le journal est désactivé.
+    ctx.log = function (fields) {
+      ctx.__logFields = Object.assign({}, ctx.__logFields, fields || {});
+    };
+    return ctx;
   }
 
   function buildApi() {
@@ -351,7 +396,16 @@
       return null;
     }
     var instance = safeCall(factory, target, opts);
-    return instance || null;
+    if (!instance) return null;
+    if (logEnabled) {
+      logEvent('widget create ' + name);
+      var realDestroy = instance.destroy;
+      instance.destroy = function () {
+        logEvent('widget destroy ' + name);
+        if (typeof realDestroy === 'function') return realDestroy.apply(instance, arguments);
+      };
+    }
+    return instance;
   }
 
   /* ---------------- fusion des paramètres (§7) ---------------- */
@@ -384,17 +438,32 @@
     return Juicy;
   }
 
+  function missingNeeds(def) {
+    return (def.needs || []).filter(function (n) { return !has(n); });
+  }
+
   function onEffect(id, params) {
     var def = effects.get(id);
     if (!def) { console.warn('[Juicy] unknown effect "' + id + '"'); return Juicy; }
     if (def.kind !== 'continuous') { console.warn('[Juicy] "' + id + '" is not continuous'); return Juicy; }
-    if (def.__unavailable) return Juicy;
+    if (def.__unavailable) {
+      logEvent('start ' + id + ' skipped: missing ' + missingNeeds(def).join(','), true);
+      return Juicy;
+    }
     if (state.on[id]) return setEffect(id, params);
 
     var merged = mergeParams(id, def, params);
     var ctx = buildCtx(id, merged);
     activeCtx.set(id, ctx);
     safeCall(def.start, ctx);
+    if (logEnabled) {
+      var fields = ctx.__logFields || {};
+      var hasTargets = typeof fields.targets === 'number';
+      var msg = 'start ' + id + ' params=' + JSON.stringify(merged);
+      if (hasTargets) msg += ' targets=' + fields.targets;
+      if (fields.layer) msg += ' layer=' + fields.layer;
+      logEvent(msg, hasTargets && fields.targets === 0);
+    }
     state.on[id] = true;
     document.documentElement.classList.add('juicy-on-' + id);
     notifyThemeEffect(id, true);
@@ -418,6 +487,7 @@
     state.on[id] = false;
     document.documentElement.classList.remove('juicy-on-' + id);
     notifyThemeEffect(id, false);
+    logEvent('stop ' + id);
     document.dispatchEvent(new CustomEvent('juicy:effect', { detail: { id: id, on: false } }));
     return Juicy;
   }
@@ -471,10 +541,21 @@
     var def = effects.get(id);
     if (!def) { console.warn('[Juicy] unknown effect "' + id + '"'); return Juicy; }
     if (def.kind !== 'oneshot') { console.warn('[Juicy] "' + id + '" is not oneshot'); return Juicy; }
-    if (def.__unavailable) return Juicy;
+    if (def.__unavailable) {
+      logEvent('fire ' + id + ' skipped: missing ' + missingNeeds(def).join(','), true);
+      return Juicy;
+    }
     var merged = mergeParams(id, def, params);
     var ctx = buildCtx(id, merged);
     safeCall(def.fire, ctx);
+    if (logEnabled) {
+      var fields = ctx.__logFields || {};
+      var hasTargets = typeof fields.targets === 'number';
+      var msg = 'fire ' + id + ' params=' + JSON.stringify(merged);
+      if (hasTargets) msg += ' targets=' + fields.targets;
+      if (fields.layer) msg += ' layer=' + fields.layer;
+      logEvent(msg, hasTargets && fields.targets === 0);
+    }
     notifyThemeFire(id);
     document.dispatchEvent(new CustomEvent('juicy:fire', { detail: { id: id, params: merged } }));
     return Juicy;
@@ -506,6 +587,7 @@
     if (!themes.has(id)) { console.warn('[Juicy] unknown theme "' + id + '"'); return Juicy; }
     if (id === state.theme) return Juicy;
 
+    var prevTheme = state.theme;
     var prevScrollY = window.scrollY;
     var outgoing = themes.get(state.theme);
     if (outgoing) safeCall(outgoing.teardown, buildApi());
@@ -519,7 +601,22 @@
     document.documentElement.classList.add('juicy-switching');
 
     var incoming = themes.get(id);
-    safeCall(incoming.layout, buildApi());
+    var api = buildApi();
+    var mountCount = 0;
+    if (logEnabled) {
+      var originalMount = api.mount;
+      api.mount = function (name, container) {
+        var el = originalMount(name, container);
+        if (el) mountCount++;
+        return el;
+      };
+    }
+    var layoutStart = logEnabled ? performance.now() : 0;
+    safeCall(incoming.layout, api);
+    if (logEnabled) {
+      logEvent('theme ' + (prevTheme || '-') + ' -> ' + id +
+        ' regions=' + mountCount + ' layout=' + (performance.now() - layoutStart).toFixed(1) + 'ms');
+    }
 
     window.scrollTo(0, prevScrollY);
 
@@ -717,6 +814,8 @@
       return Juicy;
     }
     opts = opts || {};
+    logEnabled = !!opts.log || urlHasLogFlag();
+    initPerfTime = performance.now();
     initParams = opts.params || {};
 
     discoverRegions();
@@ -733,6 +832,9 @@
     initialized = true;
 
     var initialTheme = opts.theme || Array.from(themes.keys())[0];
+    logEvent('init theme=' + (initialTheme || '-') +
+      ' gsap=' + has('gsap') + ' confetti=' + has('confetti') +
+      ' tsParticles=' + has('tsParticles') + ' Tone=' + has('Tone'));
     if (initialTheme) setTheme(initialTheme);
 
     mountThemeNav();
@@ -761,6 +863,7 @@
     toast: toastFn,
     list: list,
     has: has,
+    log: publicLog,
     state: state,
     mountControls: mountControls,
     mountThemeNav: mountThemeNav,

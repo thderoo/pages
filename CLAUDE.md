@@ -285,3 +285,47 @@ un habillage de couleurs sur une structure commune.
   `body` (couleur ou dégradé opaque) le pose visuellement au-dessus de
   `#juicy-bg` et rend l'effet `bg` invisible sous l'habillage du thème, même
   quand il fonctionne correctement.
+
+## Suivre les effets
+
+`lib/juicy.js` tient un journal : une ligne horodatée par événement (init,
+changement de thème, démarrage/arrêt d'un effet continu, déclenchement d'un
+effet ponctuel, `timewarp`, création/destruction de widget, erreur
+rattrapée). Silencieux par défaut. Pour l'activer : `Juicy.init({ log: true })`
+ou `?juicy-log` dans l'URL de la page. Les thèmes et les pages peuvent aussi
+écrire dedans avec `Juicy.log(...)`.
+
+Une ligne ressemble à :
+
+```
+[juicy +2.481s] start tilt params={"max":14,...} targets=21
+```
+
+`+2.481s` : secondes depuis `Juicy.init()`. `targets=N` : nombre d'éléments
+que l'effet cible réellement — présent pour tout effet qui cible des
+éléments (absent pour un effet plein écran comme `rain`). `console.warn` (au
+lieu de `console.info`) si l'effet démarre avec `targets=0` ou si une lib CDN
+qu'il attend manque.
+
+**`targets=0` est un bug.** Un effet qui démarre sans rien à animer ne fait
+rien de visible, silencieusement — c'est exactement ce que le journal existe
+pour révéler.
+
+Pour vérifier un scénario depuis la ligne de commande, `tools/watch.js`
+(voir `tools/README.md` pour l'installation) ouvre une page sous Chromium,
+active le journal, relaie chaque ligne au terminal, et rejoue une suite
+d'actions par de vrais clics souris :
+
+```
+node tools/watch.js juicy.html --theme rpg --toggle bg,glitch --wait 1000 \
+  --fire burst --switch neon --diff
+```
+
+`--diff` imprime, pour chaque action, `changed` (pixels changés entre les
+captures avant/après) et `changedOutsideControl` (le même total hors la
+boîte du contrôle cliqué) — c'est `changedOutsideControl` qui dit si l'effet
+a fait quelque chose de visible, pas `changed` (qui inclut le contrôle
+lui-même changeant d'apparence, ex. un toggle qui s'allume). Voir
+`node tools/watch.js --help` pour toutes les options (thèmes CDN sans accès
+réseau : `--cdn-cache`, mobile : `--viewport`, `prefers-reduced-motion` :
+`--reduced-motion`).
