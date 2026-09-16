@@ -32,7 +32,8 @@
     tweens: [],        // tweens gsap éventuels à tuer
     timers: [],        // setTimeout/setInterval à annuler
     musicPart: null,   // référence Tone à stopper/disposer
-    propEl: null        // élément DOM de la brique prop (le sundae)
+    propEl: null,       // élément DOM de la brique prop (le sundae)
+    metaEl: null         // élément DOM de la région meta (compteur/combo)
   };
 
   function clearTimers() {
@@ -92,6 +93,7 @@
         if (!region) return;
         api.mount(name, built.plate);
         hasRegion = true;
+        if (name === 'meta') state.metaEl = region;
       });
 
       // On construit l'étage même si la page n'a pas déclaré la région :
@@ -121,6 +123,12 @@
 
     api.themeLayer.appendChild(counter);
     state.root = counter;
+    updateMeta(api);
+  }
+
+  function updateMeta(api) {
+    if (!state.metaEl) return;
+    state.metaEl.textContent = 'Compteur : ' + api.state.counter + ' · Combo : ' + api.state.combo;
   }
 
   function teardown() {
@@ -137,6 +145,7 @@
     }
     state.root = null;
     state.propEl = null;
+    state.metaEl = null;
   }
 
   function growSundae(big) {
@@ -145,12 +154,14 @@
   }
 
   function onEffect(id, on, api) {
+    updateMeta(api);
     if (id === 'music') return; // délégué à music(on, api), voir plus bas
     if (on) growSundae(true);
     api.sound(on ? 'toggleOn' : 'toggleOff');
   }
 
   function onFire(id, api) {
+    updateMeta(api);
     growSundae(true);
     var timer = setTimeout(function () { growSundae(false); }, 900);
     state.timers.push(timer);

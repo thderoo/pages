@@ -144,30 +144,96 @@ html[data-juicy-theme="rpg"] .rpg-nav-slot .juicy-theme-btn {
   cursor: pointer;
 }
 
-/* ---------- scène décorative ---------- */
+/* ---------- scène de combat centrale ---------- */
 html[data-juicy-theme="rpg"] .rpg-scene-slot {
   position: fixed;
-  right: 16px;
-  top: calc(var(--rpg-statusbar-h) + 16px);
-  width: 128px;
-  height: 128px;
+  left: 0;
+  right: 0;
+  top: var(--rpg-statusbar-h);
+  bottom: var(--rpg-dialogue-h);
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
   overflow: hidden;
   font-size: 11px;
   line-height: 1.4;
   filter: none;
-  z-index: 3;
+  z-index: 1;
 }
 
 /* seule la scène de repli (aucune région "scene" fournie par la page) porte
-   le gros emoji décoratif ; du vrai contenu de région reste lisible, jamais
-   écrasé en 48px. */
+   le gros emoji décoratif, centré dans toute la zone. */
 html[data-juicy-theme="rpg"] .rpg-scene-slot--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 48px;
+}
+
+/* Combat : monstre (avec sa jauge de PV) à droite, héros à gauche, tous deux
+   posés sur la ligne de base de la scène. */
+html[data-juicy-theme="rpg"] .rpg-battle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(16px, 6vw, 72px);
+  padding: 20px clamp(20px, 8vw, 96px) 20px clamp(20px, 6vw, 64px);
+  box-sizing: border-box;
+}
+
+html[data-juicy-theme="rpg"] .rpg-battle-caption {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  font-size: 9px;
+  color: var(--rpg-ink);
+  opacity: 0.7;
+  text-align: center;
+}
+
+html[data-juicy-theme="rpg"] .rpg-hero {
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1;
+  filter: drop-shadow(2px 2px 0 var(--rpg-shadow));
+  margin-bottom: clamp(24px, 8vh, 72px);
+}
+
+html[data-juicy-theme="rpg"] .rpg-monster-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: clamp(40px, 14vh, 140px);
+}
+
+html[data-juicy-theme="rpg"] .rpg-monster-gauge-slot {
+  width: 120px;
+}
+
+html[data-juicy-theme="rpg"] .rpg-monster {
+  font-size: clamp(56px, 10vw, 96px);
+  line-height: 1;
+  filter: drop-shadow(3px 3px 0 var(--rpg-shadow));
+}
+
+html[data-juicy-theme="rpg"] .rpg-monster--hit {
+  animation: rpg-monster-hit 0.35s steps(3);
+}
+
+@keyframes rpg-monster-hit {
+  0% { transform: translateX(0) scale(1); }
+  25% { transform: translateX(-8px) scale(0.94); }
+  50% { transform: translateX(6px) scale(1.04); }
+  75% { transform: translateX(-4px) scale(0.98); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+html[data-juicy-theme="rpg"] .rpg-monster--defeated {
+  animation: none;
+  transform: rotate(88deg) translateY(18px);
+  opacity: 0.35;
 }
 
 /* ---------- fenêtres de menu, empilées en bas à gauche ---------- */
@@ -187,7 +253,11 @@ html[data-juicy-theme="rpg"] .rpg-menus {
 html[data-juicy-theme="rpg"] .rpg-window {
   padding: 10px;
   position: relative;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 38vh;
+  overflow: hidden;
 }
 
 html[data-juicy-theme="rpg"] .rpg-window-title {
@@ -195,12 +265,42 @@ html[data-juicy-theme="rpg"] .rpg-window-title {
   font-size: 9px;
   color: var(--rpg-gold);
   text-shadow: 1px 1px 0 var(--rpg-shadow);
+  flex: 0 0 auto;
+}
+
+/* Le corps défilant de la fenêtre : la molette et le curseur clavier
+   (scrollIntoView) y font défiler le contenu qui dépasse. */
+html[data-juicy-theme="rpg"] .rpg-window-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  padding-bottom: 10px;
 }
 
 html[data-juicy-theme="rpg"] .rpg-window [data-juicy-region] {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* Indicateur "il reste du contenu en dessous", façon menu de RPG. */
+html[data-juicy-theme="rpg"] .rpg-scroll-more {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--rpg-gold);
+  text-shadow: 1px 1px 0 var(--rpg-shadow);
+  opacity: 0;
+  pointer-events: none;
+  animation: rpg-blink 1.2s steps(1) infinite;
+}
+html[data-juicy-theme="rpg"] .rpg-scroll-more--visible {
+  opacity: 1;
 }
 
 /* toggles skinnés en items de menu d'options */
@@ -378,11 +478,29 @@ html[data-juicy-theme="rpg"] #juicy-cursor {
     max-width: calc(100vw - 16px);
   }
 
-  html[data-juicy-theme="rpg"] .rpg-scene-slot {
-    width: 64px;
-    height: 64px;
-    right: 8px;
+  html[data-juicy-theme="rpg"] .rpg-window {
+    max-height: 30vh;
+  }
+
+  html[data-juicy-theme="rpg"] .rpg-scene-slot--empty {
     font-size: 28px;
+  }
+
+  html[data-juicy-theme="rpg"] .rpg-battle {
+    padding: 12px 12px 12px 8px;
+    gap: 12px;
+  }
+
+  html[data-juicy-theme="rpg"] .rpg-monster {
+    font-size: 44px;
+  }
+
+  html[data-juicy-theme="rpg"] .rpg-hero {
+    font-size: 34px;
+  }
+
+  html[data-juicy-theme="rpg"] .rpg-monster-gauge-slot {
+    width: 84px;
   }
 
   html[data-juicy-theme="rpg"] [data-juicy-region="narration"] {

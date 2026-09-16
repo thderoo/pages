@@ -44,9 +44,12 @@
     hpGauge: null,
     mpGauge: null,
     keydownHandler: null,
-    windows: { options: null, skills: null }, // { el, items: [] }
+    windows: { options: null, skills: null }, // { el, body, items: [], updateMore() }
     activeWindow: 'options',
-    selectedIndex: 0
+    selectedIndex: 0,
+    battle: null,       // { monster, hero, gauge, caption, defeated }
+    monsterHp: 100,
+    metaEl: null
   };
 
   function clearTimers() {
@@ -90,6 +93,9 @@
     state.windows = { options: null, skills: null };
     state.activeWindow = 'options';
     state.selectedIndex = 0;
+    state.battle = null;
+    state.monsterHp = 100;
+    state.metaEl = null;
   }
 
   function owned(tag, className) {
@@ -119,6 +125,9 @@
     var item = items[state.selectedIndex];
     item.classList.add('rpg-selected');
     item.insertBefore(state.cursorEl, item.firstChild);
+    try { item.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* noop */ }
+    var activeWin = state.windows[state.activeWindow];
+    if (activeWin && typeof activeWin.updateMore === 'function') activeWin.updateMore();
   }
 
   function switchWindow(dir) {
@@ -189,17 +198,35 @@
     h2.textContent = titleText;
     win.appendChild(h2);
 
+    var body = owned('div', 'rpg-window-body');
+    win.appendChild(body);
+
     var items = [];
     if (api.region(regionName)) {
-      api.mount(regionName, win);
+      api.mount(regionName, body);
       var selector = regionName === 'controls' ? '[data-juicy-toggle]' : '[data-juicy-action]';
-      items = Array.prototype.slice.call(win.querySelectorAll(selector));
+      items = Array.prototype.slice.call(body.querySelectorAll(selector));
     }
-    return { el: win, items: items };
+
+    var more = owned('span', 'rpg-scroll-more');
+    more.textContent = '▼';
+    more.setAttribute('aria-hidden', 'true');
+    win.appendChild(more);
+
+    var updateMore = function () {
+      var overflow = body.scrollHeight - body.clientHeight - body.scrollTop > 1;
+      more.classList.toggle('rpg-scroll-more--visible', overflow);
+    };
+    body.addEventListener('scroll', updateMore);
+    var t = setTimeout(updateMore, 0);
+    state.timers.push(t);
+
+    return { el: win, body: body, items: items, updateMore: updateMore };
   }
 
   function spawnDamageNumber(api) {
-    var anchor = state.windows.skills && state.windows.skills.el;
+    var anchor = (state.battle && state.battle.monster) ||
+      (state.windows.skills && state.windows.skills.el);
     var rect = anchor ? anchor.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0 };
     var crit = Math.random() < 0.3;
     var value = Math.ceil(Math.random() * 40) + 10;
@@ -210,6 +237,65 @@
       color: crit ? 'var(--rpg-red)' : 'var(--rpg-gold)'
     });
     if (fn) state.widgets.push(fn);
+  }
+
+  function buildBattle(api, sceneSlot) {
+    var wrap = owned('div', 'rpg-battle');
+
+    var heroWrap = owned('div', 'rpg-hero');
+    heroWrap.textContent = '🧙';
+    wrap.appendChild(heroWrap);
+
+    var monsterWrap = owned('div', 'rpg-monster-wrap');
+    var gaugeSlot = owned('div', 'rpg-monster-gauge-slot');
+    monsterWrap.appendChild(gaugeSlot);
+    var monsterEl = owned('div', 'rpg-monster');
+    monsterEl.textContent = '👾';
+    monsterWrap.appendChild(monsterEl);
+    wrap.appendChild(monsterWrap);
+
+    var caption = owned('div', 'rpg-battle-caption');
+    wrap.appendChild(caption);
+
+    sceneSlot.appendChild(wrap);
+
+    var gauge = api.widget('gauge', gaugeSlot, { value: 100, max: 100, label: 'MONSTRE', color: 'var(--rpg-red)' });
+    if (gauge) state.widgets.push(gauge);
+
+    return { wrap: wrap, hero: heroWrap, monster: monsterEl, gauge: gauge, caption: caption, defeated: false };
+  }
+
+  function hitMonster(api) {
+    if (!state.battle || state.battle.defeated) return;
+    spawnDamageNumber(api);
+    var m = state.battle.monster;
+    m.classList.remove('rpg-monster--hit');
+    void m.offsetWidth; // force le redémarrage de l'animation
+    m.classList.add('rpg-monster--hit');
+
+    state.monsterHp = Math.max(0, state.monsterHp - (8 + Math.random() * 14));
+    if (state.battle.gauge) state.battle.gauge.update({ value: state.monsterHp });
+    if (state.monsterHp <= 0) victory(api);
+  }
+
+  function victory(api) {
+    if (!state.battle || state.battle.defeated) return;
+    state.battle.defeated = true;
+    state.battle.monster.classList.add('rpg-monster--defeated');
+    if (state.battle.gauge) state.battle.gauge.update({ value: 0 });
+  }
+
+  function reviveMonster() {
+    if (!state.battle) return;
+    state.battle.defeated = false;
+    state.monsterHp = 100;
+    state.battle.monster.classList.remove('rpg-monster--defeated', 'rpg-monster--hit');
+    if (state.battle.gauge) state.battle.gauge.update({ value: 100 });
+  }
+
+  function updateMeta(api) {
+    if (!state.metaEl) return;
+    state.metaEl.textContent = 'Compteur : ' + api.state.counter + ' · Combo : ' + api.state.combo;
   }
 
   function getLine(id, api) {
@@ -245,7 +331,10 @@
     if (state.mpGauge) state.widgets.push(state.mpGauge);
 
     var metaSlot = owned('div', 'rpg-meta-slot');
-    if (api.region('meta')) api.mount('meta', metaSlot);
+    if (api.region('meta')) {
+      api.mount('meta', metaSlot);
+      state.metaEl = api.region('meta');
+    }
     statusbar.appendChild(metaSlot);
 
     var navSlot = owned('div', 'rpg-nav-slot');
@@ -254,10 +343,11 @@
 
     screen.appendChild(statusbar);
 
-    // --- scène décorative ---
+    // --- scène de combat ---
     var sceneSlot = owned('div', 'rpg-scene-slot');
     if (api.region('scene')) {
-      api.mount('scene', sceneSlot);
+      state.battle = buildBattle(api, sceneSlot);
+      api.mount('scene', state.battle.caption);
     } else {
       sceneSlot.classList.add('rpg-scene-slot--empty');
       sceneSlot.textContent = (api.theme && api.theme.emojis && api.theme.emojis[0]) || '⚔️';
@@ -297,6 +387,7 @@
     moveCursor();
     attachKeyboard(api);
     narrate(getLine('theme', api) || 'Une quête pixel commence…', api);
+    updateMeta(api);
   }
 
   function teardown() {
@@ -304,19 +395,25 @@
   }
 
   function onEffect(id, on, api) {
+    updateMeta(api);
     if (id === 'music') return; // délégué à music(on, api)
     try { api.sound(on ? 'toggleOn' : 'toggleOff'); } catch (e) { /* noop */ }
     if (on) narrate(getLine(id, api), api);
   }
 
   function onFire(id, api) {
+    updateMeta(api);
     try { api.sound(SOUND_BY_ACTION[id] || 'select'); } catch (e) { /* noop */ }
     narrate(getLine(id, api), api);
 
-    if (id === 'shake') {
-      spawnDamageNumber(api);
+    // burst (confetti/firework/shockwave), shake et counter sont les frappes
+    // qui touchent le monstre : dégâts flottants + recul (contrat §9 : onFire
+    // reçoit l'id de l'effet réellement déclenché, pas l'id de l'action).
+    if (id === 'burst' || id === 'shake' || id === 'counter') {
+      hitMonster(api);
     }
     if (id === 'everything') {
+      victory(api);
       try {
         api.toast('Attaque ultime débloquée !', { icon: '🏆', kind: 'success' });
       } catch (e) { /* noop */ }
@@ -324,6 +421,7 @@
     if (id === 'reset') {
       if (state.hpGauge) state.hpGauge.update({ value: 100 });
       if (state.mpGauge) state.mpGauge.update({ value: 100 });
+      reviveMonster();
     }
   }
 

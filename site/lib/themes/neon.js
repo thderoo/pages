@@ -101,6 +101,12 @@
     api.mount('tagline', titleHost);
     api.mount('nav', navHost);
     api.mount('meta', metaHost);
+    var metaEl = api.region('meta');
+    function updateMeta() {
+      if (!metaEl) return;
+      metaEl.textContent = 'COMPTEUR ' + api.state.counter + ' · COMBO ' + api.state.combo;
+    }
+    updateMeta();
 
     var alertWidget = api.widget('alert', alertHost, {
       text: 'SYSTÈME EN LIGNE',
@@ -152,10 +158,50 @@
     }
     api.ticker.add(readCooldowns);
 
-    // --- centre : viseur, ligne de visée, réticule --------------------
+    // --- centre : radar tactique à balayage ---------------------------
     var reticle = el('div', 'neon-reticle');
+    var radar = el('div', 'neon-radar');
+    var sweep = el('div', 'neon-radar-sweep');
+    var echoes = el('div', 'neon-radar-echoes');
+    radar.appendChild(sweep);
+    radar.appendChild(echoes);
+    var readout = el('div', 'neon-readout');
     sceneWrap.appendChild(reticle);
+    sceneWrap.appendChild(radar);
+    sceneWrap.appendChild(readout);
     api.mount('scene', sceneWrap);
+
+    function activeSystemCount() {
+      var s = api.state;
+      var count = 0;
+      for (var k in s.on) {
+        if (Object.prototype.hasOwnProperty.call(s.on, k) && s.on[k]) count += 1;
+      }
+      return count;
+    }
+
+    function readRadar() {
+      var s = api.state;
+      var ts = typeof s.timeScale === 'number' ? s.timeScale : 1;
+      readout.textContent =
+        'CPT ' + s.counter + ' · COMBO ' + s.combo +
+        ' · T×' + ts.toFixed(2) + ' · SYS ' + activeSystemCount();
+    }
+    api.ticker.add(readRadar);
+
+    var echoTimers = [];
+    function spawnEcho() {
+      var dot = el('span', 'neon-echo');
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 18 + Math.random() * 32; // % du rayon du radar
+      dot.style.left = (50 + Math.cos(angle) * dist) + '%';
+      dot.style.top = (50 + Math.sin(angle) * dist) + '%';
+      echoes.appendChild(dot);
+      var t = setTimeout(function () {
+        if (dot.parentNode) dot.parentNode.removeChild(dot);
+      }, 900);
+      echoTimers.push(t);
+    }
 
     // --- télémétrie : la région narration devient elle-même la barre
     // fixée en bas ; la brique ticker en est le rendu défilant. ---------
@@ -210,6 +256,13 @@
       right: right,
       gauges: gauges,
       readCooldowns: readCooldowns,
+      readRadar: readRadar,
+      updateMeta: updateMeta,
+      spawnEcho: spawnEcho,
+      clearEchoTimers: function () {
+        echoTimers.forEach(function (t) { clearTimeout(t); });
+        echoTimers.length = 0;
+      },
       handleLeft: handleLeft,
       handleRight: handleRight,
       onHandleLeft: onHandleLeft,
@@ -228,6 +281,8 @@
 
   function destroySession(api, s) {
     api.ticker.remove(s.readCooldowns);
+    api.ticker.remove(s.readRadar);
+    s.clearEchoTimers();
     s.handleLeft.removeEventListener('click', s.onHandleLeft);
     s.handleRight.removeEventListener('click', s.onHandleRight);
     s.clearAlertTimer();
@@ -286,7 +341,10 @@
     },
 
     onFire: function (id, api) {
-      if (session && ALERT_TRIGGERS[id]) {
+      if (!session) return;
+      session.updateMeta();
+      session.spawnEcho();
+      if (ALERT_TRIGGERS[id]) {
         session.flashAlert(LINES[id] || 'ALERTE');
       }
     },

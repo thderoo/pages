@@ -41,6 +41,16 @@ html[data-juicy-theme="candy"] body {
 /* Structure : comptoir + étages                                          */
 /* ---------------------------------------------------------------------- */
 
+/* La racine candy vit dans #juicy-theme-layer (position:fixed;
+   pointer-events:none par défaut, contrat §4). On restaure les clics et on
+   donne un vrai défilement à l'étal : sans ça, aucun clic ne passe et les
+   étages du bas restent hors d'atteinte (molette comme tactile). */
+html[data-juicy-theme="candy"] #juicy-theme-layer {
+  pointer-events: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 html[data-juicy-theme="candy"] .candy-counter {
   position: relative;
   display: flex;

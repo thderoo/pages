@@ -89,6 +89,12 @@ l'ignore ou la comble par un repli propre (ex. RPG affiche un emoji si
 déplace physiquement ces éléments dans sa mise en page (`api.mount`) et les
 restaure à leur emplacement d'origine si on change de thème.
 
+Une page qui veut un décor central animé et réactif déclare `scene` (contenu
+minimal : un titre de scène suffit) et `meta` (un texte de repli du genre
+« Compteur : 0 · Combo : 0 » suffit) — c'est le thème actif qui construit et
+anime le reste (rpg : scène de combat ; neon : radar ; candy : sundae), et
+qui tient `meta` à jour avec le compteur et le combo réels.
+
 ### `Juicy.init(opts)`
 
 - `theme` : id du thème initial (sinon le premier thème enregistré).
@@ -255,3 +261,14 @@ Vocabulaire fermé de `sound(name)` (le noyau n'appelle jamais un autre nom) :
 La grille du nouveau thème doit rester visuellement distincte des trois
 autres (position des contrôles, défilement ou non, navigation) — ce n'est pas
 un habillage de couleurs sur une structure commune.
+
+### Pièges connus
+
+- Une racine de thème posée dans `#juicy-theme-layer` (`api.themeLayer`)
+  hérite de `pointer-events:none` (couches fixes du noyau, contrat §4) : le
+  thème doit explicitement remettre `pointer-events:auto` sur sa propre
+  racine, sinon aucun clic n'atteint ses contrôles. S'il compte défiler
+  (page qui déborde le viewport, comme `candy`), il doit aussi gérer son
+  propre défilement (`overflow-y:auto` sur sa racine ou sur `#juicy-theme-layer`
+  scopé au thème) : une couche fixe pleine fenêtre ne défile jamais toute
+  seule.

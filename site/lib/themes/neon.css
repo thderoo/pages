@@ -373,6 +373,68 @@ html[data-juicy-theme="neon"] .neon-reticle::after {
   width: 1px;
 }
 
+/* Radar tactique : balayage rotatif + échos qui pulsent sur chaque action,
+   relevés en direct depuis Juicy.state (compteur, combo, timeScale,
+   systèmes actifs). Enfants réels de .neon-scene (pas des pseudo-éléments)
+   pour rester faciles à peupler/vider depuis le JS du thème. */
+html[data-juicy-theme="neon"] .neon-radar {
+  position: absolute;
+  width: min(60%, 320px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid var(--neon-line-strong);
+  background: repeating-radial-gradient(circle, transparent 0 24px, var(--neon-line) 24px 25px);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html[data-juicy-theme="neon"] .neon-radar-sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, rgba(0, 246, 255, 0.4), transparent 30%);
+  animation: neon-radar-spin 4s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes neon-radar-spin {
+  to { transform: rotate(360deg); }
+}
+
+html[data-juicy-theme="neon"] .neon-radar-echoes {
+  position: absolute;
+  inset: 0;
+}
+
+html[data-juicy-theme="neon"] .neon-echo {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  box-shadow: var(--neon-glow);
+  animation: neon-echo-ping 0.9s ease-out forwards;
+}
+
+@keyframes neon-echo-ping {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+html[data-juicy-theme="neon"] .neon-readout {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-family: var(--neon-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--neon-cyan);
+  text-shadow: var(--neon-glow);
+  white-space: nowrap;
+}
+
 html[data-juicy-theme="neon"] .neon-scene::before {
   content: '';
   position: absolute;
@@ -506,5 +568,12 @@ html[data-juicy-theme="neon"] .neon-drawer-handle {
   html[data-juicy-theme="neon"] .neon-panel {
     transition: none !important;
     animation: none !important;
+  }
+  html[data-juicy-theme="neon"] .neon-radar-sweep {
+    animation: none !important;
+  }
+  html[data-juicy-theme="neon"] .neon-echo {
+    animation: none !important;
+    opacity: 0.85;
   }
 }
