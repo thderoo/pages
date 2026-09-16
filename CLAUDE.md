@@ -18,5 +18,7 @@ Le `CLAUDE.md` et le workflow ne sont jamais servis.
    dépendance externe).
 2. Commiter et pousser sur `main`.
 
+Les dépendances via CDN (jsDelivr, cdnjs) et Google Fonts sont bienvenues.
+
 Pas de générateur de site, pas de framework, pas d'index automatique : du
 HTML statique, un fichier par page.

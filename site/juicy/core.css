@@ -1,0 +1,479 @@
+/* juicy/core.css — moteur : chrome générique, layout, layers, effets génériques
+   des 19 toggles. Un thème restyle par-dessus (préfixé [data-theme="..."]),
+   jamais l'inverse : ce fichier ne connaît aucun thème. */
+
+@font-face { /* no-op placeholder kept out: fonts are linked in juicy.html head */ }
+
+:root {
+  --chrome-bg: #0b0e1a;
+  --chrome-panel: rgba(255, 255, 255, 0.06);
+  --chrome-border: rgba(255, 255, 255, 0.16);
+  --chrome-text: #f4f6ff;
+  --chrome-muted: rgba(244, 246, 255, 0.7);
+  --chrome-accent: #7c5cff;
+  --chrome-accent2: #00e5c7;
+  --chrome-accent3: #ff5e7a;
+  --cooldown: 0;
+  color-scheme: dark;
+}
+
+html.on-light {
+  --chrome-bg: #f4f5fb;
+  --chrome-panel: rgba(20, 20, 45, 0.05);
+  --chrome-border: rgba(20, 20, 45, 0.16);
+  --chrome-text: #171826;
+  --chrome-muted: rgba(23, 24, 38, 0.68);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  position: relative;
+  min-height: 100vh;
+  padding-top: var(--switcher-h, 60px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--chrome-bg);
+  color: var(--chrome-text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ---------- layers (fixed, full-screen) ---------- */
+
+#fx-canvas-wrap, #tsparticles, #theme-layer, #fx-overlay, #custom-cursor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#fx-canvas-wrap { z-index: 20; }
+#fx-canvas { display: block; width: 100%; height: 100%; }
+#tsparticles { z-index: 1; }
+#theme-layer { z-index: 5; }
+#fx-overlay { z-index: 30; overflow: hidden; }
+#custom-cursor {
+  z-index: 100;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  font-size: 1.1rem;
+  line-height: 1;
+  will-change: transform;
+}
+html.on-cursor #custom-cursor { display: flex; }
+html.on-cursor, html.on-cursor * { cursor: none !important; }
+
+/* ---------- structure ---------- */
+
+header#hero { position: relative; z-index: 2; text-align: center; padding: 2.6rem 1.2rem 1.4rem; }
+
+#title {
+  position: relative;
+  display: inline-block;
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  letter-spacing: -0.01em;
+}
+
+#tagline {
+  margin: 0 auto;
+  max-width: 34rem;
+  color: var(--chrome-muted);
+  font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+  line-height: 1.5;
+}
+
+/* Contrôle de bascule de thème : visible en permanence (§ objectif), donc fixé
+   en haut de viewport plutôt que dans le flux de #hero. #body réserve sa
+   hauteur via --switcher-h pour que rien ne passe dessous. */
+#theme-switcher {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.8rem;
+  background: rgba(6, 8, 16, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--chrome-border);
+}
+html.on-light #theme-switcher { background: rgba(255, 255, 255, 0.7); }
+
+.theme-btn {
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--chrome-border);
+  background: var(--chrome-panel);
+  color: var(--chrome-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-btn:hover { transform: translateY(-1px); }
+.theme-btn[aria-pressed="true"] {
+  background: var(--chrome-accent);
+  border-color: var(--chrome-accent);
+  color: #fff;
+}
+
+main#stage {
+  position: relative;
+  z-index: 2;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 1.1rem 3.5rem;
+}
+
+.panel {
+  margin-top: 1.8rem;
+  background: var(--chrome-panel);
+  border: 1px solid var(--chrome-border);
+  border-radius: 18px;
+  padding: 1.1rem 1.1rem 1.3rem;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.panel-title {
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--chrome-muted);
+}
+
+#toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.7rem;
+}
+
+#actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.7rem;
+}
+
+#panel-scene { position: relative; min-height: 8rem; }
+#theme-stage { position: relative; min-height: 3rem; }
+
+#comment {
+  margin-top: 0.8rem;
+  min-height: 1.4em;
+  color: var(--chrome-muted);
+  font-size: 0.95rem;
+}
+
+#counter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+#combo {
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+#combo:empty { display: none; }
+
+/* ---------- toggles ---------- */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 44px;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid var(--chrome-border);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label { font-size: 0.9rem; font-weight: 600; }
+
+.toggle-control {
+  --w: 48px;
+  --h: 28px;
+  flex: none;
+  width: var(--w);
+  height: var(--h);
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.35);
+  padding: 3px;
+  display: block;
+  transition: background 0.25s ease;
+}
+
+.toggle-thumb {
+  display: block;
+  width: calc(var(--h) - 6px);
+  height: calc(var(--h) - 6px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transform: translateX(0);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.toggle[data-on="true"] .toggle-control { background: var(--chrome-accent); }
+.toggle[data-on="true"] .toggle-thumb { transform: translateX(calc(var(--w) - var(--h))); }
+
+/* ---------- action buttons ---------- */
+
+.action {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0.9rem 0.7rem;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--chrome-accent), var(--chrome-accent2));
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.action[data-action="reset"] {
+  background: transparent;
+  border: 2px solid var(--chrome-border);
+  color: var(--chrome-text);
+}
+
+.action[data-armed="true"] { box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.6); }
+.action[data-firing="true"] { filter: brightness(1.35); }
+.action[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+.action::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: calc(var(--cooldown, 0) * 100%);
+  background: rgba(255, 255, 255, 0.85);
+  transition: width 0.05s linear;
+}
+
+/* ---------- toasts ---------- */
+
+#toast-layer {
+  position: fixed;
+  left: 50%;
+  bottom: 1.4rem;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+  align-items: center;
+}
+
+.toast {
+  background: rgba(10, 10, 20, 0.88);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: toast-in-out 2.6s ease forwards;
+}
+
+@keyframes toast-in-out {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+/* ---------- shake / flash (action: shake, and reduced-motion fallback) ---------- */
+
+@keyframes juicy-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+#stage.shake-active { animation: juicy-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+@keyframes juicy-flash {
+  0%, 100% { filter: none; }
+  50% { filter: brightness(1.2); }
+}
+#stage.flash-active { animation: juicy-flash 0.3s ease; }
+
+/* ---------- shockwave rings (spawned into #fx-overlay) ---------- */
+
+.shock-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--chrome-accent2);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0.85;
+}
+
+/* ---------- generic per-toggle effects (html.on-<id>) ---------- */
+
+/* bg: animated ambient gradient on the overlay layer */
+html.on-bg #fx-overlay {
+  background: linear-gradient(120deg, var(--chrome-accent), var(--chrome-accent2), var(--chrome-accent3), var(--chrome-accent));
+  background-size: 320% 320%;
+  opacity: 0.16;
+  animation: juicy-bg-shift 12s ease infinite;
+}
+@keyframes juicy-bg-shift {
+  0% { background-position: 0% 40%; }
+  50% { background-position: 100% 60%; }
+  100% { background-position: 0% 40%; }
+}
+
+/* glitch: generic split fallback in case a theme adds no glitch look of its own */
+html.on-glitch #title { position: relative; }
+
+/* shaketext: continuous small jitter on textual elements */
+html.on-shaketext #title,
+html.on-shaketext #tagline,
+html.on-shaketext .toggle-label,
+html.on-shaketext .action-label,
+html.on-shaketext #comment {
+  animation: juicy-shaketext 0.35s steps(2, end) infinite;
+}
+@keyframes juicy-shaketext {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0.6px, -0.6px); }
+}
+
+/* crt: scanlines + vignette + breathing */
+html.on-crt #fx-overlay::before,
+html.on-crt #fx-overlay::after { content: ""; position: absolute; inset: 0; }
+html.on-crt #fx-overlay::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.18) 0px,
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 2px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  animation: juicy-crt-breathe 4s ease-in-out infinite;
+}
+html.on-crt #fx-overlay::after {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+}
+@keyframes juicy-crt-breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* negative: full inversion of the content. Targets #title/#tagline rather
+   than header#hero: #hero is the ancestor of the permanently-fixed
+   #theme-switcher, and a filter on an ancestor of a fixed element makes it
+   that element's new containing block (CSS spec), which would detach the
+   switcher from the viewport top for as long as the toggle is on. */
+html.on-negative main#stage,
+html.on-negative #title,
+html.on-negative #tagline {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* fog: two drifting blurred blobs on the overlay */
+html.on-fog #fx-overlay::before,
+html.on-fog #fx-overlay::after {
+  content: "";
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5), transparent 70%);
+  filter: blur(40px);
+  opacity: 0.35;
+}
+html.on-fog #fx-overlay::before { top: -20vmax; left: -15vmax; animation: juicy-fog-a 22s ease-in-out infinite; }
+html.on-fog #fx-overlay::after { bottom: -20vmax; right: -15vmax; animation: juicy-fog-b 26s ease-in-out infinite; }
+@keyframes juicy-fog-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(12vmax, 8vmax); }
+}
+@keyframes juicy-fog-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-10vmax, -10vmax); }
+}
+/* on-crt and on-fog share #fx-overlay pseudo-elements: only one is meant to be
+   active at a time visually; both remain harmless if combined. */
+
+/* bigtext: enlarge textual content */
+html.on-bigtext #title { font-size: clamp(2.4rem, 10vw, 4.2rem); }
+html.on-bigtext #tagline,
+html.on-bigtext .toggle-label,
+html.on-bigtext .action-label,
+html.on-bigtext #comment { font-size: 1.25em; }
+
+/* is-switching: brief transition guard, themes may hook into it too */
+html.is-switching #theme-layer,
+html.is-switching #theme-stage { transition: opacity 0.2s ease; }
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html.on-bg #fx-overlay,
+  html.on-shaketext #title,
+  html.on-shaketext #tagline,
+  html.on-shaketext .toggle-label,
+  html.on-shaketext .action-label,
+  html.on-shaketext #comment,
+  html.on-crt #fx-overlay::before,
+  html.on-fog #fx-overlay::before,
+  html.on-fog #fx-overlay::after,
+  .toast {
+    animation: none !important;
+  }
+  .toast { opacity: 1; transform: none; }
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 480px) {
+  #toggles { grid-template-columns: repeat(auto-fill, minmax(46%, 1fr)); }
+  #actions { grid-template-columns: repeat(auto-fill, minmax(46%, 1fr)); }
+  header#hero { padding-top: 2rem; }
+  .action, .toggle, .theme-btn { min-height: 44px; }
+}
