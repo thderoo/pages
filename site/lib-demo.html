@@ -6,16 +6,23 @@
 <title>Juicy — exemple</title>
 <link rel="stylesheet" href="lib/juicy.css">
 <link rel="stylesheet" href="lib/bursts.css">
+<link rel="stylesheet" href="lib/ui.css">
 <link rel="stylesheet" href="lib/themes/neon.css">
 </head>
 <body>
 
 <div data-juicy-region="stage">
   <h1 data-juicy-region="title">Ma page</h1>
+  <div class="juicy-panel juicy-panel--solid">
+    <div class="juicy-panel__body">
+      <button type="button" class="juicy-btn juicy-btn--primary">Bouton</button>
+    </div>
+  </div>
 </div>
 
 <script defer src="lib/juicy.js"></script>
 <script defer src="lib/bursts.js"></script>
+<script defer src="lib/ui.js"></script>
 <script defer src="lib/themes/neon.js"></script>
 
 <script>

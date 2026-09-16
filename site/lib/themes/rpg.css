@@ -1,6 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /*
+ * Jetons Juicy UI (lib.ui, site/lib/ui.css), en tête de feuille : mappés sur
+ * la palette du thème ci-dessous, jamais de règle de composant ici (mandat
+ * lib.ui, contrat §9-§10). "Rayons nuls, bordures doubles" : les rayons sont
+ * mis à 0 et les ombres deviennent des doubles liseres sans flou.
+ */
+html[data-juicy-theme="rpg"] {
+  --juicy-bg: var(--rpg-bg);
+  --juicy-surface: var(--rpg-panel);
+  --juicy-text: var(--rpg-ink);
+  --juicy-muted: color-mix(in srgb, var(--rpg-ink) 55%, var(--rpg-bg) 45%);
+  --juicy-accent: var(--rpg-gold);
+  --juicy-accent-text: var(--rpg-shadow);
+  --juicy-danger: var(--rpg-red);
+  --juicy-success: var(--rpg-green);
+  --juicy-radius-sm: 0;
+  --juicy-radius-md: 0;
+  --juicy-radius-lg: 0;
+  --juicy-radius-pill: 0;
+  --juicy-shadow-sm: 0 0 0 2px var(--rpg-shadow);
+  --juicy-shadow-md: 0 0 0 2px var(--rpg-shadow), 0 0 0 4px var(--rpg-ink), 4px 4px 0 0 var(--rpg-shadow);
+  --juicy-shadow-lg: 0 0 0 3px var(--rpg-shadow), 0 0 0 6px var(--rpg-ink), 6px 6px 0 0 var(--rpg-shadow);
+}
+
+/*
  * Theme "rpg" — écran de jeu 8-bit rétro, plein écran, sans défilement.
  * Module de la lib Juicy, voir projects/pages/CLAUDE.md et le contrat
  * .swarm/pages/contrat-lib.md (§9, §10). Toutes les règles sont préfixées

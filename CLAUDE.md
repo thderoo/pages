@@ -44,6 +44,7 @@ une nouvelle page.
 <link rel="stylesheet" href="lib/effects.css">   <!-- si des effets continus sont utilisés -->
 <link rel="stylesheet" href="lib/bursts.css">    <!-- si des effets ponctuels sont utilisés -->
 <link rel="stylesheet" href="lib/widgets.css">   <!-- si des briques sont utilisées -->
+<link rel="stylesheet" href="lib/ui.css">        <!-- si des composants génériques (panneaux, boutons, cartes…) sont utilisés -->
 <link rel="stylesheet" href="lib/themes/<id>.css"> <!-- un par thème chargé -->
 
 <div data-juicy-region="stage">
@@ -60,6 +61,7 @@ une nouvelle page.
 <script defer src="lib/effects.js"></script>
 <script defer src="lib/bursts.js"></script>
 <script defer src="lib/widgets.js"></script>
+<script defer src="lib/ui.js"></script>
 <script defer src="lib/themes/<id>.js"></script>
 
 <script>
@@ -72,11 +74,12 @@ document.addEventListener('DOMContentLoaded', function () {
 Ne charger que ce dont la page a besoin : les 4 bibliothèques CDN sont
 facultatives (chaque effet qui en dépend se désactive proprement, sans
 erreur, si elles manquent), de même que `effects.css`/`bursts.css`/
-`widgets.css` si la page n'utilise pas ces familles. `lib-demo.html` ne
-charge par exemple aucune des 4 CDN.
+`widgets.css`/`ui.css` si la page n'utilise pas ces familles. `lib-demo.html`
+ne charge par exemple aucune des 4 CDN.
 
 L'ordre compte : `lib/juicy.js` avant `effects.js`/`bursts.js`/`widgets.js`
-avant `lib/themes/<id>.js` avant le script inline de la page.
+avant `lib/ui.js` avant `lib/themes/<id>.js` avant le script inline de la
+page.
 
 ### Régions sémantiques
 
@@ -194,6 +197,92 @@ Instanciées par `Juicy.widget(name, target, opts)`, retournent toujours
 
 `Juicy.toast(text, opts)` et `Juicy.narrate(text)` sont des raccourcis vers
 la brique `toast` et le canal narratif de la région `narration`.
+
+## Composants (`lib/ui.css` / `lib/ui.js`)
+
+Styles et composants génériques, non spécifiques à une page : jetons,
+panneaux, boutons, badges, grilles, carte, liste de scores, modale. Chargés
+après `widgets.*`, avant les feuilles de thème (voir squelette ci-dessus) :
+chaque thème surcharge les jetons `--juicy-*` pour que ces composants
+prennent son allure sans aucune autre règle. Vitrine :
+`site/ui.html` (`https://thderoo.github.io/pages/ui.html`).
+
+### Jetons (`--juicy-*`, définis sur `:root` dans `lib/ui.css`, surchargés par thème)
+
+| jeton | rôle |
+|---|---|
+| `--juicy-text-xs` … `-sm` … `-md` … `-lg` … `-xl` … `-display` | échelle typographique (`clamp`) |
+| `--juicy-space-1` … `-8` | espacements (4px à 40px) |
+| `--juicy-radius-sm` / `-md` / `-lg` / `-pill` | rayons |
+| `--juicy-shadow-sm` / `-md` / `-lg` | ombres (ou effet de bordure/lueur thématique, voir plus bas) |
+| `--juicy-duration-fast` / `-base` / `-slow` | durées de transition |
+| `--juicy-bg` / `-surface` / `-text` / `-muted` / `-accent` / `-accent-text` / `-danger` / `-success` | couleurs sémantiques |
+| `--juicy-layout-side` | largeur des colonnes latérales de `.juicy-layout--two`/`--three` |
+
+`rpg` (rayons nuls, bordures doubles) détourne `--juicy-shadow-*` en doubles
+liserés sans flou ; `neon` (cyan sur sombre, lueur) y réinjecte la lueur déjà
+définie (`--neon-glow`) ; `candy` (pastel, rayons ronds, ombres douces)
+reprend ses rayons existants et des ombres larges teintées. Les trois thèmes
+ne posent aucune règle de composant, seulement ces jetons, en tête de leur
+feuille.
+
+### Composants CSS
+
+| classe | variantes | jetons lus |
+|---|---|---|
+| `.juicy-panel` | `--solid` (défaut) / `--glass` ; `__head` / `__body` / `__foot` | surface, text, radius-md, shadow-md, space-3/4, text-md/sm |
+| `.juicy-btn` | `--primary` / `--secondary` / `--danger` / `--icon` ; `--sm` / `--lg` ; `:hover`, `:active`, `[disabled]` | accent, accent-text, surface, text, danger, radius-md/pill, shadow-sm, text-xs/sm/lg, space-1..6, duration-fast |
+| `.juicy-badge` | `--primary` / `--secondary` / `--danger` | mêmes couleurs que `.juicy-btn`, radius-pill, text-xs |
+| `.juicy-layout` | `--full` / `--two` / `--three` / `--stack` ; pile sous 640px | layout-side, space-4 ; borné à `100dvh`/`100vw`, `overflow:hidden` |
+| `.juicy-card` | `__media` (optionnel) / `__title` / `__text` / `__actions` | surface, text, muted, radius-md, shadow-sm |
+| `.juicy-scores` | `__row`, `--first` (1ᵉʳ rang), `--me` (ma ligne) | surface, accent, accent-text, muted, radius-sm |
+
+Le retour tactile des boutons (léger enfoncement + rebond) est purement CSS
+par défaut (`:active` + easing "back") ; `lib/ui.js` prend le relais en GSAP
+si la lib est chargée, pour un rebond élastique.
+
+### Modale (`Juicy.defineWidget('modal', ...)`)
+
+```js
+var m = Juicy.widget('modal', {
+  title: 'Titre',
+  html: '<p>…</p>',            // ou text: '…'
+  actions: [
+    { label: 'Annuler', variant: 'secondary', onClick: function (modal) { modal.destroy(); } },
+    { label: 'Valider', variant: 'primary', onClick: function (modal) { modal.destroy(); } }
+  ],
+  dismissible: true             // défaut ; false retire la fermeture voile/Échap
+});
+m.update({ title: '…' });       // ou html/text/actions
+m.destroy();                    // ferme (rendu par toute action ou par le bouton ×)
+```
+
+Centrée dans un calque dédié (`#juicy-modal-layer`, créé à la première
+ouverture) avec voile derrière — pas la couche `#juicy-overlay` du noyau,
+réservée aux effets (contrat §4). Fermeture au clic sur le voile et à Échap
+quand `dismissible`, focus posé dans la boîte à l'ouverture et rendu à
+l'ouvreur à la fermeture, animation d'entrée/sortie (GSAP si présent, CSS
+sinon), respecte `prefers-reduced-motion` (rendu direct, sans transition).
+
+## Faire grandir la lib
+
+Chaque page construite alimente la lib. Tout ce qui est écrit pour une page
+et ne porte rien de spécifique (aucun contenu, aucun nom de page, aucune
+valeur en dur qui ne soit un défaut paramétrable) descend dans la lib avant
+la publication de la page, et la page consomme la version de la lib, jamais
+une copie locale. Cela vaut pour les styles (panneaux, boutons, cartes,
+grilles, échelles typographiques, jetons de couleur) comme pour les
+composants (briques JS dans `widgets.js`, effets, presets).
+
+- Avant d'écrire un style ou un composant pour une page, chercher dans la
+  lib. S'il existe presque, l'étendre plutôt que dupliquer.
+- Un ajout à la lib est paramétrable, stylable par les variables de thème,
+  documenté dans la table correspondante de `projects/pages/CLAUDE.md`, et
+  visible dans une vitrine (`juicy.html` pour les effets et thèmes, `ui.html`
+  pour les composants).
+- En fin de page, relire ce qui a été écrit dans la page elle-même et
+  extraire ce qui pourrait resservir. Ce qui reste dans la page est ce qui
+  n'a de sens que pour elle.
 
 ## Les 3 thèmes
 

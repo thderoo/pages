@@ -1,6 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Share+Tech+Mono&display=swap');
 
 /*
+ * Jetons Juicy UI (lib.ui, site/lib/ui.css), en tête de feuille : mappés sur
+ * la palette du thème ci-dessous, jamais de règle de composant ici (mandat
+ * lib.ui). "Cyan sur sombre, lueur" : rayons resserrés (look technique),
+ * ombres remplacées par la lueur cyan déjà définie (--neon-glow).
+ */
+html[data-juicy-theme="neon"] {
+  --juicy-bg: var(--neon-bg);
+  --juicy-surface: var(--neon-bg-panel);
+  --juicy-text: var(--neon-text);
+  --juicy-muted: var(--neon-text-dim);
+  --juicy-accent: var(--neon-cyan);
+  --juicy-accent-text: var(--neon-bg);
+  --juicy-danger: var(--neon-red);
+  --juicy-success: #39ff8c;
+  --juicy-radius-sm: 2px;
+  --juicy-radius-md: 4px;
+  --juicy-radius-lg: 8px;
+  --juicy-shadow-sm: 0 0 6px var(--neon-cyan-dim);
+  --juicy-shadow-md: var(--neon-glow);
+  --juicy-shadow-lg: 0 0 12px var(--neon-cyan), 0 0 32px var(--neon-cyan-dim);
+}
+
+/*
  * Thème neon — console de cockpit à trois colonnes.
  * Toutes les règles sont préfixées html[data-juicy-theme="neon"],
  * toutes les variables et @keyframes sont préfixées --neon-/neon-.

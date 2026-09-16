@@ -1,6 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap');
 
 /*
+ * Jetons Juicy UI (lib.ui, site/lib/ui.css), en tête de feuille : mappés sur
+ * la palette du thème ci-dessous, jamais de règle de composant ici (mandat
+ * lib.ui). "Pastel, rayons ronds, ombres douces" : rayons repris des jetons
+ * candy déjà existants, ombres larges et floues teintées candy-shadow.
+ */
+html[data-juicy-theme="candy"] {
+  --juicy-bg: var(--candy-cream);
+  --juicy-surface: var(--candy-cream-2);
+  --juicy-text: var(--candy-ink);
+  --juicy-muted: color-mix(in srgb, var(--candy-ink) 55%, var(--candy-cream) 45%);
+  --juicy-accent: var(--candy-strawberry);
+  --juicy-accent-text: var(--candy-ink);
+  --juicy-danger: var(--candy-cherry);
+  --juicy-success: var(--candy-mint);
+  --juicy-radius-sm: var(--candy-radius-sm);
+  --juicy-radius-md: var(--candy-radius-md);
+  --juicy-radius-lg: var(--candy-radius-lg);
+  --juicy-shadow-sm: 0 2px 8px var(--candy-shadow);
+  --juicy-shadow-md: 0 8px 20px var(--candy-shadow);
+  --juicy-shadow-lg: 0 16px 36px var(--candy-shadow);
+}
+
+/*
  * Theme "candy" — étal de desserts, présentoir à étages qui tient dans la
  * fenêtre (mandat lib.fix4, aucun défilement). Grille à deux colonnes en
  * desktop, une colonne à onglets en mobile (voir candy.js).
