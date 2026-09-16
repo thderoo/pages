@@ -333,11 +333,17 @@
       cut(plate, x0, y0, w, h, cutR).fill({ color: fill, alpha: on ? 1 : 0.82 });
       cut(plate, x0, y0, w, h, cutR).stroke({ width: sk.borderWidth, color: line, alpha: on ? 1 : 0.85, alignment: 0.5 });
       // rail gauche + trait de soulignement : la signature « instrument »
-      plate.rect(x0 + 3, y0 + 4, 2.5, h - 8).fill({ color: on ? C.accentText : C.accent, alpha: on ? 0.55 : 0.9 });
+      plate.rect(x0 + 3, y0 + 4, 2.5, h - 8).fill({ color: C.accent, alpha: on ? 1 : 0.9 });
       plate.rect(x0 + 10, y0 + h - 4, w - 20, 1).fill({ color: line, alpha: hot || on ? 0.9 : 0.3 });
       flash.clear();
       cut(flash, x0 - 1, y0 - 1, w + 2, h + 2, cutR + 1).stroke({ width: 2, color: 0xffffff, alpha: 0.95, alignment: 0.5 });
       label.style.fill = on ? sk.textActive : (hot ? C.text : sk.text);
+      // Actif : plaque sombre et libellé clair. Le bloom posé sur
+      // `layers.scene` délave une plaque cyan pleine et mange un libellé
+      // sombre ; ici il fait glower le texte au lieu de l'effacer.
+      label.style.dropShadow = on
+        ? { color: C.accent, alpha: 0.9, blur: 6, angle: 0, distance: 0 }
+        : halo('label');
       label.position.set(-label.width / 2, -label.height / 2);
       node.hitArea = new PIXI.Rectangle(x0, y0, w, h + depth);
     };
@@ -706,6 +712,19 @@
 
   // ------------------------------------------------------------- gabarit
 
+  // La tagline se replie : sa boîte doit valoir sa hauteur rendue, sinon
+  // elle déborde sur la règle du bandeau ou sur la navigation.
+  function taglineHeight(j, width, fallback) {
+    var str = j.content && j.content.tagline;
+    if (!str) return fallback;
+    try {
+      var t = makeText(str, { role: 'tagline', wrapWidth: width });
+      var h = Math.ceil(t.height) + 4;
+      t.destroy(true);
+      return Math.max(fallback, h);
+    } catch (e) { return fallback; }
+  }
+
   function layout(j, w, h) {
     ensure(j);
     S.tickers = [];
@@ -716,8 +735,9 @@
 
     if (!narrow) {
       var pad = 30;
-      var titleH = 56, tagH = 24, navH = 40, metaH = 22;
+      var titleH = 56, navH = 40, metaH = 22;
       var headW = Math.min(w * 0.46, 620);
+      var tagH = taglineHeight(j, headW, 24);
       if (hasSlot('title')) plan.title = { x: pad, y: pad, width: headW, height: titleH, align: 'left', valign: 'top' };
       if (hasSlot('tagline')) plan.tagline = { x: pad, y: pad + (hasSlot('title') ? titleH + 4 : 0), width: headW, height: tagH, align: 'left', valign: 'top' };
       var rightW = Math.min(w * 0.40, 560);
@@ -776,9 +796,10 @@
     var p2 = 12, g2 = 14;
     var tH = hasSlot('narration') ? 22 : 0;
     var tY = h - p2 - tH;
-    var titleH2 = 34, tagH2 = 22, navH2 = 30, metaH2 = 15;
+    var titleH2 = 34, navH2 = 30, metaH2 = 15;
     var y = p2;
     var cw = w - p2 * 2;
+    var tagH2 = taglineHeight(j, cw, 22);
     function put(k, hh, extra) {
       plan[k] = merge({ x: p2, y: y, width: cw, height: hh }, extra || {});
       y += hh + g2;
@@ -1188,8 +1209,8 @@
     },
     skin: {
       button: {
-        fill: C.surface, fillHover: C.surfaceAlt, fillActive: C.accent,
-        text: C.accent, textActive: C.accentText,
+        fill: C.surface, fillHover: C.surfaceAlt, fillActive: 0x0d5568,
+        text: C.accent, textActive: 0xeafdff,
         border: C.border, borderWidth: 1.3, radius: 0,
         padX: 14, padY: 9, minWidth: 0, fontSize: 13, fontFamily: FONT,
         cut: 8, depth: 4
@@ -1202,7 +1223,7 @@
         cut: 8, depth: 3, lampOn: C.accent, lampOff: 0x123448, lampR: 6
       },
       panel: { fill: C.surface, fillHeader: C.surfaceAlt, border: C.accent, borderWidth: 1.4, radius: 0, title: C.accent },
-      badge: { fill: C.accent, text: C.accentText, radius: 0, borderWidth: 0 },
+      badge: { fill: 0x0d5568, text: 0xeafdff, radius: 0, borderWidth: 0 },
       card: { fill: C.surface, fillBack: C.surfaceAlt, border: C.border, accent: C.accent, radius: 0 },
       scores: { rowFill: C.surface, rowFillTop: C.surfaceAlt, flash: C.accent, accent: C.accent, radius: 0 },
       modal: { scrim: 0x01060c, scrimAlpha: 0.66, fill: C.surface, border: C.accent, radius: 0 },

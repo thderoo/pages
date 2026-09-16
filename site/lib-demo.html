@@ -4,29 +4,42 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Juicy — exemple minimal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="juicy.css">
 </head>
 <body>
 
+<!-- Le squelette à copier : cinq scripts CDN, le noyau, les effets, les
+     composants, puis les thèmes voulus. L'ordre compte. -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-filters@6/dist/pixi-filters.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/PixiPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@15/build/Tone.js" defer></script>
 
 <script src="lib/juicy.js"></script>
 <script src="lib/effects.js"></script>
 <script src="lib/ui.js"></script>
+<script src="lib/themes/rpg.js"></script>
+<script src="lib/themes/neon.js"></script>
+<script src="lib/themes/candy.js"></script>
 
 <script>
 window.addEventListener('DOMContentLoaded', function () {
   Juicy.create({
+    theme: 'plain',
+    fonts: ['Press Start 2P', 'Orbitron', 'Fredoka'],
     content: {
       title: 'Ma page',
+      tagline: 'Deux boutons, un décor, quatre thèmes.',
+      nav: true,
       actions: [
         { id: 'secousse', label: 'Secouer' },
         { id: 'zoom',     label: 'Zoomer' }
       ],
-      // contenu libre : le noyau le met à l'échelle du cadre central
+      // Contenu libre : le noyau met ce conteneur à l'échelle du cadre que
+      // le thème lui réserve, et le recentre à chaque mise en page.
       scene: function (juicy, frame) {
         var c = juicy.tokens.colors;
         var root = new PIXI.Container();

@@ -98,9 +98,12 @@ function buildScene(juicy, frame) {
   } else {
     panel.position.set(0, -H / 2 + panelH / 2 + pad);
     var rowY = -H / 2 + panelH + pad * 2;
-    card.position.set(-W / 2 + pad + cardW / 2, rowY + cardH / 2 + 26);
-    scores.position.set(W / 2 - pad - scoreW / 2, rowY + 26);
-    badge.position.set(W / 2 - pad - scoreW / 2, rowY + 10);
+    // la pastille se pose au-dessus des scores : sa hauteur dépend du thème,
+    // on la mesure au lieu de réserver une constante
+    var headroom = Math.ceil(badge.height) + 10;
+    badge.position.set(W / 2 - pad - scoreW / 2, rowY + badge.height / 2);
+    scores.position.set(W / 2 - pad - scoreW / 2, rowY + headroom);
+    card.position.set(-W / 2 + pad + cardW / 2, rowY + headroom + cardH / 2);
   }
   root.addChild(scores, card, badge);
 

@@ -24,13 +24,47 @@
 <script src="lib/themes/candy.js"></script>
 
 <script>
+// Vitrine de la bibliothèque : les douze effets continus, les neuf effets
+// ponctuels et les quatre thèmes, sur une seule page. La narration commente
+// chaque geste — et chaque thème la raconte à sa façon (machine à écrire en
+// rpg, bandeau de télémétrie en neon, bulle de chantilly en candy).
+
+// Une phrase par interrupteur : [allumé, coupé].
+var DIT = {
+  bg:        ['Des milliers de particules envahissent le fond.', 'Le fond se vide, le calme revient.'],
+  trail:     ['Une comète suit le pointeur et laisse des braises.', 'La comète s’éteint.'],
+  glitch:    ['L’image se déchire par crises, en rouge et bleu.', 'L’image se recolle.'],
+  tilt:      ['La page bascule : vraie perspective, pas une ombre portée.', 'La page se remet à plat.'],
+  sound:     ['Le son est branché : chaque geste claque.', 'Silence complet.'],
+  magnet:    ['Un champ magnétique tire tout vers le pointeur.', 'Le champ retombe.'],
+  cursor:    ['Le curseur devient un réticule dessiné.', 'Le curseur du système revient.'],
+  rain:      ['Il pleut, et ça éclabousse en bas de l’écran.', 'L’averse s’arrête.'],
+  shaketext: ['Chaque lettre se met à trembler pour elle-même.', 'Les lettres se calment.'],
+  crt:       ['Un vieux tube courbe l’image et la balaye.', 'Le tube s’éteint.'],
+  drunk:     ['La caméra tangue et roule.', 'La caméra retrouve son aplomb.'],
+  music:     ['Une séquence se met à jouer, et le décor l’écoute.', 'La musique s’arrête.']
+};
+
+// Une phrase par action.
+var FAIT = {
+  confetti:   'Confettis plein cadre.',
+  firework:   'Une gerbe monte et retombe en étincelles.',
+  shockwave:  'Une onde de choc tord l’image depuis le point cliqué.',
+  shake:      'Toute la scène encaisse le coup.',
+  emojiRain:  'Il pleut des emojis.',
+  counter:    'Un de plus au compteur.',
+  timewarp:   'Le temps ralentit, puis reprend.',
+  everything: 'Tout en même temps. Vraiment tout.',
+  reset:      'Rideau : tout est coupé, tout est effacé.'
+};
+
 window.addEventListener('DOMContentLoaded', function () {
   Juicy.create({
     theme: 'plain',
     fonts: ['Press Start 2P', 'Orbitron', 'Fredoka'],
     content: {
       title: 'Juicy',
-      tagline: 'Bascule les thèmes, active tout, rien ne casse.',
+      tagline: 'Douze effets, neuf gestes, quatre univers — tout dans un seul canvas.',
       nav: true,
       controls: [
         { id: 'bg',        label: 'Fond animé',        effect: 'bg' },
@@ -58,11 +92,37 @@ window.addEventListener('DOMContentLoaded', function () {
         { id: 'reset',      label: 'Réinitialiser',      burst: 'reset' }
       ],
       scene: 'decor',
-      narration: ['Douze interrupteurs, neuf actions, quatre thèmes.'],
+      narration: ['Allume ce que tu veux, change de thème : rien ne casse.'],
       meta: true
     }
   }).then(function (juicy) {
     window.juicy = juicy;
+
+    // La narration est construite depuis `content.narration` : on remplace la
+    // ligne, puis on redemande une mise en page. Le rebond est différé d'un
+    // tour de boucle pour ne pas détruire l'interrupteur pendant qu'il traite
+    // encore son propre clic.
+    var pending = null;
+    function raconte(ligne) {
+      if (!ligne || ligne === juicy.content.narration[0]) return;
+      juicy.content.narration = [ligne];
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(function () { pending = null; juicy.relayout(true); }, 0);
+    }
+
+    juicy.on('toggle', function (e) {
+      var d = DIT[e.id];
+      if (d) raconte(d[e.on ? 0 : 1]);
+    });
+    juicy.on('action', function (e) {
+      var f = FAIT[e.id];
+      if (!f) return;
+      raconte(e.combo > 2 ? f + ' (combo ×' + e.combo + ')' : f);
+    });
+    juicy.on('theme', function (e) {
+      var def = juicy.themes.get(e.id);
+      raconte('Thème « ' + ((def && def.name) || e.id) + ' » : même page, autre monde.');
+    });
   });
 });
 </script>
