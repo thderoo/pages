@@ -121,20 +121,27 @@ qui tient `meta` à jour avec le compteur et le combo réels.
 Activés/coupés par `Juicy.on(id, params)` / `Juicy.off(id)` / `Juicy.toggle(id)`,
 ou par les interrupteurs générés dans la région `controls`.
 
-| id | rôle | dépend de | paramètres par défaut |
-|---|---|---|---|
-| `bg` | fond animé de particules | tsParticles | `count:60` (ou `density`, alias prioritaire si fourni), `color:null`, `size:3`, `speed:1`, `shape:'circle'`, `links:false`, `opacity:0.6` |
-| `trail` | traînée de particules au pointeur | moteur interne | `color:null`, `size:6`, `life:0.6`, `spacing:18`, `shape:'circle'`, `glyph:'•'`, `fade:true` |
-| `glitch` | sauts visuels périodiques | GSAP | `selector:'[data-juicy-glitch]'`, `interval:0.9`, `jitter:0.6`, `amplitude:6`, `duration:0.08`, `hueShift:40` |
-| `tilt` | bascule 3D au survol | GSAP | `selector:'[data-juicy-tilt]'`, `max:14`, `perspective:700`, `scale:1.03`, `duration:0.3`, `ease:'power2.out'` |
-| `sound` | interrupteur global du son | — | `confirm:'toggleOn'` (nom du son de confirmation) |
-| `magnet` | éléments attirés par le pointeur | GSAP | `selector:'[data-juicy-magnet]'`, `radius:90`, `strength:0.4`, `duration:0.25`, `ease:'power2.out'` |
-| `cursor` | curseur personnalisé | GSAP | `glyph:''`, `size:18`, `color:null`, `smoothing:0.25` |
-| `rain` | pluie de glyphes | moteur interne | `preset:null` ('snow'\|'code'\|'sparks'), `glyphs:['░','▪','·']`, `density:30`, `speed:1`, `direction:'down'`, `drift:0`, `size:16`, `rotation:0`, `color:null` |
-| `shaketext` | texte tremblant | GSAP | `selector:'[data-juicy-shaketext]'`, `amplitude:3`, `frequency:12`, `rotation:1.5` |
-| `crt` | scanlines/vignette/souffle | — (Tone.js pour le souffle) | `scanlineOpacity:0.12`, `vignette:0.35`, `flicker:0.04`, `breathSpeed:4`, `hum:true` |
-| `drunk` | tangage/skew continu | GSAP | `selector:'[data-juicy-region="stage"]'`, `angle:2.5`, `skew:1`, `duration:2.2` |
-| `music` | musique de fond | délégué à `theme.music(on, ctx)` | `volume:-8` |
+| id | rôle | dépend de | cible par défaut | paramètres par défaut |
+|---|---|---|---|---|
+| `bg` | fond animé de particules | tsParticles (+ `loadSlim`, voir pièges) | `#juicy-bg` (couche fixe du noyau) | `count:60` (ou `density`, alias prioritaire si fourni), `color:null`, `size:6`, `speed:4`, `shape:'circle'`, `links:false`, `opacity:0.75` |
+| `trail` | traînée de particules au pointeur | moteur interne (canvas) | `#juicy-canvas` (couche fixe du noyau) | `color:null`, `size:13`, `life:0.6`, `spacing:8`, `shape:'circle'`, `glyph:'•'`, `fade:true` |
+| `glitch` | sauts visuels périodiques | GSAP | `[data-juicy-glitch]` > région `title` | `interval:0.15`, `jitter:0.4`, `amplitude:8`, `duration:0.12`, `hueShift:50` |
+| `tilt` | bascule 3D au survol | GSAP | `[data-juicy-tilt]` > `.juicy-toggle, .juicy-action` | `max:14`, `perspective:700`, `scale:1.03`, `duration:0.3`, `ease:'power2.out'` |
+| `sound` | interrupteur global du son | — | — | `confirm:'toggleOn'` (nom du son de confirmation) |
+| `magnet` | éléments attirés par le pointeur | GSAP | `[data-juicy-magnet]` > `.juicy-action` | `radius:90`, `strength:0.4`, `duration:0.25`, `ease:'power2.out'` |
+| `cursor` | curseur personnalisé | GSAP | `#juicy-cursor` (couche fixe du noyau) | `glyph:''`, `size:30`, `color:null`, `smoothing:0.25` |
+| `rain` | pluie de glyphes | moteur interne (canvas) | — (plein écran) | `preset:null` ('snow'\|'code'\|'sparks'), `glyphs:['░','▪','·']`, `density:30`, `speed:1`, `direction:'down'`, `drift:0`, `size:16`, `rotation:0`, `color:null` |
+| `shaketext` | texte tremblant | GSAP | `[data-juicy-shaketext]` > régions `title`/`tagline`, `.juicy-toggle-label`, `.juicy-action-label` | `amplitude:3`, `frequency:12`, `rotation:1.5` |
+| `crt` | scanlines/vignette/souffle | — (Tone.js pour le souffle) | `#juicy-overlay` (couche fixe du noyau) | `scanlineOpacity:0.12`, `vignette:0.35`, `flicker:0.35`, `breathSpeed:1.6`, `hum:true` |
+| `drunk` | tangage/skew continu | GSAP | `[data-juicy-region="stage"]`, ou le contenu de `#juicy-theme-layer` s'il n'est pas vide (jamais `html`/`body`) | `angle:2.5`, `skew:1`, `duration:2.2` |
+| `music` | musique de fond | délégué à `theme.music(on, ctx)` | — | `volume:-8` |
+
+Sauf mention contraire, la colonne « cible par défaut » suit la priorité à
+trois niveaux de `resolveTargets()` (contrat lib §7) : `params.selector`
+explicite (passé par la page ou un preset de thème) > marqueur
+`[data-juicy-<id>]` posé par la page > repli listé ci-dessus. Un preset de
+thème (`registerTheme({ presets: {...} })`) peut aussi ne réécrire que
+certains paramètres (couleur, taille…) sans toucher au ciblage.
 
 `rain` a trois presets (`snow`, `code`, `sparks`, via `params.preset`) qui ne
 réécrivent que les clés encore à leur défaut — un paramètre explicite passé à
@@ -272,3 +279,9 @@ un habillage de couleurs sur une structure commune.
   propre défilement (`overflow-y:auto` sur sa racine ou sur `#juicy-theme-layer`
   scopé au thème) : une couche fixe pleine fenêtre ne défile jamais toute
   seule.
+- Le fond d'un thème doit se peindre sur `html`, pas sur `body` : `#juicy-bg`
+  (couche du noyau où `bg` dessine ses particules, z-index:-1) est positionnée
+  par rapport à `html`, sous `body`. Un thème qui peint son propre décor sur
+  `body` (couleur ou dégradé opaque) le pose visuellement au-dessus de
+  `#juicy-bg` et rend l'effet `bg` invisible sous l'habillage du thème, même
+  quand il fonctionne correctement.

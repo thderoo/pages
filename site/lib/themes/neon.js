@@ -293,8 +293,17 @@
     }
     s.alertWidget.destroy();
     if (s.tickerWidget) s.tickerWidget.destroy();
+    stopMusic(s);
     // Le DOM lui-même (root et tout ce qu'il contient) est effacé par le
     // noyau, qui vide api.layer('theme') à chaque bascule/teardown.
+  }
+
+  function stopMusic(s) {
+    if (s && s.musicLoop) {
+      try { s.musicLoop.stop(0); } catch (e) { /* noop */ }
+      try { s.musicLoop.dispose(); } catch (e) { /* noop */ }
+      s.musicLoop = null;
+    }
   }
 
   window.Juicy.registerTheme({
@@ -323,10 +332,12 @@
 
     presets: {
       rain: { glyphs: ['0', '1', '◇', '※', '#'], density: 42, speed: 1.3, color: '#00f6ff' },
-      trail: { shape: 'square', size: 5, color: '#00f6ff' },
+      // size 5 (plus petit que le défaut) laissait une traînée trop discrète
+      // pour rester mesurable ; 10 garde le style « pixel carré » du thème
+      // tout en restant visible sur le fond sombre.
+      trail: { shape: 'square', size: 10, color: '#00f6ff' },
       burst: { shapes: ['square', 'triangle'], colors: ['#00f6ff', '#ff2bd6', '#ffb000'] },
-      bg: { color: '#00f6ff', density: 30 },
-      crt: { intensity: 0.6 }
+      bg: { color: '#00f6ff', density: 30 }
     },
 
     layout: function (api) {
@@ -355,9 +366,28 @@
 
     music: function (on, api) {
       if (session) session.root.classList.toggle('is-music-on', !!on);
-      if (!on || !api.Tone || typeof api.Tone.start !== 'function') return;
-      // Dégradation gracieuse : sans Tone.js réellement chargé, la
-      // console reste muette mais n'erre jamais.
+      if (!on) {
+        stopMusic(session);
+        return;
+      }
+      // Dégradation gracieuse : sans Tone.js réellement chargé, la console
+      // reste muette mais n'erre jamais (même schéma que rpg/candy).
+      if (!api.Tone || api.state.reduceMotion || !session) return;
+      try {
+        var synth = new api.Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination();
+        synth.volume.value = -20;
+        var notes = ['E3', 'B3', 'A3', 'F#3'];
+        var i = 0;
+        var loop = new api.Tone.Loop(function (time) {
+          synth.triggerAttackRelease(notes[i % notes.length], '16n', time);
+          i += 1;
+        }, '4n');
+        loop.start(0);
+        if (api.Tone.Transport && api.Tone.Transport.state !== 'started') {
+          api.Tone.Transport.start();
+        }
+        session.musicLoop = loop;
+      } catch (e) { /* dégradation silencieuse */ }
     },
 
     sound: function (name, api) {

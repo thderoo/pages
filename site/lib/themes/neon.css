@@ -30,11 +30,16 @@ html[data-juicy-theme="neon"] {
 }
 
 /* ---------------------------------------------------------------- */
-/* Fond du body derrière les couches fixes du noyau                  */
+/* Fond du thème, posé sur html, derrière les couches fixes du noyau */
 /* ---------------------------------------------------------------- */
 
-html[data-juicy-theme="neon"] body {
+/* Le fond de thème se peint sur html seulement, jamais sur body : body reste
+   transparent pour laisser #juicy-bg (z-index:-1, contrat §4) visible sous
+   l'interface — voir CLAUDE.md, section Pièges connus. */
+html[data-juicy-theme="neon"] {
   background: var(--neon-bg);
+}
+html[data-juicy-theme="neon"] body {
   overflow-x: hidden;
 }
 

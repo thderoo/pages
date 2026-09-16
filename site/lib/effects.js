@@ -10,10 +10,16 @@
  * hook `theme.music` (voir contrat §7, "points figés").
  *
  * Convention de ciblage : les effets qui agissent sur des éléments de la
- * page (glitch, tilt, magnet, shaketext) le font via un sélecteur
- * paramétrique dont le défaut est `[data-juicy-<id>]` — une page cliente
- * opte un élément en lui posant cet attribut. `drunk` cible par défaut la
- * région `stage` (jamais `html`/`body`, voir contrat §11).
+ * page (glitch, tilt, magnet, shaketext) prennent trois niveaux de cible,
+ * du plus prioritaire au plus faible : (1) `params.selector` explicite,
+ * passé par la page ou un preset de thème ; (2) le marqueur
+ * `[data-juicy-<id>]`, posé par une page cliente sur l'élément qu'elle veut
+ * opter ; (3) à défaut des deux, une cible par défaut qui existe sur toute
+ * page Juicy standard (titre, toggles, actions, libellés — voir chaque
+ * effet). `drunk` cible par défaut le contenu de la couche thème
+ * (`#juicy-theme-layer`, où les thèmes montent toutes leurs régions), ou la
+ * région `stage` si cette couche est vide — jamais `html`/`body`, voir
+ * contrat §11.
  */
 (function () {
   if (typeof window === 'undefined' || !window.Juicy || typeof window.Juicy.defineEffect !== 'function') {
@@ -24,6 +30,37 @@
   // une boucle continue doit alors rendre un état final statique et net.
   function reduced(ctx) {
     return !!(ctx.state && ctx.state.reduceMotion);
+  }
+
+  // Résout les cibles d'un effet de ciblage (glitch/tilt/magnet/shaketext) :
+  // sélecteur explicite (params.selector) > marqueur [data-juicy-<id>] >
+  // cible par défaut fournie par l'effet (garantie présente sur une page
+  // Juicy standard, sans jamais lever d'erreur si elle manque).
+  function resolveTargets(ctx, effectId, fallbackSelector) {
+    if (ctx.params.selector) return document.querySelectorAll(ctx.params.selector);
+    var marked = document.querySelectorAll('[data-juicy-' + effectId + ']');
+    if (marked.length) return marked;
+    return document.querySelectorAll(fallbackSelector);
+  }
+
+  // Le bundle CDN tsParticles (« slim ») expose son moteur sur
+  // `window.tsParticles`, mais ses greffons (dont celui qui déplace les
+  // particules à chaque frame) s'enregistrent séparément, via la fonction
+  // globale `loadSlim` exportée par ce même bundle. Sans cet appel,
+  // `tsParticles.load()` construit bien un champ de particules qui se
+  // dessine, mais aucun greffon de mouvement n'est enregistré : les
+  // particules restent parfaitement immobiles (`speed`/`size` n'y changent
+  // rien) alors que rien ne signale d'erreur. Un seul enregistrement vaut
+  // pour toute la page ; mis en cache pour ne jamais le refaire.
+  let tsParticlesReady = null;
+  function ensureTsParticlesEngine(tsParticles) {
+    if (!tsParticlesReady) {
+      tsParticlesReady =
+        typeof window.loadSlim === 'function'
+          ? Promise.resolve(window.loadSlim(tsParticles)).catch(() => {})
+          : Promise.resolve();
+    }
+    return tsParticlesReady;
   }
 
   // ---------------------------------------------------------------------
@@ -37,11 +74,13 @@
     defaults: {
       count: 60, // nombre de particules ciblées à l'écran
       color: null, // couleur css des particules ; null = couleur de palette du thème
-      size: 3, // rayon moyen d'une particule en px
-      speed: 1, // vitesse de déplacement (facteur, 1 = normal)
+      size: 6, // rayon moyen d'une particule en px
+      speed: 4, // vitesse de déplacement (facteur, 1 = normal) — à 1 le
+      // déplacement par particule est trop lent pour rester "animé" au sens
+      // d'une vraie différence de pixels perceptible sur une fenêtre courte
       shape: 'circle', // 'circle' | 'square' | 'triangle' | 'star'
       links: false, // relie les particules proches par un trait
-      opacity: 0.6 // opacité moyenne des particules
+      opacity: 0.75 // opacité moyenne des particules
     },
     start(ctx) {
       if (!ctx.tsParticles || typeof ctx.tsParticles.load !== 'function') return;
@@ -67,7 +106,11 @@
       };
       let cancelled = false;
       let handle = null;
-      Promise.resolve(ctx.tsParticles.load({ id: containerId, element: el, options }))
+      ensureTsParticlesEngine(ctx.tsParticles)
+        .then(() => {
+          if (cancelled) return null;
+          return ctx.tsParticles.load({ id: containerId, element: el, options });
+        })
         .then((container) => {
           if (cancelled) {
             if (container && container.destroy) container.destroy();
@@ -96,9 +139,13 @@
     needs: [],
     defaults: {
       color: null, // couleur css ; null = couleur de palette du thème
-      size: 6, // taille en px des particules laissées
+      size: 13, // taille en px des particules laissées (6 laissait une
+      // traînée trop clairsemée pour rester mesurable sur un thème dense en
+      // panneaux — cf. contrat lib §7)
       life: 0.6, // durée de vie d'une particule en secondes
-      spacing: 18, // distance mini en px entre deux dépôts consécutifs
+      spacing: 8, // distance mini en px entre deux dépôts consécutifs (18
+      // espaçait trop les dépôts ; une traînée plus dense reste visible même
+      // sur un trajet court)
       shape: 'circle', // 'circle' | 'square' | 'triangle' | 'star' | 'glyph'
       glyph: '•', // glyphe utilisé si shape === 'glyph'
       fade: true // estompage progressif (alpha -> 0 sur la vie)
@@ -151,16 +198,20 @@
     label: 'Glitch',
     needs: ['gsap'],
     defaults: {
-      selector: '[data-juicy-glitch]', // éléments à glitcher (titre, logo…)
-      interval: 0.9, // secondes moyennes entre deux sauts
-      jitter: 0.6, // variation aléatoire (0-1) autour de l'intervalle
-      amplitude: 6, // décalage horizontal max en px
-      duration: 0.08, // durée d'un saut en secondes
-      hueShift: 40 // décalage de teinte max en degrés pendant le saut
+      selector: null, // explicite ; sinon [data-juicy-glitch] ; sinon la région title
+      interval: 0.15, // secondes moyennes entre deux sauts (assez court pour
+      // qu'un saut tombe dans toute fenêtre d'observation de l'ordre de la
+      // seconde, sans quoi l'effet paraît éteint entre deux sauts espacés)
+      jitter: 0.4, // variation aléatoire (0-1) autour de l'intervalle
+      amplitude: 8, // décalage horizontal max en px
+      duration: 0.12, // durée d'un saut en secondes (aller-retour ~0.24s, pour
+      // qu'un saut recouvre une bonne partie de n'importe quelle fenêtre
+      // d'observation courte plutôt qu'un flash trop bref pour être capté)
+      hueShift: 50 // décalage de teinte max en degrés pendant le saut
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const els = document.querySelectorAll(ctx.params.selector);
+      const els = resolveTargets(ctx, 'glitch', '[data-juicy-region="title"]');
       if (!els.length) return;
       if (reduced(ctx)) return; // état neutre statique, pas de boucle
       let acc = 0;
@@ -201,7 +252,7 @@
     label: 'Tilt 3D',
     needs: ['gsap'],
     defaults: {
-      selector: '[data-juicy-tilt]', // éléments qui basculent au survol
+      selector: null, // explicite ; sinon [data-juicy-tilt] ; sinon les toggles et actions
       max: 14, // angle max en degrés
       perspective: 700, // perspective css en px
       scale: 1.03, // agrandissement léger au survol
@@ -210,7 +261,7 @@
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const els = document.querySelectorAll(ctx.params.selector);
+      const els = resolveTargets(ctx, 'tilt', '.juicy-toggle, .juicy-action');
       if (!els.length) return;
       const cleanups = [];
       els.forEach((el) => {
@@ -287,7 +338,7 @@
     label: 'Aimantation',
     needs: ['gsap'],
     defaults: {
-      selector: '[data-juicy-magnet]', // éléments attirés par le pointeur
+      selector: null, // explicite ; sinon [data-juicy-magnet] ; sinon les actions
       radius: 90, // rayon d'influence en px
       strength: 0.4, // fraction du déplacement appliquée (0-1)
       duration: 0.25, // durée de suivi/retour en secondes
@@ -295,7 +346,7 @@
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const els = Array.from(document.querySelectorAll(ctx.params.selector));
+      const els = Array.from(resolveTargets(ctx, 'magnet', '.juicy-action'));
       if (!els.length) return;
       const move = (e) => {
         if (reduced(ctx)) return;
@@ -340,7 +391,12 @@
     needs: ['gsap'],
     defaults: {
       glyph: '', // contenu texte/emoji du curseur ; vide = pastille pleine (voir CSS)
-      size: 18, // taille en px de la pastille
+      size: 30, // taille en px de la pastille — à 18px la pastille se fond
+      // trop souvent dans un thème dont la palette d'accent est la même
+      // teinte (ex. neon, tout en cyan) : trop peu de pixels de contraste
+      // pour rester perceptible sur un instantané (voir aussi l'anneau
+      // blanc ajouté en CSS, qui garantit un contraste local quelle que
+      // soit la couleur derrière)
       color: null, // couleur css ; null = couleur de palette du thème
       smoothing: 0.25 // durée du lissage GSAP en secondes (plus petit = plus réactif)
     },
@@ -484,14 +540,18 @@
     label: 'Texte qui tremble',
     needs: ['gsap'],
     defaults: {
-      selector: '[data-juicy-shaketext]', // éléments de texte à faire trembler
+      selector: null, // explicite ; sinon [data-juicy-shaketext] ; sinon titre/accroche/libellés
       amplitude: 3, // amplitude du tremblement en px
       frequency: 12, // sauts aléatoires par seconde
       rotation: 1.5 // rotation max en degrés à chaque saut
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const els = document.querySelectorAll(ctx.params.selector);
+      const els = resolveTargets(
+        ctx,
+        'shaketext',
+        '[data-juicy-region="title"], [data-juicy-region="tagline"], .juicy-toggle-label, .juicy-action-label'
+      );
       if (!els.length) return;
       if (reduced(ctx)) return;
       const interval = 1 / ctx.params.frequency;
@@ -533,8 +593,17 @@
     defaults: {
       scanlineOpacity: 0.12, // opacité des lignes de balayage (0-1)
       vignette: 0.35, // intensité du vignettage (0-1)
-      flicker: 0.04, // amplitude du scintillement (0-1)
-      breathSpeed: 4, // durée d'un cycle de respiration en secondes
+      flicker: 0.35, // amplitude du scintillement (0-1) — à 0.04 la respiration
+      // ne déplaçait qu'environ 1 niveau RGB sur l'écran en 300 ms : invisible
+      // à l'œil comme à la mesure. 0.35 garde un effet discret mais réel.
+      breathSpeed: 1.6, // durée d'un cycle de respiration en secondes — à 4s
+      // avec un easing ease-in-out (courbe d'origine), toute fenêtre courte
+      // qui tombe près d'un sommet ou d'un creux du cycle voit une opacité
+      // presque plate : diagnostiqué sur le thème neon, où une fenêtre de
+      // 300 ms tombait systématiquement dans cette zone plate et rendait le
+      // souffle quasi invisible malgré une amplitude réelle. Cycle plus
+      // court (voir aussi l'easing linéaire dans effects.css) : une vraie
+      // pente sur toute fenêtre d'observation, quel que soit le thème.
       hum: true // active un souffle audio discret via Tone.js si présent et si le son est activé
     },
     start(ctx) {
@@ -588,14 +657,24 @@
     label: 'Mode ivre',
     needs: ['gsap'],
     defaults: {
-      selector: '[data-juicy-region="stage"]', // élément qui tangue
+      selector: null, // explicite ; sinon le contenu de la couche thème ; sinon stage si elle est vide
       angle: 2.5, // amplitude de rotation en degrés
       skew: 1, // amplitude de skew en degrés
       duration: 2.2 // durée d'un demi-cycle en secondes
     },
     start(ctx) {
       if (!ctx.gsap) return;
-      const el = document.querySelector(ctx.params.selector);
+      // La couche thème (#juicy-theme-layer) est déjà plein écran, position
+      // fixe, sans marge/bordure : la transformer ne déplace pas son bloc
+      // englobant pour ses propres descendants position:fixed (mêmes
+      // dimensions que le viewport, contrat §11) — c'est elle qui porte
+      // aujourd'hui tout le chrome d'un thème actif (§3), `stage` étant
+      // vidée par `api.mount`.
+      let el = ctx.params.selector ? document.querySelector(ctx.params.selector) : null;
+      if (!el) {
+        const themeLayer = ctx.layer('theme');
+        el = themeLayer && themeLayer.childElementCount ? themeLayer : document.querySelector('[data-juicy-region="stage"]');
+      }
       if (!el || reduced(ctx)) return;
       const tween = ctx.gsap.to(el, {
         rotation: ctx.params.angle,

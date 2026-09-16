@@ -14,6 +14,11 @@
   top: 0;
   border-radius: 50%;
   background: var(--juicy-accent, #ffffff);
+  /* anneau blanc en plus du fond de couleur : un thème dont l'accent est
+     déjà la teinte dominante de l'UI (ex. neon, tout en cyan) fond sinon la
+     pastille dans son environnement — l'anneau reste visible quelle que soit
+     la couleur derrière. */
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 10px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,7 +52,12 @@ html.juicy-on-crt #juicy-overlay {
       transparent 55%,
       rgba(0, 0, 0, var(--juicy-crt-vignette, 0.35)) 100%
     );
-  animation: juicy-crt-breathe var(--juicy-crt-breath, 4s) ease-in-out infinite;
+  /* linear, pas ease-in-out : un easing qui s'aplatit près des deux bornes
+     rend la variation d'opacité quasi nulle sur toute fenêtre d'observation
+     courte (ex. 300 ms) qui tombe près d'un sommet ou d'un creux du cycle —
+     un souffle linéaire garde une pente constante, donc une vraie différence
+     visible quelle que soit la phase où on regarde. */
+  animation: juicy-crt-breathe var(--juicy-crt-breath, 1.6s) linear infinite;
 }
 @keyframes juicy-crt-breathe {
   0%,
@@ -61,18 +71,27 @@ html.juicy-on-crt #juicy-overlay {
 
 /* --- glitch / tilt / magnet / shaketext : les éléments ciblés sont animés
    par GSAP en JS ; ces règles ne font que préparer le rendu (perspective,
-   composition GPU) pour que l'animation reste fluide --- */
-[data-juicy-glitch] {
+   composition GPU) pour que l'animation reste fluide. `[data-juicy-<id>]`
+   reste la cible prioritaire si une page en pose une (contrat lib §7) ; les
+   sélecteurs de repli ci-dessous sont ceux que `resolveTargets()` (effects.js)
+   utilise réellement quand aucune page ne fournit ce marqueur --- */
+[data-juicy-glitch],
+[data-juicy-region="title"] {
   will-change: transform, filter;
 }
-[data-juicy-tilt] {
+[data-juicy-tilt],
+.juicy-toggle,
+.juicy-action {
   will-change: transform;
   transform-style: preserve-3d;
 }
 [data-juicy-magnet] {
   will-change: transform;
 }
-[data-juicy-shaketext] {
+[data-juicy-shaketext],
+[data-juicy-region="tagline"],
+.juicy-toggle-label,
+.juicy-action-label {
   will-change: transform;
 }
 

@@ -325,7 +325,10 @@
       rain: { preset: 'snow', glyphs: ['🍬', '●', '✦', '🍭'], density: 26, speed: 0.8, drift: 12, color: '#ff8fab' },
       burst: { shapes: ['circle'], colors: ['#ff8fab', '#ffc2d6', '#bdf2e6', '#ffe8a3', '#ddc9f2'], preset: 'confetti' },
       bg: { color: '#ffc2d6', shape: 'circle', density: 22 },
-      trail: { shape: 'circle', size: 10, color: '#ff8fab' },
+      // size 10 restait proche du défaut mais se fond trop dans les
+      // plateaux clairs du thème (contraste faible avec les teintes
+      // pastel) ; 16 garde la forme « caramel » tout en restant mesurable.
+      trail: { shape: 'circle', size: 16, color: '#ff8fab' },
       emojiRain: { glyphs: ['🍬', '🍭', '🍩', '🧁', '🍒'] },
       magnet: { color: '#ffe8a3' }
     },

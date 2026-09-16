@@ -28,8 +28,11 @@ html[data-juicy-theme="rpg"] body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: var(--rpg-bg);
 }
+
+/* Le fond de thème se peint sur html seulement (déjà posé plus haut) : body
+   reste transparent pour laisser #juicy-bg (z-index:-1, contrat §4) visible
+   sous l'interface — voir CLAUDE.md, section Pièges connus. */
 
 /* La région stage reste en place (le thème ne la déplace pas) mais ne doit
    jamais provoquer de débordement une fois ses enfants extraits par mount. */

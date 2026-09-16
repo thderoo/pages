@@ -555,7 +555,10 @@
     cursor: '▶',
 
     presets: {
-      rain: { glyphs: ['0', '1', '♦', '※'], density: 26, speed: 0.8, size: 14, color: '#e0c34c' },
+      // speed 0.8 (plus lent que le défaut 1) reste sous le seuil de
+      // différence de pixels perceptible sur une fenêtre de 300ms ; 1.4
+      // garde la chute posée du thème tout en restant mesurablement animée.
+      rain: { glyphs: ['0', '1', '♦', '※'], density: 26, speed: 1.4, size: 14, color: '#e0c34c' },
       bg: { shape: 'square', density: 36, color: '#7b3ff2' },
       trail: { shape: 'square', size: 6, color: '#e0c34c' },
       burst: { shapes: ['square'], colors: ['#e0c34c', '#7b3ff2', '#4ce07a', '#e0524c'], preset: 'confetti' },

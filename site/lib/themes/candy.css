@@ -28,12 +28,17 @@ html[data-juicy-theme="candy"] {
   scroll-behavior: smooth;
 }
 
-html[data-juicy-theme="candy"] body {
-  min-height: 100%;
+/* Le fond de thème se peint sur html seulement, jamais sur body : body reste
+   transparent pour laisser #juicy-bg (z-index:-1, contrat §4) visible sous
+   l'interface — voir CLAUDE.md, section Pièges connus. */
+html[data-juicy-theme="candy"] {
   background:
     radial-gradient(circle at 15% 10%, var(--candy-cream-2) 0, transparent 45%),
     radial-gradient(circle at 85% 30%, var(--candy-mint) 0, transparent 40%),
     repeating-linear-gradient(135deg, var(--candy-cream) 0 42px, #fff2e4 42px 84px);
+}
+html[data-juicy-theme="candy"] body {
+  min-height: 100%;
   overflow-x: hidden;
 }
 
