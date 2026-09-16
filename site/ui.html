@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Juicy — composants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="juicy.css">
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-filters@6/dist/pixi-filters.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/PixiPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@15/build/Tone.js" defer></script>
+
+<script src="lib/juicy.js"></script>
+<script src="lib/effects.js"></script>
+<script src="lib/ui.js"></script>
+<script src="lib/themes/rpg.js"></script>
+<script src="lib/themes/neon.js"></script>
+<script src="lib/themes/candy.js"></script>
+
+<script>
+// Vitrine des composants : chaque composant de `juicy.ui` est posé dans le
+// cadre central, et reste manipulable (le panneau se glisse, la carte se
+// retourne, les scores se réordonnent, la modale floute le fond).
+window.demo = {};
+
+var HEROS = ['Ambre', 'Basile', 'Cyan', 'Dune'];
+
+function buildScene(juicy, frame) {
+  var ui = juicy.ui;
+  var d = window.demo;
+  var root = new PIXI.Container();
+  var W = Math.max(300, frame.width), H = Math.max(240, frame.height);
+  var pad = 12;
+
+  var wide = frame.width >= 540;   // deux colonnes tiennent
+  var colW = wide ? Math.min(300, W * 0.46) : W - pad * 2;
+
+  // --- panneau saisissable, avec un bouton et un interrupteur dedans ---
+  var panelH = wide ? Math.min(180, H * 0.52) : Math.min(120, H * 0.36);
+  var panel = ui.panel({ width: colW, height: panelH, title: 'Panneau · glisse-moi' });
+  var btn = ui.button({
+    label: 'Bouton',
+    accessibleTitle: 'Bouton de démonstration',
+    onPress: function () { d.badge.setValue(d.badge._value + 1); }
+  });
+  var tog = ui.toggle({
+    label: 'Interrupteur', value: true,
+    accessibleTitle: 'Interrupteur de démonstration',
+    onChange: function (on) { d.card.alpha = on ? 1 : 0.45; }
+  });
+  if (wide) {
+    btn.position.set(0, -panelH * 0.10);
+    tog.position.set(0, panelH * 0.14);
+  } else {
+    btn.position.set(-colW * 0.26, panelH * 0.06);
+    tog.position.set(colW * 0.20, panelH * 0.06);
+  }
+  panel.content.addChild(btn, tog);
+  root.addChild(panel);
+
+  // --- pastille, carte, scores ------------------------------------------
+  var badge = ui.badge({ label: 'Score', value: 0 });
+  var scoreW = wide ? colW : Math.max(140, W * 0.52 - pad);
+  var cardW = wide ? Math.min(160, W * 0.34) : Math.max(110, W * 0.40 - pad);
+  var cardH = wide ? Math.min(210, H * 0.62) : Math.max(110, H - panelH - pad * 3 - 20);
+  var card = ui.card({
+    width: cardW, height: cardH,
+    title: 'Carte', lines: ['Clique sur', '« Retourner »'],
+    back: 'Verso', backLines: ['Elle se retourne', 'sur la tranche.']
+  });
+  var scores = ui.scores({
+    width: scoreW,
+    entries: HEROS.map(function (n, i) { return { name: n, value: 40 - i * 9 }; })
+  });
+  var scoresH = HEROS.length * 34 - 6;
+
+  // hauteur naturelle : celle du contenu, pas celle du cadre, pour que le
+  // noyau centre le bloc au lieu de laisser un vide sous les composants
+  var gap = 26;
+  var Hc = wide
+    ? Math.max(panelH + gap + scoresH, 28 + 16 + cardH) + pad * 2
+    : H;
+
+  if (wide) {
+    var leftX = -W / 2 + colW / 2 + pad;
+    var rightX = W / 2 - Math.min(160, W * 0.34) / 2 - pad;
+    var top = -Hc / 2 + pad;
+    panel.position.set(leftX, top + panelH / 2);
+    scores.position.set(leftX, top + panelH + gap);
+    badge.position.set(rightX, top + 18);
+    card.position.set(rightX, top + 44 + cardH / 2);
+  } else {
+    panel.position.set(0, -H / 2 + panelH / 2 + pad);
+    var rowY = -H / 2 + panelH + pad * 2;
+    card.position.set(-W / 2 + pad + cardW / 2, rowY + cardH / 2 + 26);
+    scores.position.set(W / 2 - pad - scoreW / 2, rowY + 26);
+    badge.position.set(W / 2 - pad - scoreW / 2, rowY + 10);
+  }
+  root.addChild(scores, card, badge);
+
+  // boîte invisible : fixe la taille naturelle de la scène (le noyau la
+  // met à l'échelle et la centre dans le cadre du thème)
+  root.addChildAt(
+    new PIXI.Graphics().rect(-W / 2, -Hc / 2, W, Hc).fill({ color: 0x000000, alpha: 0 }),
+    0
+  );
+
+  d.panel = panel; d.badge = badge; d.card = card; d.scores = scores;
+  d.button = btn; d.toggle = tog;
+  return root;
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  // Trois effets continus propres à la page : ils pilotent le curseur sprite.
+  // Ids préfixés `ui` pour ne pas entrer en collision avec ceux de effects.js.
+  // start/stop lisent `demo.cursor` paresseusement : il n'existe qu'après create.
+  function cursorEffect(method) {
+    return {
+      start: function () { var c = window.demo.cursor; if (c) c[method](true); return 1; },
+      stop: function () { var c = window.demo.cursor; if (c) c[method](false); }
+    };
+  }
+  Juicy.effects.define('uiCursor', cursorEffect('setEnabled'));
+  Juicy.effects.define('uiTrail', cursorEffect('setTrail'));
+  Juicy.effects.define('uiMagnet', cursorEffect('setMagnet'));
+  // Ils partent allumés : les interrupteurs se construisent donc cochés.
+  Juicy.effects.enable('uiCursor');
+  Juicy.effects.enable('uiTrail');
+  Juicy.effects.enable('uiMagnet');
+
+  Juicy.create({
+    theme: 'plain',
+    fonts: ['Press Start 2P', 'Orbitron', 'Fredoka'],
+    content: {
+      title: 'Composants',
+      tagline: 'Des objets physiques : ils s’écrasent, rebondissent, glissent.',
+      nav: true,
+      controls: [
+        { id: 'cursor', label: 'Curseur', effect: 'uiCursor' },
+        { id: 'trail', label: 'Traînée', effect: 'uiTrail' },
+        { id: 'magnet', label: 'Aimantation', effect: 'uiMagnet' }
+      ],
+      actions: [
+        { id: 'modale', label: 'Modale' },
+        { id: 'pastille', label: 'Pastille' },
+        { id: 'carte', label: 'Retourner' },
+        { id: 'scores', label: 'Scores' },
+        { id: 'secousse', label: 'Secousse' }
+      ],
+      scene: buildScene,
+      meta: true
+    }
+  }).then(function (juicy) {
+    window.juicy = juicy;
+    var d = window.demo;
+
+    d.cursor = juicy.ui.cursor({ trail: true, magnet: true });
+    d.modal = juicy.ui.modal({
+      title: 'Une modale',
+      body: [
+        'Le fond est flouté, la boîte arrive au ressort.',
+        'Clique à côté pour fermer.'
+      ],
+      actions: [
+        { label: 'Secouer', onPress: function () { juicy.camera.shake(14, 450); }, close: false },
+        { label: 'Fermer' }
+      ]
+    });
+
+    juicy.on('action', function (e) {
+      if (e.id === 'modale') d.modal.open();
+      if (e.id === 'pastille') d.badge.setValue(e.counter * 7);
+      if (e.id === 'carte') d.card.flip();
+      if (e.id === 'scores') d.scores.bump(HEROS[e.counter % HEROS.length], 15 + (e.counter % 4) * 9);
+      if (e.id === 'secousse') juicy.camera.shake(12, 450);
+    });
+  });
+});
+</script>
+</body>
+</html>
