@@ -204,7 +204,12 @@
     document.addEventListener('keydown', state.keydownHandler);
   }
 
+  // La page n'a pas déclaré cette région (mandat lib.fix6) : ne créer ni
+  // fenêtre, ni titre, ni corps — la fenêtre entière n'existe pas, pas
+  // seulement son contenu.
   function buildWindow(titleText, regionName, api) {
+    if (!api.region(regionName)) return null;
+
     var win = owned('section', 'rpg-window rpg-panel-border');
     var h2 = owned('h2', 'rpg-window-title');
     h2.textContent = titleText;
@@ -213,12 +218,9 @@
     var body = owned('div', 'rpg-window-body');
     win.appendChild(body);
 
-    var items = [];
-    if (api.region(regionName)) {
-      api.mount(regionName, body);
-      var selector = regionName === 'controls' ? '[data-juicy-toggle]' : '[data-juicy-action]';
-      items = Array.prototype.slice.call(body.querySelectorAll(selector));
-    }
+    api.mount(regionName, body);
+    var selector = regionName === 'controls' ? '[data-juicy-toggle]' : '[data-juicy-action]';
+    var items = Array.prototype.slice.call(body.querySelectorAll(selector));
 
     return { el: win, body: body, items: items };
   }
@@ -455,13 +457,13 @@
     var texts = (api.theme && api.theme.texts) || {};
     var optionsWin = buildWindow(texts.controlsTitle || "MENU D'OPTIONS", 'controls', api);
     var skillsWin = buildWindow(texts.actionsTitle || 'COMPÉTENCES', 'actions', api);
-    menus.appendChild(optionsWin.el);
-    menus.appendChild(skillsWin.el);
+    if (optionsWin) menus.appendChild(optionsWin.el);
+    if (skillsWin) menus.appendChild(skillsWin.el);
     screen.appendChild(menus);
 
     state.windows.options = optionsWin;
     state.windows.skills = skillsWin;
-    state.activeWindow = optionsWin.items.length ? 'options' : 'skills';
+    state.activeWindow = (optionsWin && optionsWin.items.length) ? 'options' : 'skills';
     state.selectedIndex = 0;
 
     // --- fenêtre de dialogue, fixée en bas pleine largeur ---

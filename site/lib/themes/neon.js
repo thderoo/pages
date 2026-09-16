@@ -74,17 +74,25 @@
     var theme = api.theme || {};
     var texts = theme.texts || {};
 
+    // Région absente (mandat lib.fix6) : ni colonne, ni titre de panneau —
+    // left/right restent null, la scène récupère l'espace via les
+    // modificateurs --no-left/--no-right (neon.css).
+    var hasControls = !!api.region('controls');
+    var hasActions = !!api.region('actions');
+
     var root = el('div', 'neon-console');
     root.setAttribute('data-juicy-owner', 'neon');
+    if (!hasControls) root.classList.add('neon-console--no-left');
+    if (!hasActions) root.classList.add('neon-console--no-right');
     api.themeLayer.appendChild(root);
 
     var header = el('div', 'neon-header');
-    var left = el('div', 'neon-panel neon-panel--left');
-    var right = el('div', 'neon-panel neon-panel--right');
+    var left = hasControls ? el('div', 'neon-panel neon-panel--left') : null;
+    var right = hasActions ? el('div', 'neon-panel neon-panel--right') : null;
     var sceneWrap = el('div', 'neon-scene');
     root.appendChild(header);
-    root.appendChild(left);
-    root.appendChild(right);
+    if (left) root.appendChild(left);
+    if (right) root.appendChild(right);
     root.appendChild(sceneWrap);
 
     // --- bandeau haut : titre, accroche, bascule, méta, statut -------
@@ -114,16 +122,22 @@
     });
 
     // --- panneau gauche : interrupteurs à voyant ----------------------
-    var controlsTitle = el('div', 'neon-panel-title');
-    controlsTitle.textContent = texts.controlsTitle || 'SYSTÈMES';
-    left.appendChild(controlsTitle);
-    api.mount('controls', left);
+    var controlsTitle = null;
+    if (left) {
+      controlsTitle = el('div', 'neon-panel-title');
+      controlsTitle.textContent = texts.controlsTitle || 'SYSTÈMES';
+      left.appendChild(controlsTitle);
+      api.mount('controls', left);
+    }
 
     // --- panneau droit : modules d'armement + cadrans radiaux --------
-    var actionsTitle = el('div', 'neon-panel-title');
-    actionsTitle.textContent = texts.actionsTitle || 'ARMEMENT';
-    right.appendChild(actionsTitle);
-    api.mount('actions', right);
+    var actionsTitle = null;
+    if (right) {
+      actionsTitle = el('div', 'neon-panel-title');
+      actionsTitle.textContent = texts.actionsTitle || 'ARMEMENT';
+      right.appendChild(actionsTitle);
+      api.mount('actions', right);
+    }
 
     // La hauteur du bandeau n'est fixe (--neon-header-h, neon.css) qu'au-delà
     // de 640px ; en dessous il passe sur deux lignes (mobile, neon.css) dont
@@ -170,7 +184,7 @@
     // d'armement, dont la valeur suit la variable --cooldown posée par le
     // noyau sur le bouton lui-même pendant son temps de recharge.
     var gauges = {};
-    var actionButtons = right.querySelectorAll('[data-juicy-action]');
+    var actionButtons = right ? right.querySelectorAll('[data-juicy-action]') : [];
     for (var i = 0; i < actionButtons.length; i++) {
       var btn = actionButtons[i];
       var id = btn.getAttribute('data-juicy-action');
@@ -265,26 +279,30 @@
       });
     }
 
-    // --- tiroirs mobiles -----------------------------------------------
-    var handleLeft = el('button', 'neon-drawer-handle neon-drawer-handle--left');
-    handleLeft.type = 'button';
-    handleLeft.setAttribute('aria-label', controlsTitle.textContent);
-    handleLeft.textContent = '»';
-    var handleRight = el('button', 'neon-drawer-handle neon-drawer-handle--right');
-    handleRight.type = 'button';
-    handleRight.setAttribute('aria-label', actionsTitle.textContent);
-    handleRight.textContent = '«';
-    root.appendChild(handleLeft);
-    root.appendChild(handleRight);
-
-    function onHandleLeft() {
-      left.classList.toggle('is-open');
+    // --- tiroirs mobiles (un seul si un panneau manque, aucun si les deux
+    // manquent) ------------------------------------------------------
+    var handleLeft = null;
+    var handleRight = null;
+    var onHandleLeft = null;
+    var onHandleRight = null;
+    if (left) {
+      handleLeft = el('button', 'neon-drawer-handle neon-drawer-handle--left');
+      handleLeft.type = 'button';
+      handleLeft.setAttribute('aria-label', controlsTitle.textContent);
+      handleLeft.textContent = '»';
+      root.appendChild(handleLeft);
+      onHandleLeft = function () { left.classList.toggle('is-open'); };
+      handleLeft.addEventListener('click', onHandleLeft);
     }
-    function onHandleRight() {
-      right.classList.toggle('is-open');
+    if (right) {
+      handleRight = el('button', 'neon-drawer-handle neon-drawer-handle--right');
+      handleRight.type = 'button';
+      handleRight.setAttribute('aria-label', actionsTitle.textContent);
+      handleRight.textContent = '«';
+      root.appendChild(handleRight);
+      onHandleRight = function () { right.classList.toggle('is-open'); };
+      handleRight.addEventListener('click', onHandleRight);
     }
-    handleLeft.addEventListener('click', onHandleLeft);
-    handleRight.addEventListener('click', onHandleRight);
 
     var alertTimer = null;
     function flashAlert(text) {
@@ -374,8 +392,8 @@
     api.ticker.remove(s.readCooldowns);
     api.ticker.remove(s.readRadar);
     s.clearEchoTimers();
-    s.handleLeft.removeEventListener('click', s.onHandleLeft);
-    s.handleRight.removeEventListener('click', s.onHandleRight);
+    if (s.handleLeft) s.handleLeft.removeEventListener('click', s.onHandleLeft);
+    if (s.handleRight) s.handleRight.removeEventListener('click', s.onHandleRight);
     s.clearAlertTimer();
     s.clearResizeHandler();
     for (var id in s.gauges) {

@@ -377,6 +377,18 @@ html[data-juicy-theme="neon"] .neon-scene {
   overflow: hidden;
 }
 
+/* Région controls/actions absente (mandat lib.fix6) : la colonne
+   correspondante n'existe pas, la scène récupère l'espace libéré — une
+   seule colonne centrale pleine largeur si les deux manquent, deux
+   colonnes s'il n'en manque qu'une. */
+html[data-juicy-theme="neon"] .neon-console--no-left .neon-scene {
+  left: 0;
+}
+
+html[data-juicy-theme="neon"] .neon-console--no-right .neon-scene {
+  right: 0;
+}
+
 html[data-juicy-theme="neon"] .neon-scene [data-juicy-region='scene'] {
   position: relative;
   z-index: 1;
