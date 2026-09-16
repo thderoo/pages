@@ -1,0 +1,15 @@
+/* juicy.css — tout ce dont une page Juicy a besoin côté DOM.
+   La scène est un canvas WebGL plein écran : rien d'autre ne se style ici. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0d1018;
+}
+
+canvas {
+  display: block;
+}

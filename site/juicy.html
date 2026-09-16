@@ -6,45 +6,64 @@
 <title>Juicy — vitrine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="lib/juicy.css">
-<link rel="stylesheet" href="lib/effects.css">
-<link rel="stylesheet" href="lib/bursts.css">
-<link rel="stylesheet" href="lib/widgets.css">
-<link rel="stylesheet" href="lib/themes/rpg.css">
-<link rel="stylesheet" href="lib/themes/neon.css">
-<link rel="stylesheet" href="lib/themes/candy.css">
+<link rel="stylesheet" href="juicy.css">
 </head>
 <body>
 
-<div data-juicy-region="stage">
-  <header>
-    <h1 data-juicy-region="title">Juicy</h1>
-    <p data-juicy-region="tagline">Bascule les thèmes, active tout, rien ne casse.</p>
-  </header>
-  <nav data-juicy-region="nav"></nav>
-  <div data-juicy-region="controls"></div>
-  <div data-juicy-region="actions"></div>
-  <div data-juicy-region="scene">Scène</div>
-  <div data-juicy-region="narration"></div>
-  <div data-juicy-region="meta">Compteur : 0 · Combo : 0</div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-filters@6/dist/pixi-filters.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/PixiPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@15/build/Tone.js" defer></script>
 
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@tsparticles/slim@3/tsparticles.slim.bundle.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/tone@15/build/Tone.js"></script>
-
-<script defer src="lib/juicy.js"></script>
-<script defer src="lib/effects.js"></script>
-<script defer src="lib/bursts.js"></script>
-<script defer src="lib/widgets.js"></script>
-<script defer src="lib/themes/rpg.js"></script>
-<script defer src="lib/themes/neon.js"></script>
-<script defer src="lib/themes/candy.js"></script>
+<script src="lib/juicy.js"></script>
+<script src="lib/effects.js"></script>
+<script src="lib/ui.js"></script>
+<script src="lib/themes/rpg.js"></script>
+<script src="lib/themes/neon.js"></script>
+<script src="lib/themes/candy.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  Juicy.init({ theme: 'rpg', controls: true });
+window.addEventListener('DOMContentLoaded', function () {
+  Juicy.create({
+    theme: 'plain',
+    fonts: ['Press Start 2P', 'Orbitron', 'Fredoka'],
+    content: {
+      title: 'Juicy',
+      tagline: 'Bascule les thèmes, active tout, rien ne casse.',
+      nav: true,
+      controls: [
+        { id: 'bg',        label: 'Fond animé',        effect: 'bg' },
+        { id: 'trail',     label: 'Traînée',           effect: 'trail' },
+        { id: 'glitch',    label: 'Glitch',            effect: 'glitch' },
+        { id: 'tilt',      label: 'Tilt 3D',           effect: 'tilt' },
+        { id: 'sound',     label: 'Sons',              effect: 'sound' },
+        { id: 'magnet',    label: 'Aimantation',       effect: 'magnet' },
+        { id: 'cursor',    label: 'Curseur',           effect: 'cursor' },
+        { id: 'rain',      label: 'Pluie',             effect: 'rain' },
+        { id: 'shaketext', label: 'Texte qui tremble', effect: 'shaketext' },
+        { id: 'crt',       label: 'CRT',               effect: 'crt' },
+        { id: 'drunk',     label: 'Mode ivre',         effect: 'drunk' },
+        { id: 'music',     label: 'Musique',           effect: 'music' }
+      ],
+      actions: [
+        { id: 'confetti',   label: 'Confettis',          burst: 'confetti' },
+        { id: 'firework',   label: "Feu d'artifice",     burst: 'firework' },
+        { id: 'shockwave',  label: 'Onde de choc',       burst: 'shockwave' },
+        { id: 'shake',      label: 'Secousse',           burst: 'shake' },
+        { id: 'emojiRain',  label: "Pluie d'emojis",     burst: 'emojiRain' },
+        { id: 'counter',    label: 'Compteur',           burst: 'counter' },
+        { id: 'timewarp',   label: 'Ralenti',            burst: 'timewarp' },
+        { id: 'everything', label: 'Tout en même temps', burst: 'everything' },
+        { id: 'reset',      label: 'Réinitialiser',      burst: 'reset' }
+      ],
+      scene: 'decor',
+      narration: ['Douze interrupteurs, neuf actions, quatre thèmes.'],
+      meta: true
+    }
+  }).then(function (juicy) {
+    window.juicy = juicy;
+  });
 });
 </script>
 </body>

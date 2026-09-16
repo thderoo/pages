@@ -2,32 +2,51 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Juicy — exemple</title>
-<link rel="stylesheet" href="lib/juicy.css">
-<link rel="stylesheet" href="lib/bursts.css">
-<link rel="stylesheet" href="lib/ui.css">
-<link rel="stylesheet" href="lib/themes/neon.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Juicy — exemple minimal</title>
+<link rel="stylesheet" href="juicy.css">
 </head>
 <body>
 
-<div data-juicy-region="stage">
-  <h1 data-juicy-region="title">Ma page</h1>
-  <div class="juicy-panel juicy-panel--solid">
-    <div class="juicy-panel__body">
-      <button type="button" class="juicy-btn juicy-btn--primary">Bouton</button>
-    </div>
-  </div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-filters@6/dist/pixi-filters.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/PixiPlugin.min.js"></script>
 
-<script defer src="lib/juicy.js"></script>
-<script defer src="lib/bursts.js"></script>
-<script defer src="lib/ui.js"></script>
-<script defer src="lib/themes/neon.js"></script>
+<script src="lib/juicy.js"></script>
+<script src="lib/effects.js"></script>
+<script src="lib/ui.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  Juicy.init({ theme: 'neon', controls: false }).fire('burst');
+window.addEventListener('DOMContentLoaded', function () {
+  Juicy.create({
+    content: {
+      title: 'Ma page',
+      actions: [
+        { id: 'secousse', label: 'Secouer' },
+        { id: 'zoom',     label: 'Zoomer' }
+      ],
+      // contenu libre : le noyau le met à l'échelle du cadre central
+      scene: function (juicy, frame) {
+        var c = juicy.tokens.colors;
+        var root = new PIXI.Container();
+        var r = Math.min(frame.width, frame.height) * 0.3;
+        root.addChild(new PIXI.Graphics()
+          .roundRect(-r, -r * 0.7, r * 2, r * 1.4, 18).fill({ color: c.surface })
+          .roundRect(-r, -r * 0.7, r * 2, r * 1.4, 18).stroke({ width: 2, color: c.accent }));
+        var t = juicy.ui.text('Mon contenu', { role: 'title', fontSize: r * 0.22 });
+        t.position.set(-t.width / 2, -t.height / 2);
+        root.addChild(t);
+        return root;
+      }
+    }
+  }).then(function (juicy) {
+    window.juicy = juicy;
+    juicy.on('action', function (e) {
+      if (e.id === 'secousse') juicy.camera.shake(14, 500);
+      if (e.id === 'zoom') juicy.camera.zoom(juicy.camera.state.zoom > 1.2 ? 1 : 1.35);
+    });
+  });
 });
 </script>
 </body>
