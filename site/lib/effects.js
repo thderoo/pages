@@ -749,9 +749,40 @@
     ['controls', 'actions', 'nav'].forEach(function (k) {
       var s = j.slots[k];
       if (!s) return;
-      s.items.forEach(function (it) { out.push({ it: it, slot: s, bx: it.position.x, by: it.position.y, bs: it.scale.x }); });
+      s.items.forEach(function (it) {
+        var b = it.getBounds();
+        out.push({
+          it: it, slot: s,
+          bx: it.position.x, by: it.position.y, bs: it.scale.x,
+          cx: b.x + b.width / 2, cy: b.y + b.height / 2,
+          hw: b.width / 2, hh: b.height / 2,
+          roomX: Infinity, roomY: Infinity
+        });
+      });
     });
+    measureRoom(out);
     return out;
+  }
+
+  /**
+   * Place libre autour de chaque objet, mesurée une fois sur la disposition au
+   * repos : de combien il peut grossir et glisser sans mordre sur un voisin.
+   * Deux objets sont séparés par leur plus grand écart d'axe, et chacun ne
+   * s'autorise que la moitié du sien ; au pire deux voisins qui viennent l'un
+   * vers l'autre se touchent, jamais ils ne se recouvrent. Sans cette borne,
+   * l'aimant empile les contrôles sous le pointeur et l'un vole le centre de
+   * l'autre : le clic part sur le voisin, et l'interface devient inutilisable.
+   */
+  function measureRoom(list) {
+    list.forEach(function (a) {
+      list.forEach(function (b) {
+        if (a === b) return;
+        var sx = Math.abs(a.cx - b.cx) - (a.hw + b.hw);
+        var sy = Math.abs(a.cy - b.cy) - (a.hh + b.hh);
+        if (sx >= sy) a.roomX = Math.min(a.roomX, Math.max(sx, 0));
+        else a.roomY = Math.min(a.roomY, Math.max(sy, 0));
+      });
+    });
   }
   E.define('magnet', {
     start: function (j) {
@@ -785,18 +816,29 @@
       magnet.items.forEach(function (e) {
         var it = e.it;
         if (it.destroyed || !it.parent) return;
+        var sc = (it.parent.worldTransform ? it.parent.worldTransform.a : 1) || 1;
         var b = it.getBounds();
-        var cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+        // Centre au repos : on retranche le déplacement déjà appliqué. Mesurée
+        // sur les bornes du moment, la distance au pointeur dépendrait de
+        // l'attraction qu'elle commande, et l'objet se poursuivrait lui-même.
+        var cx = b.x + b.width / 2 - (it.position.x - e.bx) * sc;
+        var cy = b.y + b.height / 2 - (it.position.y - e.by) * sc;
         var dx = P.x - cx, dy = P.y - cy;
-        var d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var d = Math.sqrt(dx * dx + dy * dy);
         var f = clamp(1 - d / reach, 0, 1);
         f = f * f;
-        var sc = it.parent.worldTransform ? (it.parent.worldTransform.a || 1) : 1;
-        var ox = (dx / d) * pull * f / (sc || 1);
-        var oy = (dy / d) * pull * f / (sc || 1);
+        // Le grossissement se sert le premier dans la place libre, le glissement
+        // prend ce qui reste ; et l'objet ne dépasse jamais le pointeur, si bien
+        // qu'un objet posé dessus ne part pas dans une direction au hasard.
+        var grow = clamp(f * 0.16, 0, Math.min(e.roomX / 2 / (e.hw || 1), e.roomY / 2 / (e.hh || 1)));
+        var reachX = Math.max(e.roomX / 2 - grow * e.hw, 0);
+        var reachY = Math.max(e.roomY / 2 - grow * e.hh, 0);
+        var move = d > 0.01 ? Math.min(pull * f, d) / d : 0;
+        var ox = clamp(dx * move, -reachX, reachX) / sc;
+        var oy = clamp(dy * move, -reachY, reachY) / sc;
         var k = clamp(dt / 120, 0.05, 1);
         it.position.set(lerp(it.position.x, e.bx + ox, k), lerp(it.position.y, e.by + oy, k));
-        it.scale.set(lerp(it.scale.x, e.bs * (1 + f * 0.16), k));
+        it.scale.set(lerp(it.scale.x, e.bs * (1 + grow), k));
         if (f > 0.45) near.push({ x: cx + ox * sc, y: cy + oy * sc, f: f });
       });
       var c = j.tokens.colors;

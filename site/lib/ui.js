@@ -365,6 +365,13 @@
       node.redraw();
       // bascule avec inertie : le curseur dépasse puis revient
       ramp(node._p, next ? 1 : 0, 420, 'back.out(2.6)', function (v) {
+        // Le noyau détruit et reconstruit les objets d'un emplacement à
+        // chaque `relayout(true)` — y compris celui qui vient d'être cliqué,
+        // pendant que sa bascule s'anime encore. Ce tween-là porte sur un
+        // objet anonyme, donc `killTweensOf(node)` ne l'atteint pas : sans ce
+        // garde, il redessine un `Graphics` détruit, dont le `context` est
+        // nul (« Cannot read properties of null (reading 'clear') »).
+        if (node.destroyed) return;
         node._p = v; drawSwitch();
       });
       if (!flat()) {

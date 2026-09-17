@@ -935,24 +935,64 @@
       try { return projection.unproject(p) || PASSTHROUGH(p); } catch (e) { return PASSTHROUGH(p); }
     }
 
-    /** Rend `hitTest` (donc tout clic réel) conscient de la projection. */
-    function installProjectionBridge() {
+    /**
+     * Enveloppe `hitTest` — donc tout clic réel, `createPointerEvent` s'en
+     * sert pour choisir sa cible. Deux choses y sont réglées :
+     *
+     * 1. **Le stage n'est pas interactif pendant le test de contact.** Pixi
+     *    propage le mode du parent à toute sa descendance
+     *    (`hitTestRecursive` : `this._isInteractive(e) ? e : enfant.eventMode`),
+     *    si bien qu'un stage `static` rend *toute* la scène interactive. Une
+     *    feuille purement décorative dont `containsPoint` répond rend alors
+     *    `[]` — un tableau vide, mais vrai — que son parent prend pour une
+     *    cible : elle masque tous ses frères en dessous, c'est-à-dire
+     *    l'interface. Le test se fait donc stage en `auto`, où chaque nœud ne
+     *    compte que par son propre `eventMode` ; le stage redevient `static`
+     *    aussitôt après, pour rester notifié de tout ce qui remonte jusqu'à
+     *    lui (`ui.js` : glissé-déposé, curseur dessiné, démarrage du son).
+     *    La cible de secours n'est plus sa `hitArea` mais `layers.pointer`.
+     * 2. **La projection de la scène** (perspective du `tilt`) : les couches
+     *    non projetées sont testées au point réel, `scene` au point ramené
+     *    par `unproject`.
+     */
+    function installHitTestBridge() {
       var events = app.renderer && app.renderer.events;
       var boundary = events && events.rootBoundary;
-      if (!boundary || boundary.juicyProjected) return;
+      if (!boundary || boundary.juicyBridged) return;
       var original = boundary.hitTest;
       if (typeof original !== 'function') return;
-      boundary.juicyProjected = true;
+      boundary.juicyBridged = true;
       boundary.hitTest = function (x, y) {
-        if (!projection) return original.call(this, x, y);
-        var L = juicy.layers;
-        var flat = hitPass(this, original, x, y, [L.scene]);
-        if (flat && flat !== app.stage) return flat;
-        var p = unprojectPoint({ x: x, y: y });
-        var deep = hitPass(this, original, p.x, p.y, [L.ui, L.overlay, L.cursor]);
-        dedupe(this._allInteractiveElements);
-        return (deep && deep !== app.stage) ? deep : flat;
+        var mode = app.stage.eventMode;
+        app.stage.eventMode = 'auto';
+        try {
+          if (!projection) return original.call(this, x, y);
+          var L = juicy.layers;
+          // couches plates au point réel ; `pointer` reste hors jeu, sinon la
+          // cible de secours court-circuiterait la passe sur `scene`
+          var flat = hitPass(this, original, x, y, [L.scene, L.pointer]);
+          if (flat) return flat;
+          var p = unprojectPoint({ x: x, y: y });
+          var deep = hitPass(this, original, p.x, p.y, [L.ui, L.overlay, L.cursor]);
+          dedupe(this._allInteractiveElements);
+          return deep;
+        } finally {
+          app.stage.eventMode = mode;
+          keepStageNotified(this);
+        }
       };
+    }
+    /**
+     * `globalpointermove` ne suit pas le chemin de propagation : il part vers
+     * `_allInteractiveElements`, rempli pendant le test de contact. Le stage,
+     * non interactif le temps de ce test, n'y serait pas — et perdrait son
+     * écoute globale. On l'y remet, en dernier comme Pixi le ferait.
+     */
+    function keepStageNotified(boundary) {
+      if (!boundary._isPointerMoveEvent || !boundary.enableGlobalMoveEvents) return;
+      var list = boundary._allInteractiveElements;
+      if (!list || !app.stage.isInteractive || !app.stage.isInteractive()) return;
+      if (list.indexOf(app.stage) < 0) list.push(app.stage);
     }
     /** Un test de contact avec `mute` mis hors jeu le temps de la passe. */
     function hitPass(boundary, original, x, y, mute) {
@@ -1050,6 +1090,7 @@
       // conteneur au lieu d'en composer deux. L'ordre d'empilement est
       // inchangé : background et world d'abord, puis ui, overlay, cursor.
       var layers = {
+        pointer: new PIXI.Container(),
         scene: new PIXI.Container(),
         background: new PIXI.Container(),
         world: new PIXI.Container(),
@@ -1059,13 +1100,22 @@
       };
       Object.keys(layers).forEach(function (k) { layers[k].label = k; });
       layers.scene.addChild(layers.background, layers.world);
-      app.stage.addChild(layers.scene, layers.ui, layers.overlay, layers.cursor);
+      app.stage.addChild(layers.pointer, layers.scene, layers.ui, layers.overlay, layers.cursor);
       // `overlay` reste traversé par le système d'événements : une modale ou
       // un composant posé là reçoit ses clics sans que personne n'ait à
       // basculer la couche. Ses enfants décoratifs, non interactifs, ne
       // deviennent pas des cibles pour autant.
       layers.overlay.eventMode = 'passive';
       layers.cursor.eventMode = 'none';
+      // `pointer` : la cible de secours du système d'événements, vide, sans
+      // rien à dessiner, sous toutes les autres couches. Elle capte le
+      // pointeur là où rien d'autre ne le capte, pour que le stage reste
+      // notifié (`pointerdown`, `pointermove`, `pointerup`) même sur le fond.
+      // C'est elle, et non la `hitArea` du stage, qui joue ce rôle depuis que
+      // le stage n'est plus interactif pendant le test de contact — voir
+      // `installHitTestBridge`.
+      layers.pointer.eventMode = 'static';
+      layers.pointer.hitArea = app.screen;
       // Projection de `scene` : identité tant qu'aucun effet n'en déclare une.
       layers.setProjection = setProjection;
       layers.project = projectPoint;
@@ -1079,9 +1129,14 @@
       } catch (e) { /* ignore */ }
 
       makeSlots();
+      // Le stage reste `static` pour être notifié de ce qui remonte jusqu'à
+      // lui, mais il n'est plus interactif pendant le test de contact : le
+      // pont l'y passe en `auto` (voir `installHitTestBridge`). Sa `hitArea`
+      // ne sert donc plus de cible de secours — c'est `layers.pointer` —
+      // mais toujours d'élagage : hors de l'écran, rien n'est testé.
       app.stage.eventMode = 'static';
       app.stage.hitArea = app.screen;
-      installProjectionBridge();
+      installHitTestBridge();
 
       var themeId = themeDefs[wantedTheme] ? wantedTheme : (themeOrder[0] || 'plain');
       if (themeId !== wantedTheme) console.warn('[juicy] thème « ' + wantedTheme + ' » inconnu, repli sur ' + themeId);

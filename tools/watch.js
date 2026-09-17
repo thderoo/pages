@@ -60,6 +60,12 @@ que si ce centre est dans la fenêtre et si
 un de ses enfants — sinon le clic est annulé et signalé, jamais fait à
 l'aveugle.
 
+Avant chaque clic, le pointeur est posé sur le centre de la cible, la page a
+500 ms de temps mur pour réagir, puis les bornes sont relues et le hitTest
+refait : un effet qui dessine sous le pointeur ou déplace les objets
+(\`magnet\`, \`cursor\`, \`tilt\`) est ainsi pris en compte au lieu d'être
+devancé par un clic immédiat.
+
 Options globales (n'importe où sur la ligne) :
   --cdn-cache <dossier>   sert pixi.min.js, pixi-filters.min.js, gsap.min.js,
                           PixiPlugin.min.js, Tone.js et la CSS Google Fonts
@@ -358,11 +364,28 @@ async function doTheme(page, diff, id) {
   });
 }
 
+// Temps mur laissé à la page entre le moment où le pointeur se pose sur la
+// cible et le clic. Un effet ne se manifeste qu'une fois le pointeur arrivé :
+// `magnet` dessine son champ sous le pointeur et attire les objets, `cursor`
+// pose son réticule, un bouton passe en survol. Déplacer et cliquer dans la
+// foulée mesurait la page d'*avant* le survol — c'est ce qui faisait passer
+// `magnet` pour sain alors que le clic se perdait chez l'utilisateur.
+const HOVER_SETTLE_MS = 500;
+
 async function doClick(page, diff, label, kind, id, waitTheme) {
   console.log(`> ${label} ${id}`);
-  const loc = await locate(page, kind, id);
+  let loc = await locate(page, kind, id);
   if (!loc.ok) { console.log(`  ! ${loc.error}`); return; }
   if (!loc.within) { console.log(`  ! bornes hors fenêtre : ${JSON.stringify(loc.rect)}`); return; }
+
+  // Poser le pointeur, laisser la page réagir, puis relire les bornes et
+  // refaire le hitTest : on clique sur la page telle qu'elle est sous le
+  // pointeur, pas telle qu'elle était avant qu'il arrive.
+  await page.mouse.move(loc.cx, loc.cy);
+  await page.waitForTimeout(HOVER_SETTLE_MS);
+  loc = await locate(page, kind, id);
+  if (!loc.ok) { console.log(`  ! ${loc.error}`); return; }
+  if (!loc.within) { console.log(`  ! bornes hors fenêtre après survol : ${JSON.stringify(loc.rect)}`); return; }
   if (!loc.hit) { console.log(`  ! hitTest ne trouve pas la cible en (${Math.round(loc.cx)},${Math.round(loc.cy)}) — clic annulé`); return; }
 
   if (waitTheme) await armThemeWait(page);

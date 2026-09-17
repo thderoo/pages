@@ -138,7 +138,7 @@ Un bouton sans `burst` ne déclenche rien tout seul : il émet l'événement
 | membre | ce que c'est |
 |---|---|
 | `app` | la `PIXI.Application` plein écran (`resizeTo: window`, `autoDensity`) |
-| `layers` | `background`, `world`, `ui`, `overlay`, `cursor` — voir plus bas |
+| `layers` | `pointer`, `background`, `world`, `ui`, `overlay`, `cursor` — voir plus bas |
 | `camera` | `pan(x, y, opts)`, `zoom(k, opts)`, `rotate(a, opts)`, `shake(strength, ms)`, `reset(opts)`, `state` |
 | `slots` | les conteneurs nommés, voir plus bas |
 | `state` | `{ counter, combo }` |
@@ -161,6 +161,8 @@ Les couches, dans l'ordre de rendu :
 
 ```
 app.stage
+ ├─ pointer          vide, plein écran, `static` : la cible de secours du
+ │                   système d'événements, sous tout le reste
  ├─ scene
  │   ├─ background   peint par le thème (fond, décor de fond)
  │   └─ world        la caméra : tout ce qui se déplace, zoome, tourne
@@ -170,6 +172,13 @@ app.stage
  ├─ overlay          plein écran, `eventMode: 'passive'`
  └─ cursor           le curseur dessiné, `eventMode: 'none'`
 ```
+
+`pointer` ne dessine rien et n'attend aucun écouteur : elle donne une cible
+au pointeur là où rien d'autre ne le capte, pour que `app.stage` reste notifié
+des `pointerdown` / `pointermove` / `pointerup` même sur le fond. Le noyau
+n'interroge l'arbre des événements qu'avec le stage rendu non interactif —
+voir « Pièges connus » — et c'est cette couche qui remplace alors sa
+`hitArea`. Rien à y ajouter.
 
 **Les emplacements vivent dans `world`** : la caméra les emporte. Chacun
 expose `.items[]` (les objets construits depuis `content`, dans le même
@@ -362,6 +371,12 @@ Un contrôle n'est **atteint** que si ses bornes globales, passées par
 contrôle ou un de ses enfants. Sinon le clic est annulé et signalé, jamais
 fait à l'aveugle.
 
+Avant chaque clic, le pointeur se pose sur le centre de la cible, la page a
+500 ms de temps mur pour réagir, puis les bornes sont relues et le hitTest
+refait. Sans cette pause, un effet qui ne se manifeste qu'au survol (le champ
+de `magnet` dessiné sous le pointeur, les objets qu'il attire) est devancé par
+le clic : l'outil déclarait sain ce qui, chez l'utilisateur, perdait le clic.
+
 Ce que le journal écrit :
 
 - `fit ok <w>x<h> · <slot> x,y wxh · …` après chaque mise en page ; un
@@ -393,6 +408,22 @@ Ce que le journal écrit :
   `overlay` est en `'passive'`. `alpha = 0.001` ne préserve pas les clics et
   `visible = false` élague la branche : pour garder un objet cliquable et
   invisible, c'est `eventMode` qu'on règle, pas l'opacité.
+- **Un parent `static` rend interactive toute sa descendance, et `[]` est
+  vrai.** `hitTestRecursive` descend avec le mode du parent
+  (`this._isInteractive(e) ? e : enfant.eventMode`) : sous un `app.stage` en
+  `static`, *chaque* nœud est traité comme interactif. Une feuille purement
+  décorative dont `containsPoint` répond rend alors `[]` — un tableau vide,
+  mais vrai — que son parent prend pour une cible : elle masque tous ses
+  frères en dessous, donc l'interface, et `hitTest` finit par rendre
+  `app.stage` partout. `overlay.eventMode = 'passive'` n'en protège pas,
+  puisque le mode hérité l'emporte sur le sien. *Symptôme* : la page entière
+  devient insensible dès qu'un effet pose une décoration plein écran
+  (`rain` et son voile d'éclair, le champ de `magnet`), sans la moindre
+  erreur. *Parade, dans le noyau* : le test de contact se fait `app.stage` en
+  `eventMode: 'auto'` — chaque nœud ne compte alors que par son propre mode —
+  et la couche `pointer` sert de cible de secours ; le stage redevient
+  `static` aussitôt après pour rester notifié. Rien à faire côté effet ou
+  thème, sinon poser `eventMode: 'none'` par hygiène.
 - **Ne jamais mesurer une fenêtre de temps en cumulant `ticker.deltaMS`** :
   Pixi le plafonne à `maxElapsedMS = 100 ms`, ce qui produit un `fps=10`
   parfaitement stable — un artefact, pas une mesure.
@@ -409,12 +440,22 @@ Ce que le journal écrit :
   dans `world`. Un bloom y délave les plaques claires et mange un libellé
   sombre ; baisser sa `resolution` détruit les traits fins de l'interface.
 - **Un effet qui déplace les contrôles fait rater le clic suivant.** Passer
-  par `juicy.layers.project()` avant de viser, comme le fait `watch.js`.
+  par `juicy.layers.project()` avant de viser, comme le fait `watch.js`, et
+  borner le déplacement à la place libre autour de chaque objet (`measureRoom`
+  dans `magnet`) : sans borne, un voisin vient se poser sous le pointeur et
+  vole le clic destiné à la cible.
 - **Pixi n'installe sa racine d'événements qu'au premier vrai pointeur** :
   un `page.mouse.move` est nécessaire avant tout `hitTest`.
 - **`relayout` déclenché depuis un gestionnaire d'événement détruit l'objet
   qui traite encore son clic.** Différer d'un tour de boucle
   (`setTimeout(…, 0)`), comme le fait la narration de `juicy.html`.
+- **Un tween posé sur un objet intermédiaire survit à la destruction de son
+  nœud.** Avant de détruire les objets d'un emplacement, le noyau appelle
+  `gsap.killTweensOf` sur chacun et ses enfants ; une animation qui interpole
+  un `{ v }` anonyme (le `ramp` de `ui.js`) lui échappe et continue de
+  redessiner un `Graphics` mort, dont le `context` est nul (« Cannot read
+  properties of null (reading 'clear') »). Un composant qui anime par `ramp`
+  sort sur `node.destroyed`.
 - **`scaleUp` sur une grille de pixels la rend floue** : l'éviter pour un
   décor en pixel art.
 - **Comparer deux captures d'une page qui suit le pointeur** demande
