@@ -25,6 +25,18 @@ HTML statique, un fichier par page.
 `site/index.html` est une page de test indépendante de la lib : ne pas y
 toucher.
 
+## Pages hors lib
+
+- `crumb-ui.html` : démo du design system fictif « Crumb UI » (biscuit &
+  chocolat), reproduite d'après une maquette image. Choix (2026-10-09) :
+  HTML/CSS (DOM) plutôt que Juicy, pour de vrais composants utilisables au
+  clavier (décision de l'utilisateur) ; police d'affichage Nunito, la plus
+  proche de la maquette sur une planche de six candidates ; JetBrains Mono
+  pour le code (indiquée par la maquette) ; textures en CSS/SVG inline, sans
+  image bitmap. Les trois derniers choix ont été pris par Claude, sur
+  délégation de l'utilisateur. La police se change en une ligne
+  (`--font-display`).
+
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 
 Une page Juicy n'est pas un document avec des effets par-dessus : c'est une
