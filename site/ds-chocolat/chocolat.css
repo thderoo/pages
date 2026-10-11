@@ -41,9 +41,20 @@
   --ch-biscuit-74: #ecca8b;
   --ch-biscuit-76: #dec9a7;
   --ch-biscuit-80: #e7d2af;
-  /* Couleurs : blanc (nombre = clarté en %) */
-  --ch-blanc-100: #ffffff;
+  /* Couleurs : blanc, la teinte vanille des surfaces secondaires (nombre = clarté en %) */
+  --ch-blanc-80: #eee0a8;
+  --ch-blanc-81: #f0e2ad;
+  --ch-blanc-85: #f2e8be;
+  --ch-blanc-87: #f6ecc5;
+  --ch-blanc-89: #faf0cb;
+  --ch-blanc-89b: #fbf2cd;
+  --ch-blanc-91: #faf2d5;
+  --ch-blanc-92: #fff7d6;
+  --ch-blanc-95: #fffae8;
+  --ch-blanc-95a: #fff9e4;
+  --ch-blanc-97: #fffcee;
   --ch-blanc-98: #fffdf6;
+  --ch-blanc-100: #ffffff;
   /* Couleurs : cacao (nombre = clarté en %) */
   --ch-cacao-18: #502a0a;
   --ch-cacao-18a: #5a2d00;
@@ -165,8 +176,13 @@
   /* Triplets rgb, pour les teintes translucides : rgba(var(--ch-x-rgb), .4) */
   --ch-biscuit-65-rgb: 212, 176, 120;
   --ch-biscuit-76-rgb: 222, 201, 167;
-  --ch-blanc-100-rgb: 255, 255, 255;
+  --ch-blanc-89-rgb: 250, 240, 203;
+  --ch-blanc-92-rgb: 255, 247, 214;
+  --ch-blanc-95-rgb: 255, 250, 232;
+  --ch-blanc-97-rgb: 255, 252, 238;
   --ch-blanc-98-rgb: 255, 253, 246;
+  --ch-blanc-98a-rgb: 255, 253, 244;
+  --ch-blanc-100-rgb: 255, 255, 255;
   --ch-cacao-18-rgb: 80, 42, 10;
   --ch-cacao-18a-rgb: 90, 45, 0;
   --ch-cacao-19-rgb: 86, 48, 10;
@@ -535,9 +551,9 @@
 /* Surface ivoire commune : cartes et panneau de liste. */
 .k-blanc-carte, .k-blanc-liste {
   --blanc-u: 0.4397px;
-  --blanc-ivoire-haut: var(--ch-creme-89);
-  --blanc-ivoire-bas: var(--ch-creme-85);
-  --blanc-reflet: #fcf4e7;
+  --blanc-ivoire-haut: var(--ch-blanc-89);
+  --blanc-ivoire-bas: var(--ch-blanc-85);
+  --blanc-reflet: var(--ch-blanc-95a);
   --blanc-ombre-encre: 80, 30, 0;
   --blanc-ombre-bord: 120, 85, 40;
   --blanc-rayon: calc(16 * var(--blanc-u));
@@ -556,15 +572,15 @@
       rgba(var(--ch-blanc-98-rgb), 0.32) calc(3.5 * var(--blanc-u)),
       rgba(var(--ch-blanc-98-rgb), 0) calc(8 * var(--blanc-u))),
      
-    radial-gradient(120% 90% at 18% 0%, rgba(255, 250, 238, var(--blanc-lueur)), rgba(var(--ch-ivoire-97-rgb), 0) 62%),
+    radial-gradient(120% 90% at 18% 0%, rgba(var(--ch-blanc-97-rgb), var(--blanc-lueur)), rgba(var(--ch-blanc-97-rgb), 0) 62%),
      
     linear-gradient(180deg,
-      var(--ch-creme-91) 0,
+      var(--ch-blanc-91) 0,
       var(--blanc-reflet) calc(3.5 * var(--blanc-u)),
-      rgba(var(--ch-creme-89-rgb), 0) calc(var(--blanc-reflet-fin) * var(--blanc-u))),
+      rgba(var(--ch-blanc-89-rgb), 0) calc(var(--blanc-reflet-fin) * var(--blanc-u))),
      
     linear-gradient(180deg, var(--blanc-ivoire-haut) 0, var(--blanc-ivoire-bas) 100%);
-  box-shadow: inset 0 calc(2 * var(--blanc-u)) calc(1.5 * var(--blanc-u)) calc(-1 * var(--blanc-u)) rgba(var(--ch-ivoire-97-rgb), 0.55),
+  box-shadow: inset 0 calc(2 * var(--blanc-u)) calc(1.5 * var(--blanc-u)) calc(-1 * var(--blanc-u)) rgba(var(--ch-blanc-97-rgb), 0.55),
      
     inset calc(-7 * var(--blanc-u)) 0 calc(6 * var(--blanc-u)) calc(-4 * var(--blanc-u)) rgba(var(--blanc-ombre-bord), 0.30),
      
@@ -577,8 +593,8 @@
 }
 /* Le panneau de liste est plus grand et plus uniforme que les cartes. */
 .k-blanc-liste {
-  --blanc-ivoire-haut: var(--ch-creme-87a);
-  --blanc-ivoire-bas: var(--ch-creme-85);
+  --blanc-ivoire-haut: var(--ch-blanc-87);
+  --blanc-ivoire-bas: var(--ch-blanc-85);
   --blanc-lueur: 0.12;
   --blanc-reflet-fin: 5;
   --blanc-bas: 0.08;
@@ -594,7 +610,7 @@
   z-index: -1;
   background: linear-gradient(115deg,
     rgba(var(--ch-blanc-100-rgb), 0) 30%,
-    rgba(255, 252, 244, var(--blanc-sheen)) 46%,
+    rgba(var(--ch-blanc-98a-rgb), var(--blanc-sheen)) 46%,
     rgba(var(--ch-blanc-100-rgb), 0) 62%);
 }
 /* Panneau de liste : hauteur de ligne de l'exemple (67 px d'exemple). */
@@ -603,7 +619,7 @@
   --blanc-ligne-h: calc(67 * var(--blanc-u));
   --blanc-sep-marge: calc(17 * var(--blanc-u));
   --blanc-sep-trait: #bd9a69;
-  --blanc-sep-reflet: var(--ch-creme-92);
+  --blanc-sep-reflet: var(--ch-blanc-92);
   position: relative;
   box-sizing: border-box;
   height: var(--blanc-ligne-h);
@@ -624,7 +640,7 @@
       var(--blanc-sep-trait) calc(2 * var(--blanc-u)),
       var(--blanc-sep-reflet) calc(2.6 * var(--blanc-u)),
       var(--blanc-sep-reflet) calc(3.4 * var(--blanc-u)),
-      rgba(var(--ch-creme-92-rgb), 0) 100%);
+      rgba(var(--ch-blanc-92-rgb), 0) 100%);
 }
 /* Gouttière creusée dans le blanc : on y voit le biscuit nu. */
 .k-blanc-gouttiere {
@@ -644,7 +660,7 @@
      
     0 0 0 calc(1 * var(--blanc-u)) rgba(var(--ch-lait-41b-rgb), 0.45),
      
-    0 calc(1.8 * var(--blanc-u)) 0 calc(0.5 * var(--blanc-u)) rgba(var(--ch-ivoire-95-rgb), 0.95);
+    0 calc(1.8 * var(--blanc-u)) 0 calc(0.5 * var(--blanc-u)) rgba(var(--ch-blanc-95-rgb), 0.95);
 }
 /* Barre chocolat au lait en relief, posée dans la gouttière.
    --blanc-de et --blanc-largeur : position et longueur, en % de la gouttière. */
@@ -1412,12 +1428,12 @@
   box-shadow: inset 0 .8px 1px var(--creux-ombre), 0 .5px 0 var(--creux-levre);
 }
 .k-creux--ivoire {
-  --creux-fond: var(--ch-ivoire-97);
+  --creux-fond: var(--ch-blanc-97);
   --creux-ombre: rgba(var(--ch-cacao-25-rgb), .3);
-  --creux-levre: rgba(var(--ch-ivoire-97-rgb), .8);
+  --creux-levre: rgba(var(--ch-blanc-97-rgb), .8);
   box-shadow: inset 0 1.4px 0 rgba(var(--ch-blanc-98-rgb), .75),
     inset 0 2.6px 2px -1px var(--creux-ombre),
-    inset 0 -1.2px 0 rgba(var(--ch-ivoire-97-rgb), .8),
+    inset 0 -1.2px 0 rgba(var(--ch-blanc-97-rgb), .8),
     0 .5px 0 var(--creux-levre);
 }
 
@@ -1930,8 +1946,8 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 }
 /* ---------- variantes : teinte du bandeau et du statut ---------- */
 .c-banniere.c-banniere--info {
-  --banniere-ivoire-haut: var(--ch-creme-87a);
-  --banniere-ivoire-bas: var(--ch-creme-85);
+  --banniere-ivoire-haut: var(--ch-blanc-87);
+  --banniere-ivoire-bas: var(--ch-blanc-85);
 }
 .c-banniere.c-banniere--avertissement {
   --banniere-encre: var(--ch-noir-11a);
@@ -1954,8 +1970,8 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 /* La teinte passe dans les variables du kit blanc (même matière, autre ivoire) : plus de lueur
    en moins pour que la teinte du statut reste lisible. */
 .c-banniere.k-blanc-carte {
-  --blanc-ivoire-haut: var(--banniere-ivoire-haut, var(--ch-creme-87a));
-  --blanc-ivoire-bas: var(--banniere-ivoire-bas, var(--ch-creme-85));
+  --blanc-ivoire-haut: var(--banniere-ivoire-haut, var(--ch-blanc-87));
+  --blanc-ivoire-bas: var(--banniere-ivoire-bas, var(--ch-blanc-85));
   --blanc-lueur: 0.28;
   --blanc-bas: 0.14;
   --blanc-sheen: 0.08;
@@ -2115,8 +2131,8 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
   --barre-superieure-creme: var(--ch-creme-87a);
   --barre-superieure-noir: var(--ch-noir-11a);
   --barre-superieure-noir-corps: var(--ch-noir-16a);
-  --barre-superieure-ivoire: var(--ch-creme-87a);
-  --barre-superieure-ivoire-bas: #ead9bb;
+  --barre-superieure-ivoire: var(--ch-blanc-87);
+  --barre-superieure-ivoire-bas: #f0e4b5;
   --barre-superieure-encre: var(--ch-noir-14);
   --barre-superieure-biscuit-fonce: var(--ch-lait-41a);
   --barre-superieure-griotte: #8e1f2b;
@@ -2350,7 +2366,7 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
   padding: 0 9px;
   gap: 7px;
   border-radius: 4.4px;
-  background: linear-gradient(180deg, var(--ch-creme-81) 0, var(--barre-superieure-ivoire) 30%, var(--barre-superieure-ivoire-bas) 100%);
+  background: linear-gradient(180deg, var(--ch-blanc-81) 0, var(--barre-superieure-ivoire) 30%, var(--barre-superieure-ivoire-bas) 100%);
   box-shadow: inset 0 2px 2.6px rgba(var(--ch-noir-15b-rgb), .5),
     inset 1.2px 0 1.6px rgba(var(--ch-noir-15b-rgb), .28),
     0 0 0 .8px rgba(var(--ch-noir-8-rgb), .55),
@@ -2380,12 +2396,12 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 }
 /* lecture seule : ivoire sans creux, valeur noire nette */
 .c-barre-superieure-champ[data-etat="lecture-seule"] {
-  background: linear-gradient(180deg, var(--ch-creme-89b), var(--ch-creme-87a));
+  background: linear-gradient(180deg, var(--ch-blanc-89b), var(--ch-blanc-87));
   box-shadow: 0 0 0 1px #c9a975;
 }
 /* erreur : bord griotte, icône et texte clair */
 .c-barre-superieure-champ[data-etat="erreur"] {
-  background: linear-gradient(180deg, var(--ch-creme-89b), var(--ch-creme-87a));
+  background: linear-gradient(180deg, var(--ch-blanc-89b), var(--ch-blanc-87));
   box-shadow: 0 0 0 1.6px var(--barre-superieure-griotte);
   color: var(--barre-superieure-griotte);
 }
@@ -2599,10 +2615,10 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 }
 /* ---------- reflet qui traverse (survol, succès) et lumière éteinte à l'enfoncement ---------- */
 .c-bouton-icone.k-blanc-carte::before {
-  background: linear-gradient(115deg, rgba(var(--ch-blanc-100-rgb), 0) 40%, rgba(var(--ch-ivoire-97-rgb), .7) 50%, rgba(var(--ch-blanc-100-rgb), 0) 60%)
+  background: linear-gradient(115deg, rgba(var(--ch-blanc-100-rgb), 0) 40%, rgba(var(--ch-blanc-97-rgb), .7) 50%, rgba(var(--ch-blanc-100-rgb), 0) 60%)
       var(--bouton-icone-reflet) 0 / 300% 100% no-repeat,
     linear-gradient(180deg, rgba(150, 98, 40, calc(.16 * var(--bouton-icone-presse))) 0, rgba(150, 98, 40, calc(.03 * var(--bouton-icone-presse))) 100%),
-    linear-gradient(115deg, rgba(var(--ch-blanc-100-rgb), 0) 30%, rgba(255, 252, 244, calc(var(--blanc-sheen) * (1 - var(--bouton-icone-presse)))) 46%, rgba(var(--ch-blanc-100-rgb), 0) 62%);
+    linear-gradient(115deg, rgba(var(--ch-blanc-100-rgb), 0) 30%, rgba(var(--ch-blanc-98a-rgb), calc(var(--blanc-sheen) * (1 - var(--bouton-icone-presse)))) 46%, rgba(var(--ch-blanc-100-rgb), 0) 62%);
 }
 /* ---------- survol : la plaque se soulève d'un cheveu, le reflet passe ---------- */
 .c-bouton-icone:hover:not(:disabled):not([aria-busy="true"]), .c-bouton-icone[data-etat="survol"] {
@@ -2617,7 +2633,7 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 .c-bouton-icone.k-blanc-carte:active:not(:disabled), .c-bouton-icone.k-blanc-carte[data-etat="presse"] {
   box-shadow: inset 0 2.4px 2.6px rgba(var(--blanc-ombre-bord), .62),
     inset 1.5px 0 2px rgba(var(--blanc-ombre-bord), .36),
-    inset 0 -1px 1px rgba(var(--ch-ivoire-97-rgb), .6),
+    inset 0 -1px 1px rgba(var(--ch-blanc-97-rgb), .6),
     0 0 0 .44px rgba(var(--blanc-ombre-encre), .22),
     .4px .6px 1px rgba(var(--blanc-ombre-encre), .2);
 }
@@ -2681,7 +2697,7 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
   background: linear-gradient(180deg, #cdb88f, var(--ch-biscuit-76));
   box-shadow: inset 0 1px 1.2px rgba(var(--ch-cacao-23-rgb), .55),
     inset 1px 0 1px rgba(var(--ch-cacao-23-rgb), .3),
-    0 .8px 0 rgba(var(--ch-ivoire-97-rgb), .8);
+    0 .8px 0 rgba(var(--ch-blanc-97-rgb), .8);
 }
 /* allumé : carré de chocolat noir en relief */
 .c-bouton-icone-case::after {
@@ -3640,8 +3656,8 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
   box-shadow: inset -.8px -.8px 0 rgba(86, 40, 12, .62),
     inset 0 0 0 .6px rgba(110, 56, 22, .42),
     inset .5px .5px 0 rgba(230, 180, 140, .35),
-    0 0 0 .8px rgba(var(--ch-ivoire-95-rgb), .9),
-    0 0 2px 1px rgba(var(--ch-ivoire-95-rgb), .55),
+    0 0 0 .8px rgba(var(--ch-blanc-95-rgb), .9),
+    0 0 2px 1px rgba(var(--ch-blanc-95-rgb), .55),
     0 1px 1.6px 1px rgba(110, 60, 20, .16);
 }
 .c-carte-mesure-barre--courante {
@@ -3661,7 +3677,7 @@ button.c-avatar:active .c-avatar__initiales, .c-avatar.is-presse .c-avatar__init
 .c-carte-mesure--ouvrable::before {
   background: linear-gradient(115deg,
     rgba(var(--ch-blanc-100-rgb), 0) calc(var(--carte-mesure-reflet) - 16%),
-    rgba(255, 252, 244, calc(var(--blanc-sheen, .12) + (var(--carte-mesure-reflet) - 46%) * .006)) var(--carte-mesure-reflet),
+    rgba(var(--ch-blanc-98a-rgb), calc(var(--blanc-sheen, .12) + (var(--carte-mesure-reflet) - 46%) * .006)) var(--carte-mesure-reflet),
     rgba(var(--ch-blanc-100-rgb), 0) calc(var(--carte-mesure-reflet) + 16%));
   transition: --carte-mesure-reflet var(--ch-dur-280ms) var(--ch-ease-decel-soft);
 }
@@ -4497,7 +4513,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
 }
 .c-case-choix:has(.c-case-choix-input[aria-readonly="true"]) { cursor: default; }
 .c-case-choix-input[aria-readonly="true"] + .c-case-choix-case .c-case-choix-creux {
-  background: var(--ch-creme-89);
+  background: var(--ch-blanc-89);
   box-shadow: 0 0 0 1px rgba(var(--ch-lait-41b-rgb), .62);
 }
 .c-case-choix-input[aria-readonly="true"] + .c-case-choix-case .c-case-choix-creux::before,
@@ -4920,9 +4936,9 @@ button.c-carte, a.c-carte { cursor: pointer; }
   filter: none;
   box-shadow: inset 0 3px 3.4px rgba(var(--ch-cacao-25-rgb), .52),
     inset 1.6px 0 2.4px rgba(var(--ch-cacao-25-rgb), .30),
-    inset 0 -.6px 0 rgba(var(--ch-ivoire-95-rgb), .55),
+    inset 0 -.6px 0 rgba(var(--ch-blanc-95-rgb), .55),
     0 0 0 .44px rgba(var(--champ-recherche-ombre), .22),
-    0 .8px 0 rgba(var(--ch-ivoire-95-rgb), .7);
+    0 .8px 0 rgba(var(--ch-blanc-95-rgb), .7);
 }
 .c-champ-recherche[data-etat="presse"] .c-champ-recherche-champ::before,
 .c-champ-recherche .c-champ-recherche-filtre:active::before,
@@ -5044,7 +5060,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
 }
 /* ---------- Lecture seule : ivoire sans creux, bord fin, valeur nette ---------- */
 .c-champ-recherche[data-etat="lecture-seule"] .c-champ-recherche-champ {
-  background: var(--ch-creme-87a);
+  background: var(--ch-blanc-87);
   box-shadow: inset 0 0 0 1px rgba(176, 138, 84, .9);
   filter: none;
   transform: none;
@@ -5054,7 +5070,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
 .c-champ-recherche[data-etat="lecture-seule"] .c-champ-recherche-saisie { cursor: default; }
 /* ---------- Erreur : le bord se fend net, teinte griotte, icône estampée et texte ---------- */
 .c-champ-recherche[data-etat="erreur"] .c-champ-recherche-champ {
-  box-shadow: inset 0 .9px 1px -.4px rgba(var(--ch-ivoire-97-rgb), .5),
+  box-shadow: inset 0 .9px 1px -.4px rgba(var(--ch-blanc-97-rgb), .5),
     0 0 0 1.6px var(--champ-recherche-griotte),
     1px 2px 2px rgba(var(--champ-recherche-ombre), .2);
 }
@@ -5109,9 +5125,9 @@ button.c-carte, a.c-carte { cursor: pointer; }
   filter: none;
   box-shadow: inset 0 3px 3.4px rgba(var(--ch-cacao-25-rgb), .52),
     inset 1.6px 0 2.4px rgba(var(--ch-cacao-25-rgb), .30),
-    inset 0 -.6px 0 rgba(var(--ch-ivoire-95-rgb), .55),
+    inset 0 -.6px 0 rgba(var(--ch-blanc-95-rgb), .55),
     0 0 0 .44px rgba(var(--champ-recherche-ombre), .22),
-    0 .8px 0 rgba(var(--ch-ivoire-95-rgb), .7);
+    0 .8px 0 rgba(var(--ch-blanc-95-rgb), .7);
 }
 .c-champ-recherche .c-champ-recherche-filtre[aria-pressed="true"]::before { opacity: 0; }
 /* ---------- Succès : coche pistache estampée, l'éclat du tempérage passe une fois ---------- */
@@ -5144,12 +5160,12 @@ button.c-carte, a.c-carte { cursor: pointer; }
   left: 0;
   width: 34%;
   transform: translateX(-130%) skewX(-18deg);
-  background: linear-gradient(90deg, rgba(var(--ch-ivoire-97-rgb), 0), rgba(var(--ch-ivoire-97-rgb), .85) 50%, rgba(var(--ch-ivoire-97-rgb), 0));
+  background: linear-gradient(90deg, rgba(var(--ch-blanc-97-rgb), 0), rgba(var(--ch-blanc-97-rgb), .85) 50%, rgba(var(--ch-blanc-97-rgb), 0));
   opacity: 0;
 }
 /* sans animation (mouvement réduit) : l'effet final, un liseré clair posé sur le bord haut */
 .c-champ-recherche[data-etat="succes"] .c-champ-recherche-eclat {
-  box-shadow: inset 0 1.2px 0 rgba(var(--ch-ivoire-97-rgb), .9);
+  box-shadow: inset 0 1.2px 0 rgba(var(--ch-blanc-97-rgb), .9);
 }
 /* ---------- Chargement : des carrés qui s'allument un à un, la forme du champ reste ---------- */
 .c-champ-recherche-carres {
@@ -5160,6 +5176,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
 .c-champ-recherche[data-etat="chargement"] .c-champ-recherche-carres { display: flex; }
 .c-champ-recherche[data-etat="chargement"] .c-champ-recherche-loupe { display: none; }
 .c-champ-recherche-carres i {
+  --creux-levre: rgba(var(--ch-blanc-95-rgb), .8);
   display: block;
   width: 5px;
   height: 5px;
@@ -5168,7 +5185,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
 }
 .c-champ-recherche-carres i.is-allume {
   background: linear-gradient(180deg, var(--ch-cacao-23a), var(--ch-noir-14));
-  box-shadow: inset 0 .5px 0 rgba(var(--ch-creme-85a-rgb), .35), 0 .5px 0 rgba(var(--ch-ivoire-95-rgb), .8);
+  box-shadow: inset 0 .5px 0 rgba(var(--ch-creme-85a-rgb), .35), 0 .5px 0 rgba(var(--ch-blanc-95-rgb), .8);
 }
 .c-champ-recherche[data-etat="chargement"] .c-champ-recherche-champ { cursor: progress; }
 /* lignes de la liste pendant le chargement : carrés de biscuit en creux */
@@ -5179,7 +5196,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   width: 12px;
   border-radius: 2.5px;
   --biscuit-nu-base: var(--ch-biscuit-66);
-  box-shadow: inset 0 1.4px 1.6px rgba(var(--ch-cacao-25-rgb), .5), 0 .7px 0 rgba(var(--ch-ivoire-95-rgb), .85);
+  box-shadow: inset 0 1.4px 1.6px rgba(var(--ch-cacao-25-rgb), .5), 0 .7px 0 rgba(var(--ch-blanc-95-rgb), .85);
 }
 .c-champ-recherche-creux-barre { width: 46%; height: 10px; }
 .c-champ-recherche-creux-barre.court { width: 30%; }
@@ -5208,7 +5225,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   border-radius: var(--ch-r-6);
   box-shadow: inset 0 1.6px 2.4px rgba(var(--ch-cacao-25-rgb), .45),
     inset 1.2px 0 2px rgba(var(--ch-cacao-25-rgb), .22),
-    0 .8px 0 rgba(var(--ch-ivoire-95-rgb), .85);
+    0 .8px 0 rgba(var(--ch-blanc-95-rgb), .85);
 }
 .c-champ-recherche-vide-rang .k-rubis-btn { flex: none; width: 112px; }
 .c-champ-recherche-vide-rang .k-rubis-btn-label {
@@ -5262,7 +5279,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   --champ-texte-biscuit-fonce: #8c7648;
   --champ-texte-rime: 120, 76, 28;
   --champ-texte-ombre: 92, 52, 16;
-  --champ-texte-levre: 255, 244, 214;
+  --champ-texte-levre: var(--ch-blanc-92-rgb);
   --champ-texte-creme: var(--ch-creme-89b);
   --champ-texte-focus: var(--ch-noir-11a);
   --champ-texte-griotte: var(--ch-rubis-35);
@@ -5275,8 +5292,8 @@ button.c-carte, a.c-carte { cursor: pointer; }
   --champ-texte-creux: inset 0 1.4px 0 rgba(var(--ch-blanc-98-rgb), .75),
     inset 0 2.6px 2px -1px rgba(var(--champ-texte-ombre), .3),
     inset 1.4px 0 1.6px -.6px rgba(var(--champ-texte-ombre), .22),
-    inset -1px 0 1.2px rgba(var(--ch-ivoire-97-rgb), .5),
-    inset 0 -1.2px 0 rgba(var(--ch-ivoire-97-rgb), .8);
+    inset -1px 0 1.2px rgba(var(--ch-blanc-97-rgb), .5),
+    inset 0 -1.2px 0 rgba(var(--ch-blanc-97-rgb), .8);
   --champ-texte-bord: 0 0 0 .8px rgba(var(--champ-texte-rime), .62),
     0 1.6px 0 .8px rgba(var(--champ-texte-levre), .6);
   --champ-texte-anneau: 0 0 0 0 transparent;
@@ -5385,8 +5402,8 @@ button.c-carte, a.c-carte { cursor: pointer; }
   transform: translateY(.5px);
   --champ-texte-creux: inset 0 3.6px 3.6px rgba(var(--ch-cacao-18-rgb), .62),
     inset 2.2px 0 2.6px rgba(var(--ch-cacao-18-rgb), .36),
-    inset -1px 0 1.2px rgba(var(--ch-ivoire-97-rgb), .35),
-    inset 0 -1px 0 rgba(var(--ch-ivoire-97-rgb), .55);
+    inset -1px 0 1.2px rgba(var(--ch-blanc-97-rgb), .35),
+    inset 0 -1px 0 rgba(var(--ch-blanc-97-rgb), .55);
 }
 /* ---------- Focus clavier : cadre net de chocolat noir à l'extérieur du bord, doublé de crème ---------- */
 .c-champ-texte .c-champ-texte-zone:focus-within, .c-champ-texte--focus .c-champ-texte-zone {
@@ -5439,7 +5456,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   width: 38%;
   opacity: 0;
   transform: translateX(-120%) skewX(-18deg);
-  background: linear-gradient(90deg, rgba(var(--ch-ivoire-97-rgb), 0), rgba(var(--ch-ivoire-97-rgb), .9) 50%, rgba(var(--ch-ivoire-97-rgb), 0));
+  background: linear-gradient(90deg, rgba(var(--ch-blanc-97-rgb), 0), rgba(var(--ch-blanc-97-rgb), .9) 50%, rgba(var(--ch-blanc-97-rgb), 0));
 }
 /* ---------- Icônes estampées (symboles dans la page) ---------- */
 .c-champ-texte .c-champ-texte-icone {
@@ -5708,7 +5725,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   --controle-segmente-corps: 13.6px;
   --controle-segmente-creme: var(--ch-creme-92a);
   --controle-segmente-noir: var(--ch-noir-11a);
-  --controle-segmente-ivoire: var(--ch-creme-87a);
+  --controle-segmente-ivoire: var(--ch-blanc-87);
   --controle-segmente-trait: #c4a67c;
   --controle-segmente-nu-texte: var(--ch-lait-41a);
   --controle-segmente-griotte: #811714;
@@ -7627,7 +7644,7 @@ button.c-carte, a.c-carte { cursor: pointer; }
   --graphique-pistache-fond: #b7c88f;
   --graphique-pistache-encre: #2f4a17;
   --graphique-biscuit-fonce: var(--ch-lait-41a);
-  --graphique-ivoire: var(--ch-creme-87a);
+  --graphique-ivoire: var(--ch-blanc-87);
   --graphique-duree-toucher: var(--ch-dur-90ms);
   --graphique-duree-geste: var(--ch-dur-220ms);
   position: relative;
@@ -8840,7 +8857,7 @@ button.c-graphique-ligne-plage:active .c-graphique-rail, .c-graphique-ligne-plag
   --blanc-rayon: 50%;
   opacity: var(--interrupteur-actif);
   border-radius: var(--ch-r-round);
-  box-shadow: inset 0 1.4px 1px -.4px rgba(var(--ch-ivoire-97-rgb), .9),
+  box-shadow: inset 0 1.4px 1px -.4px rgba(var(--ch-blanc-97-rgb), .9),
     inset -2.2px 0 2px -1px rgba(var(--blanc-ombre-bord), .32),
     inset 0 -2.6px 2.2px -1px rgba(var(--blanc-ombre-bord), .4);
 }
@@ -9282,15 +9299,15 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   pointer-events: none;
   translate: 0 calc(-0.6px * var(--ligne-liste-leve) + 0.7px * var(--ligne-liste-enfonce));
   background: linear-gradient(180deg,
-    rgba(248, 238, 217, var(--ligne-liste-leve)),
-    rgba(239, 227, 203, var(--ligne-liste-leve)));
+    rgba(252, 244, 213, var(--ligne-liste-leve)),
+    rgba(244, 235, 198, var(--ligne-liste-leve)));
   box-shadow: 0 calc(1.3px * var(--ligne-liste-leve)) calc(2.2px * var(--ligne-liste-leve)) rgba(80, 30, 0, calc(0.3 * var(--ligne-liste-leve))),
     0 0 0 calc(0.5px * var(--ligne-liste-leve)) rgba(120, 85, 40, calc(0.3 * var(--ligne-liste-leve))),
      
-    inset 0 calc(1px * var(--ligne-liste-leve)) 0 rgba(255, 252, 243, calc(0.8 * var(--ligne-liste-leve))),
+    inset 0 calc(1px * var(--ligne-liste-leve)) 0 rgba(var(--ch-blanc-98a-rgb), calc(0.8 * var(--ligne-liste-leve))),
      
     inset 0 calc(2px * var(--ligne-liste-creux)) calc(3.4px * var(--ligne-liste-creux)) rgba(110, 66, 20, calc(0.42 * var(--ligne-liste-creux))),
-    inset 0 calc(-1px * var(--ligne-liste-creux)) 0 rgba(255, 250, 238, calc(0.6 * var(--ligne-liste-creux)));
+    inset 0 calc(-1px * var(--ligne-liste-creux)) 0 rgba(var(--ch-blanc-97-rgb), calc(0.6 * var(--ligne-liste-creux)));
 }
 /* Le reflet : une bande claire en diagonale qui traverse la plaque. Éteinte à l'appui. */
 .c-ligne-liste-fond::before {
@@ -9498,7 +9515,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   border-radius: var(--ch-r-5);
   box-shadow: inset 0 1.5px 2.5px rgba(var(--ch-cacao-25-rgb), 0.45),
     inset 0 0 0 0.5px rgba(var(--ch-cacao-25-rgb), 0.3),
-    0 1px 0 rgba(var(--ch-ivoire-97-rgb), 0.9);
+    0 1px 0 rgba(var(--ch-blanc-97-rgb), 0.9);
 }
 .c-ligne-liste-vide .k-rubis-btn {
   flex: none;
@@ -9855,7 +9872,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   width: var(--message-bref-disque);
   height: var(--message-bref-disque);
   box-shadow: 0 0 0 calc(2.4 * var(--blanc-u)) rgba(var(--ch-noir-4-rgb), 0.95),
-    inset 0 calc(2 * var(--blanc-u)) calc(1.5 * var(--blanc-u)) calc(-1 * var(--blanc-u)) rgba(var(--ch-ivoire-97-rgb), 0.55),
+    inset 0 calc(2 * var(--blanc-u)) calc(1.5 * var(--blanc-u)) calc(-1 * var(--blanc-u)) rgba(var(--ch-blanc-97-rgb), 0.55),
     inset calc(-7 * var(--blanc-u)) 0 calc(6 * var(--blanc-u)) calc(-4 * var(--blanc-u)) rgba(var(--blanc-ombre-bord), 0.30),
     inset 0 calc(-7 * var(--blanc-u)) calc(6 * var(--blanc-u)) calc(-4 * var(--blanc-u)) rgba(var(--blanc-ombre-bord), var(--blanc-bas)),
     calc(1 * var(--blanc-u)) calc(2 * var(--blanc-u)) calc(2 * var(--blanc-u)) rgba(var(--ch-noir-2-rgb), 0.45);
@@ -10179,7 +10196,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 }
 .c-message-champ-champ:not(.c-message-champ-champ--desactive) {
   background: linear-gradient(180deg, rgba(var(--ch-cacao-29a-rgb), .09) 0, rgba(var(--ch-cacao-29a-rgb), 0) 30%),
-    linear-gradient(180deg, var(--ch-creme-89) 0, var(--ch-creme-91) 100%);
+    linear-gradient(180deg, var(--ch-blanc-89) 0, var(--ch-blanc-91) 100%);
   box-shadow: 0 0 0 var(--message-champ-bord-epais) var(--message-champ-bord),
      
     inset 0 0 0 1px rgba(var(--ch-blanc-98-rgb), .85),
@@ -10187,7 +10204,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
     inset 0 2px 2.2px -.6px rgba(var(--ch-cacao-27-rgb), .38),
     inset 1.4px 0 1.6px -.8px rgba(var(--ch-cacao-27-rgb), .22),
      
-    0 1.6px 0 var(--message-champ-bord-epais) rgba(var(--ch-ivoire-95-rgb), .9);
+    0 1.6px 0 var(--message-champ-bord-epais) rgba(var(--ch-blanc-95-rgb), .9);
 }
 /* champ en erreur : le bord prend la teinte griotte, net, sans rubis */
 .c-message-champ-champ--erreur {
@@ -10592,7 +10609,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 .c-onglets-section-onglet.k-blanc-carte::before {
   background: linear-gradient(115deg,
     rgba(var(--ch-blanc-100-rgb), 0) 30%,
-    rgba(255, 252, 244, var(--blanc-sheen)) 46%,
+    rgba(var(--ch-blanc-98a-rgb), var(--blanc-sheen)) 46%,
     rgba(var(--ch-blanc-100-rgb), 0) 62%) var(--onglets-section-reflet-x) 0 / 260% 100% no-repeat;
   transition: background-position var(--onglets-section-duree-ecran) var(--onglets-section-ease);
 }
@@ -10737,7 +10754,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   height: calc(17 * var(--onglets-section-u));
   border-radius: calc(4 * var(--onglets-section-u));
   box-shadow: inset 0 calc(2 * var(--onglets-section-u)) calc(2 * var(--onglets-section-u)) rgba(var(--ch-cacao-18-rgb), 0.55),
-    0 calc(1 * var(--onglets-section-u)) 0 rgba(var(--ch-creme-92-rgb), 0.7);
+    0 calc(1 * var(--onglets-section-u)) 0 rgba(var(--ch-blanc-92-rgb), 0.7);
 }
 .c-onglets-section-carres > i > b {
   --lait-rayon: calc(4 * var(--onglets-section-u));
@@ -10821,8 +10838,8 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 /* ---------- Une case ---------- */
 .c-pagination .c-pagination-case {
   --blanc-rayon: var(--pagination-rayon);
-  --blanc-ivoire-haut: var(--ch-creme-87a);
-  --blanc-ivoire-bas: var(--ch-creme-85);
+  --blanc-ivoire-haut: var(--ch-blanc-87);
+  --blanc-ivoire-bas: var(--ch-blanc-85);
   --blanc-lueur: .4;
   --pagination-reflet: 46%;
   position: relative;
@@ -10847,7 +10864,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 .c-pagination .c-pagination-case::before {
   background: linear-gradient(115deg,
     rgba(var(--ch-blanc-100-rgb), 0) calc(var(--pagination-reflet) - 16%),
-    rgba(255, 252, 244, var(--blanc-sheen)) var(--pagination-reflet),
+    rgba(var(--ch-blanc-98a-rgb), var(--blanc-sheen)) var(--pagination-reflet),
     rgba(var(--ch-blanc-100-rgb), 0) calc(var(--pagination-reflet) + 16%));
 }
 /* Texte : numéro, et nom de l'étape sous lui. Au-dessus de la pose. */
@@ -10921,7 +10938,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 .c-pagination .c-pagination-case.k-blanc-carte:is(a[href], button:enabled):active,
 .c-pagination .c-pagination-case.k-blanc-carte.c-pagination-case--presse {
   box-shadow: inset 0 calc(3.5 * var(--blanc-u)) calc(4 * var(--blanc-u)) calc(-0.5 * var(--blanc-u)) rgba(var(--blanc-ombre-bord), .55),
-    inset 0 calc(-1 * var(--blanc-u)) 0 rgba(var(--ch-ivoire-97-rgb), .5),
+    inset 0 calc(-1 * var(--blanc-u)) 0 rgba(var(--ch-blanc-97-rgb), .5),
     0 0 0 calc(1 * var(--blanc-u)) rgba(var(--blanc-ombre-encre), .22);
 }
 .c-pagination .c-pagination-case--courante:is(a[href], button:enabled):active .c-pagination-pose,
@@ -10971,7 +10988,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   height: 6px;
   border-radius: var(--ch-r-1-5);
   background: var(--pagination-creux);
-  box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-ivoire-97-rgb), .8);
+  box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-blanc-97-rgb), .8);
   animation: c-pagination-allume 1.3s var(--ch-ease-standard) infinite;
 }
 .c-pagination .c-pagination-carre:nth-child(2) { animation-delay: var(--ch-dur-170ms); }
@@ -10979,7 +10996,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 @keyframes c-pagination-allume {
   0%, 8% {
     background: var(--pagination-creux);
-    box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-ivoire-97-rgb), .8);
+    box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-blanc-97-rgb), .8);
   }
   16%, 66% {
     background: var(--pagination-allume);
@@ -10987,7 +11004,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   }
   78%, 100% {
     background: var(--pagination-creux);
-    box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-ivoire-97-rgb), .8);
+    box-shadow: inset 0 1px 1.6px rgba(var(--ch-cacao-21-rgb), .55), 0 1px 0 rgba(var(--ch-blanc-97-rgb), .8);
   }
 }
 /* ---------- Succès : coche pistache, brillance du tempérage qui passe une fois ---------- */
@@ -11015,7 +11032,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
       rgba(var(--ch-blanc-100-rgb), 0) calc(var(--pagination-brillance) + 15%)),
     linear-gradient(115deg,
       rgba(var(--ch-blanc-100-rgb), 0) calc(var(--pagination-reflet) - 16%),
-      rgba(255, 252, 244, var(--blanc-sheen)) var(--pagination-reflet),
+      rgba(var(--ch-blanc-98a-rgb), var(--blanc-sheen)) var(--pagination-reflet),
       rgba(var(--ch-blanc-100-rgb), 0) calc(var(--pagination-reflet) + 16%));
 }
 @keyframes c-pagination-temperage {
@@ -11035,7 +11052,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 /* ---------- Contraste renforcé : sans grain, bords durcis ---------- */
 @media (prefers-contrast: more) {
   .c-pagination .c-pagination-case.k-blanc-carte {
-    background: var(--ch-creme-89);
+    background: var(--ch-blanc-89);
     box-shadow: 0 0 0 1.5px var(--pagination-encre);
   }
   .c-pagination .c-pagination-case--desactive {
@@ -11093,8 +11110,8 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   --puce-encre-nu: #7d5724;
   --puce-anneau: var(--ch-noir-11a);
   --puce-anneau-liseré: var(--ch-creme-91);
-  --puce-presse-haut: var(--ch-biscuit-80);
-  --puce-presse-bas: var(--ch-creme-85);
+  --puce-presse-haut: var(--ch-blanc-80);
+  --puce-presse-bas: var(--ch-blanc-85);
   --puce-creux: var(--ch-caramel-62);
   --puce-allume: #8a5a3d;
   --puce-d-toucher: var(--ch-dur-90ms);
@@ -11243,7 +11260,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   background: linear-gradient(180deg, var(--puce-presse-haut) 0, var(--puce-presse-bas) 100%);
   box-shadow: inset 0 2.2px 3px rgba(105, 66, 28, .5),
     inset 1.6px 0 2px -1px rgba(105, 66, 28, .32),
-    inset 0 -1px 0 rgba(var(--ch-ivoire-97-rgb), .55),
+    inset 0 -1px 0 rgba(var(--ch-blanc-97-rgb), .55),
     0 0 0 .44px rgba(var(--ch-noir-16-rgb), .3),
     0 .5px .8px rgba(var(--ch-noir-16-rgb), .18);
 }
@@ -11298,13 +11315,13 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   background: var(--puce-creux);
   box-shadow: inset 0 1.2px 1.6px rgba(var(--ch-cacao-25-rgb), .55),
     inset 1px 0 1.2px rgba(var(--ch-cacao-25-rgb), .3),
-    0 .7px 0 rgba(var(--ch-ivoire-97-rgb), .95);
+    0 .7px 0 rgba(var(--ch-blanc-97-rgb), .95);
 }
 .c-puce-carre.is-allume {
   background: var(--puce-allume);
   box-shadow: inset 0 .8px 0 rgba(var(--ch-creme-89a-rgb), .4),
     inset 0 -1.2px 1px rgba(var(--ch-noir-8-rgb), .4),
-    0 .7px 0 rgba(var(--ch-ivoire-97-rgb), .95);
+    0 .7px 0 rgba(var(--ch-blanc-97-rgb), .95);
 }
 /* ---------- mouvement réduit : l'effet final reste, pas la trajectoire ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -11485,10 +11502,10 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 /* ---- pressé : l'estampage s'enfonce, ombre interne, reflet éteint, léger recul ---- */
 .c-selecteur-champ:active:not(:disabled) .c-selecteur-plaque, .c-selecteur[data-etat="presse"] .c-selecteur-plaque {
   transform: translateY(1px);
-  background: linear-gradient(180deg, var(--ch-creme-85) 0, var(--ch-creme-87a) 60%, var(--ch-creme-87a) 100%);
+  background: linear-gradient(180deg, var(--ch-blanc-85) 0, var(--ch-blanc-87) 60%, var(--ch-blanc-87) 100%);
   box-shadow: inset 0 2.4px 3.4px rgba(var(--ch-cacao-27-rgb), .5),
     inset 1.4px 0 2px -.4px rgba(var(--ch-cacao-27-rgb), .3),
-    inset 0 -1px 0 rgba(var(--ch-ivoire-97-rgb), .55),
+    inset 0 -1px 0 rgba(var(--ch-blanc-97-rgb), .55),
     0 0 0 .44px rgba(var(--ch-noir-16-rgb), .3);
 }
 .c-selecteur-champ:active:not(:disabled) .c-selecteur-plaque::before, .c-selecteur[data-etat="presse"] .c-selecteur-plaque::before {
@@ -11531,13 +11548,13 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 }
 /* éteint : creux de biscuit ; allumé : carré de lait (matières du kit) */
 .c-selecteur-carre.k-biscuit-nu-carre {
-  box-shadow: inset 0 1px 1.6px rgba(var(--ch-noir-15c-rgb), .6), 0 .5px 0 rgba(var(--ch-ivoire-97-rgb), .7);
+  box-shadow: inset 0 1px 1.6px rgba(var(--ch-noir-15c-rgb), .6), 0 .5px 0 rgba(var(--ch-blanc-97-rgb), .7);
 }
 .c-selecteur-carre[data-allume] { box-shadow: none; }
 /* ---- lecture seule : fond ivoire sans creux ni relief, texte noir net, pas de flèche ---- */
 .c-selecteur[data-etat="lecture"] .c-selecteur-champ { cursor: default; }
 .c-selecteur[data-etat="lecture"] .c-selecteur-plaque {
-  background: var(--ch-creme-91);
+  background: var(--ch-blanc-91);
   box-shadow: 0 0 0 1.4px #cdb28a;
   transform: none;
 }
@@ -11549,7 +11566,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 .c-selecteur-fente { display: none; }
 .c-selecteur[data-etat="erreur"] .c-selecteur-plaque {
   box-shadow: inset 0 0 0 1.8px var(--selecteur-griotte),
-    inset 0 2px 1px -.4px rgba(var(--ch-ivoire-97-rgb), .5),
+    inset 0 2px 1px -.4px rgba(var(--ch-blanc-97-rgb), .5),
     0 0 0 .44px rgba(var(--ch-noir-16-rgb), .3),
     .44px .9px .9px rgba(var(--ch-noir-16-rgb), .22);
 }
@@ -11745,9 +11762,9 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   right: 0;
   top: var(--selecteur-ligne);
   height: var(--selecteur-ligne);
-  background: linear-gradient(180deg, var(--ch-creme-81) 0, var(--ch-creme-81) 50%, var(--ch-biscuit-80) 100%);
+  background: linear-gradient(180deg, var(--ch-blanc-81) 0, var(--ch-blanc-81) 50%, var(--ch-blanc-80) 100%);
   box-shadow: inset 0 1.6px 2px -.4px rgba(var(--ch-lait-31a-rgb), .38),
-    inset 0 -1px 0 rgba(var(--ch-ivoire-97-rgb), .65),
+    inset 0 -1px 0 rgba(var(--ch-blanc-97-rgb), .65),
     0 -.6px 0 rgba(var(--ch-lait-41b-rgb), .25);
   pointer-events: none;
 }
@@ -11798,17 +11815,17 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
 .c-selecteur[data-etat="desactive"] .c-selecteur-item + .c-selecteur-item::before { opacity: .45; }
 .c-selecteur[data-etat="desactive"] .c-selecteur-defil { pointer-events: none; }
 .c-selecteur[data-etat="lecture"] .c-selecteur-roue .c-selecteur-plaque {
-  background: var(--ch-creme-91);
+  background: var(--ch-blanc-91);
   box-shadow: 0 0 0 1.4px #cdb28a;
 }
 .c-selecteur[data-etat="lecture"] .c-selecteur-roue .c-selecteur-bande {
-  background: var(--ch-creme-85);
+  background: var(--ch-blanc-85);
   box-shadow: none;
 }
 .c-selecteur[data-etat="lecture"] .c-selecteur-defil { pointer-events: none; }
 .c-selecteur[data-etat="lecture"] .c-selecteur-item + .c-selecteur-item::before { display: none; }
 .c-selecteur-roue[data-presse] .c-selecteur-bande {
-  box-shadow: inset 0 2.6px 3.4px -.4px rgba(var(--ch-cacao-27-rgb), .55), inset 0 -1px 0 rgba(var(--ch-ivoire-97-rgb), .65);
+  box-shadow: inset 0 2.6px 3.4px -.4px rgba(var(--ch-cacao-27-rgb), .55), inset 0 -1px 0 rgba(var(--ch-blanc-97-rgb), .65);
 }
 /* date : le plateau ouvert porte trois roues côte à côte */
 .c-selecteur-panneau {
@@ -12247,7 +12264,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
   --tableau-teinte-raye: 140, 85, 30;
   --tableau-teinte-raye-force: 0.055;
   --tableau-rainure: #bd9a69;
-  --tableau-rainure-reflet: var(--ch-creme-92);
+  --tableau-rainure-reflet: var(--ch-blanc-92);
   --tableau-rainure-marge: 8px;
   --tableau-creux-h: 11px;
   --tableau-creux-l: 22px;
@@ -12291,7 +12308,7 @@ a.c-ligne-liste-corps, button.c-ligne-liste-corps { cursor: pointer; }
     var(--tableau-rainure) calc(2 * var(--blanc-u)),
     var(--tableau-rainure-reflet) calc(2.6 * var(--blanc-u)),
     var(--tableau-rainure-reflet) calc(3.4 * var(--blanc-u)),
-    rgba(var(--ch-creme-92-rgb), 0) 100%);
+    rgba(var(--ch-blanc-92-rgb), 0) 100%);
 }
 .c-tableau-entete .c-tableau-cellule { font-weight: 600; }
 /* Rainures verticales entre colonnes : moulées, qui s'éteignent aux deux bouts (hauteur relevée : 70 % de la bande). */
