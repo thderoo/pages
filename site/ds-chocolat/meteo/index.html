@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Weather screen</title>
+<!-- Écran météo de l'exemple validé, reconstruit à l'échelle 390 x 780 px CSS avec la feuille unique ../design-system/chocolat.css
+     et les défs SVG de chocolat.defs.html (collées juste après <body>). Polices : celles de la feuille (--kit-serif, --kit-sans). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../chocolat.css">
+<style>
+  /* Mise en page seulement : aucune matière ici (les matières viennent de la feuille chocolat.css). */
+  html, body { margin: 0; background: var(--ch-biscuit-66); }
+  .ecran { position: relative; width: 390px; height: 780px; overflow: hidden; --u: .4397px;
+           font-family: var(--kit-sans); color: var(--ch-noir-14); -webkit-text-size-adjust: 100%; }
+  .ecran > *, .ecran .a { position: absolute; }
+  :where(.ecran) a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  .ecran button { font: inherit; }
+  .t { position: absolute; margin: 0; white-space: nowrap; line-height: 1; }
+  .serif { font-family: var(--kit-serif); font-variant-numeric: lining-nums; translate: 0 .09em; } /* la ligne de base de Caladea est .09 em plus haute que celle de la boîte de l'exemple */
+  .ico { display: block; position: absolute; }
+  h2.serif { translate: 0 .055em; }
+
+  /* plaque : le contenu passe au-dessus du grain et du reflet de la matière */
+  .plaque > * { z-index: 1; }
+  .plaque .t, .plaque .ico { position: absolute; }
+  .heure > * { position: absolute; z-index: 1; }
+  .heure .t { left: 0; width: 100%; text-align: center; }
+  .heure .h { top: 8.9px; font-size: 10.72px; color: var(--ch-creme-91); font-weight: 600; }
+  .heure .d { top: 52.8px; font-size: 17.8px; color: var(--ch-creme-81); font-weight: 600; }
+  .deg { font-size: 1em; }
+  .heure .p { top: 73.8px; font-size: 10.4px; color: var(--ch-creme-89); font-weight: 500; }
+  .now > * { position: absolute; }
+  .now .t { left: 0; right: 0; text-align: center; }
+
+  /* cartes et liste (relevés du kit blanc, en unités de l'exemple) */
+  .carte { position: absolute; }
+  .carte-texte { position: absolute; left: calc(131 * var(--u)); top: calc(25 * var(--u)); right: 0; }
+  .lib { font-size: calc(22 * var(--u)); line-height: calc(26 * var(--u)); font-weight: 400; }
+  .val { margin-top: calc(2.5 * var(--u)); line-height: calc(54 * var(--u)); white-space: nowrap; position: relative; top: -1px; }
+  .val b { font: 800 19.8px/1 var(--kit-serif); font-variant-numeric: lining-nums; }
+  .val i { font: 700 15.5px/1 var(--kit-sans); font-style: normal; margin-left: 3.5px; }
+  .sub { font-size: calc(23.5 * var(--u)); line-height: calc(24 * var(--u)); margin-top: calc(-2.5 * var(--u)); }
+  .liste { position: absolute; padding-top: calc(4.5 * var(--u)); }
+  .liste .ligne > * { position: absolute; }
+  .liste .jour { left: calc(30 * var(--u)); top: 50%; margin-top: calc(-2 * var(--u)); transform: translateY(-50%); font-weight: 800; font-size: 11.43px; }
+  .liste .pct { left: calc(298 * var(--u)); top: 50%; margin-top: calc(-2 * var(--u)); transform: translateY(-50%); font-size: 9.9px; }
+  .liste .tmin, .liste .tmax { top: 50%; margin-top: calc(-2 * var(--u)); transform: translateY(-50%); font-size: calc(27 * var(--u)); }
+  .liste .tmin { left: calc(446 * var(--u)); }
+  .liste .tmax { left: calc(743 * var(--u)); }
+  .liste .k-blanc-gouttiere { left: calc(500.5 * var(--u)); width: calc(229 * var(--u)); top: 50%; margin-top: calc(-8.5 * var(--u)); }
+
+  /* ligne sans données : texte creusé dans le biscuit nu */
+  .nu > * { position: absolute; }
+
+  /* barre du bas */
+  .barre { position: absolute; left: 0; top: calc(1625.4 * var(--u)); width: 390px; height: calc(148.6 * var(--u)); --demo-u: calc(1px / 2.2744); }
+  .barre .k-noir-tile { cursor: pointer; }
+  .tile-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; transform: translateX(calc(var(--dx, 0) * var(--demo-u))); }
+  .tile-content .k-noir-icon, .tile-content .ico { margin-top: calc(19 * var(--demo-u)); position: static; }
+  .tile-content .k-noir-label { position: absolute; top: calc(79.6 * var(--demo-u) - 1px); }
+  .couvert { visibility: hidden; }
+  .onglet-today { left: 0; top: 714.9px; width: 103.6px; height: 65.1px; }
+  .onglet-today > * { position: absolute; }
+  .onglet-today .k-rubis-tab-icon { left: 43.1px; top: 9.9px; }
+  .onglet-today .k-rubis-tab-label { left: 0; right: 0; top: 33.2px; text-align: center; margin-left: 2px; }
+  .onglet-today .k-rubis-tab-line { left: 22.9px; top: 49.7px; }
+  .onglet-radar { left: 196.1px; top: 716.2px; width: 91.9px; height: 61.2px; }
+  .onglet-radar > * { position: absolute; }
+  .onglet-radar .nom { left: 0; right: 0; top: 33px; text-align: center; font-size: 10.5px; font-weight: 600; line-height: 1; }
+  .b-add .plus { display: block; width: 18.3px; height: 18.7px; filter: url(#k-rubis-f-raised); }
+</style>
+</head>
+<body>
+<!-- Défs SVG du design system chocolat : à inclure une fois dans le <body>, avant tout élément qui les référence par id.
+     Contenu : matières du kit (badge, estampe, rubis, icônes) puis symboles, dégradés et filtres des composants. Un id, une définition. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- kit badge -->
+    <filter id="k-badge-relief" x="-8%" y="-40%" width="116%" height="190%" color-interpolation-filters="sRGB">
+      <!-- forme lissée : creux entre les lobes arrondis (flou puis seuil sur l'alpha) -->
+      <feGaussianBlur in="k-badge-shape" stdDeviation="0.6" result="k-badge-soft"/>
+      <feComponentTransfer in="k-badge-soft" result="k-badge-shape">
+        <feFuncA type="linear" slope="7" intercept="-3"/>
+      </feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="k-badge-shape" operator="in" result="k-badge-face"/>
+      <!-- rebord éclairé : la forme moins la forme décalée vers le bas à droite -->
+      <feOffset in="k-badge-shape" dx="0.75" dy="0.85" result="k-badge-sh-lit"/>
+      <feComposite in="k-badge-shape" in2="k-badge-sh-lit" operator="out" result="k-badge-lit-a"/>
+      <feGaussianBlur in="k-badge-lit-a" stdDeviation="0.3" result="k-badge-lit-b"/>
+      <feFlood flood-color="#f6d58f" flood-opacity="0.85"/>
+      <feComposite in2="k-badge-lit-b" operator="in" result="k-badge-lit"/>
+      <!-- rebord dans l'ombre : la forme moins la forme décalée vers le haut à gauche -->
+      <feOffset in="k-badge-shape" dx="-0.5" dy="-0.65" result="k-badge-sh-dark"/>
+      <feComposite in="k-badge-shape" in2="k-badge-sh-dark" operator="out" result="k-badge-dark-a"/>
+      <feGaussianBlur in="k-badge-dark-a" stdDeviation="0.35" result="k-badge-dark-b"/>
+      <feFlood flood-color="#8c5a1f" flood-opacity="0.62"/>
+      <feComposite in2="k-badge-dark-b" operator="in" result="k-badge-dark"/>
+      <!-- liseré sombre fin, tout autour, sous le rebord éclairé -->
+      <feMorphology in="k-badge-shape" operator="erode" radius="0.45" result="k-badge-er"/>
+      <feComposite in="k-badge-shape" in2="k-badge-er" operator="out" result="k-badge-edge-a"/>
+      <feFlood flood-color="#9a6628" flood-opacity="0.35"/>
+      <feComposite in2="k-badge-edge-a" operator="in" result="k-badge-edge"/>
+      <!-- ombre portée : contact serré puis ombre large, sur la plaque -->
+      <feGaussianBlur in="k-badge-shape" stdDeviation="0.8" result="k-badge-a1"/>
+      <feFlood flood-color="#3a1a08" flood-opacity="0.5"/>
+      <feComposite in2="k-badge-a1" operator="in" result="k-badge-ambient"/>
+      <feOffset in="k-badge-shape" dx="0.25" dy="1.0" result="k-badge-c0"/>
+      <feGaussianBlur in="k-badge-c0" stdDeviation="0.8" result="k-badge-c1"/>
+      <feFlood flood-color="#2a1004" flood-opacity="0.85"/>
+      <feComposite in2="k-badge-c1" operator="in" result="k-badge-contact"/>
+      <feOffset in="k-badge-shape" dx="0.4" dy="1.7" result="k-badge-w0"/>
+      <feGaussianBlur in="k-badge-w0" stdDeviation="1.3" result="k-badge-w1"/>
+      <feFlood flood-color="#2a1004" flood-opacity="0.38"/>
+      <feComposite in2="k-badge-w1" operator="in" result="k-badge-wide"/>
+      <feMerge>
+        <feMergeNode in="k-badge-wide"/>
+        <feMergeNode in="k-badge-ambient"/>
+        <feMergeNode in="k-badge-contact"/>
+        <feMergeNode in="k-badge-face"/>
+        <feMergeNode in="k-badge-edge"/>
+        <feMergeNode in="k-badge-dark"/>
+        <feMergeNode in="k-badge-lit"/>
+      </feMerge>
+    </filter>
+    <!-- kit estampe -->
+    <filter id="k-estampe-leve" x="-8%" y="-8%" width="120%" height="125%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="h"/>
+      <feSpecularLighting in="h" surfaceScale="2.4" specularConstant=".4" specularExponent="30" lighting-color="#f3d3a5" result="spec">
+        <feDistantLight azimuth="225" elevation="42"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
+      <feDiffuseLighting in="h" surfaceScale="2.4" diffuseConstant="1.25" lighting-color="#fff" result="diff">
+        <feDistantLight azimuth="225" elevation="53"/>
+      </feDiffuseLighting>
+      <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1=".4" k2=".6" k3="0" k4="0" result="lit"/>
+      <feComposite in="lit" in2="SourceAlpha" operator="in" result="litIn"/>
+      <feComposite in="litIn" in2="specIn" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="face"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="haloB"/>
+      <feFlood flood-color="#c28a5e" flood-opacity=".55"/>
+      <feComposite in2="haloB" operator="in" result="halo"/>
+    
+      <feMorphology in="SourceAlpha" operator="dilate" radius=".45" result="dil"/>
+      <feFlood flood-color="#5a2a0c" flood-opacity=".75"/>
+      <feComposite in2="dil" operator="in" result="contact"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".6" result="s1b"/>
+      <feOffset in="s1b" dx=".9" dy="1.1" result="s1o"/>
+      <feFlood flood-color="#3a1303" flood-opacity=".9"/>
+      <feComposite in2="s1o" operator="in" result="s1"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="s2b"/>
+      <feOffset in="s2b" dx="1.4" dy="2" result="s2o"/>
+      <feFlood flood-color="#3a1403" flood-opacity=".45"/>
+      <feComposite in2="s2o" operator="in" result="s2"/>
+    
+      <feMerge>
+        <feMergeNode in="halo"/>
+        <feMergeNode in="s2"/>
+        <feMergeNode in="s1"/>
+        <feMergeNode in="contact"/>
+        <feMergeNode in="face"/>
+      </feMerge>
+    </filter>
+    <filter id="k-estampe-moule" x="-10%" y="-10%" width="125%" height="125%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.7" result="h"/>
+      <feDiffuseLighting in="h" surfaceScale="2.7" diffuseConstant="1.15" lighting-color="#fff" result="diff">
+        <feDistantLight azimuth="225" elevation="55"/>
+      </feDiffuseLighting>
+      <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="lit"/>
+      <feComposite in="lit" in2="SourceAlpha" operator="in" result="litIn"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".8" result="h2"/>
+      <feSpecularLighting in="h2" surfaceScale="2.2" specularConstant=".85" specularExponent="20" lighting-color="#f2cfae" result="spec">
+        <feDistantLight azimuth="225" elevation="25"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
+      <feComposite in="litIn" in2="specIn" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="face"/>
+    
+      <feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="dil"/>
+      <feGaussianBlur in="dil" stdDeviation=".9" result="dilb0"/>
+      <feOffset in="dilb0" dx=".5" dy=".7" result="dilb"/>
+      <feFlood flood-color="#5a2d14" flood-opacity=".6"/>
+      <feComposite in2="dilb" operator="in" result="groove"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="dil2"/>
+      <feGaussianBlur in="dil2" stdDeviation=".5" result="dil2b0"/>
+      <feOffset in="dil2b0" dx=".4" dy=".5" result="dil2b"/>
+      <feFlood flood-color="#3a1607" flood-opacity=".55"/>
+      <feComposite in2="dil2b" operator="in" result="groove2"/>
+    
+      <feMerge>
+        <feMergeNode in="groove"/>
+        <feMergeNode in="groove2"/>
+        <feMergeNode in="face"/>
+      </feMerge>
+    </filter>
+    <filter id="k-estampe-grave" x="-8%" y="-12%" width="120%" height="135%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".9" result="h"/>
+      <feDiffuseLighting in="h" surfaceScale="3" diffuseConstant="1.27" lighting-color="#fff" result="diff">
+        <feDistantLight azimuth="225" elevation="52"/>
+      </feDiffuseLighting>
+      <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="lit"/>
+      <feComposite in="lit" in2="SourceAlpha" operator="in" result="litIn"/>
+      <feSpecularLighting in="h" surfaceScale="3" specularConstant=".75" specularExponent="14" lighting-color="#a07656" result="spec">
+        <feDistantLight azimuth="225" elevation="25"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
+      <feComposite in="litIn" in2="specIn" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="face"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".6" result="sb"/>
+      <feOffset in="sb" dx="-.4" dy="-.5" result="so"/>
+      <feFlood flood-color="#6a4a30" flood-opacity=".3"/>
+      <feComposite in2="so" operator="in" result="shade"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".3" result="lb"/>
+      <feOffset in="lb" dx=".5" dy=".6" result="lo"/>
+      <feFlood flood-color="#fff3d6" flood-opacity=".95"/>
+      <feComposite in2="lo" operator="in" result="line"/>
+    
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="gb"/>
+      <feOffset in="gb" dx=".5" dy="1.2" result="go"/>
+      <feFlood flood-color="#fff0c8" flood-opacity=".5"/>
+      <feComposite in2="go" operator="in" result="glow"/>
+    
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="shade"/>
+        <feMergeNode in="line"/>
+        <feMergeNode in="face"/>
+      </feMerge>
+    </filter>
+    <!-- kit rubis -->
+    <linearGradient id="k-rubis-g-sand" gradientUnits="userSpaceOnUse" x1="0" y1="645" x2="0" y2="694">
+      <stop offset="0" stop-color="#ecd1a8"/><stop offset=".55" stop-color="#e2c195"/><stop offset="1" stop-color="#d4af82"/>
+    </linearGradient>
+    <linearGradient id="k-rubis-g-sun" gradientUnits="userSpaceOnUse" x1="0" y1="658" x2="0" y2="678">
+      <stop offset="0" stop-color="#e4c498"/><stop offset="1" stop-color="#d2ad7e"/>
+    </linearGradient>
+    <linearGradient id="k-rubis-g-pink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cb4d5a"/><stop offset=".6" stop-color="#c64855"/><stop offset="1" stop-color="#bc4250"/>
+    </linearGradient>
+    <linearGradient id="k-rubis-g-cream" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf0e1"/><stop offset="1" stop-color="#ecd9c3"/>
+    </linearGradient>
+    <linearGradient id="k-rubis-g-rubis" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b53442"/><stop offset="1" stop-color="#9d2432"/>
+    </linearGradient>
+    <filter id="k-rubis-f-raised" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".7" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2.2" specularConstant=".9" specularExponent="34" lighting-color="#ffc4c8" result="s">
+        <feDistantLight azimuth="-120" elevation="50"/>
+      </feSpecularLighting>
+      <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+      <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k1="0" k2="1" k3=".4" k4="0" result="lit"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".5" result="sh0"/>
+      <feOffset in="sh0" dx=".25" dy=".9" result="sh1"/>
+      <feFlood flood-color="#3a0509" flood-opacity=".75"/>
+      <feComposite in2="sh1" operator="in" result="sh"/>
+      <feMerge><feMergeNode in="sh"/><feMergeNode in="lit"/></feMerge>
+    </filter>
+    <filter id="k-rubis-f-inlay" x="-15%" y="-15%" width="130%" height="140%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="m"/>
+      <feGaussianBlur in="m" stdDeviation=".7" result="halo0"/>
+      <feFlood flood-color="#5a1220" flood-opacity=".55"/>
+      <feComposite in2="halo0" operator="in" result="halo"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".9" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2" specularConstant=".9" specularExponent="42" lighting-color="#f2dfb4" result="s">
+        <feDistantLight azimuth="-125" elevation="48"/>
+      </feSpecularLighting>
+      <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+      <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k1="0" k2="1" k3=".5" k4="0" result="lit"/>
+      <feOffset in="SourceAlpha" dx=".4" dy="1.7" result="w0"/>
+      <feFlood flood-color="#9a7240" flood-opacity=".95"/>
+      <feComposite in2="w0" operator="in" result="wall"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="d0"/>
+      <feOffset in="d0" dx="1" dy="3" result="d1"/>
+      <feFlood flood-color="#3a0509" flood-opacity=".8"/>
+      <feComposite in2="d1" operator="in" result="drop"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="drop"/><feMergeNode in="wall"/><feMergeNode in="lit"/></feMerge>
+    </filter>
+    <symbol id="k-rubis-i-cloudsun" viewBox="72 643 62 52">
+      <g filter="url(#k-rubis-f-inlay)" fill="none" stroke="url(#k-rubis-g-sand)" stroke-width="2.6" stroke-linecap="round">
+        <path d="M97.8 646.5V654"/><path d="M80.8 652.8L85.4 657"/><path d="M115.6 652.8L111.6 657"/>
+        <path d="M74 669H80.6"/><path d="M78.6 681.8L82.2 679.2"/>
+      </g>
+      <circle filter="url(#k-rubis-f-inlay)" cx="94.6" cy="667.8" r="9.7" fill="url(#k-rubis-g-sun)"/>
+      <path filter="url(#k-rubis-f-inlay)" fill="url(#k-rubis-g-sand)"
+            d="M84.7 688C84.5 682.5 86.7 677.5 94.5 676.3C99.5 676 101 673.5 101 669C101.2 665.5 104.5 663.5 109 663.2C112.5 662.2 119 662.2 122.5 665C125.2 667 125.4 671.5 125.3 674.5C130.5 674.8 133.6 677 133.6 683V688C133.6 691 131.5 692.2 128.5 692.2H89.5C86.5 692.2 84.7 691 84.7 688Z"/>
+    </symbol>
+    <symbol id="k-rubis-i-home" viewBox="0 0 46 44">
+      <path fill="url(#k-rubis-g-pink)" stroke="url(#k-rubis-g-pink)" stroke-width="1.4" stroke-linejoin="round"
+            d="M22.9 1L45.2 20.8H41V43.2H27.8V29.8H18.7V43.2H5V20.8H.8Z"/>
+    </symbol>
+    <symbol id="k-rubis-i-plus" viewBox="0 0 38 39">
+      <path fill="url(#k-rubis-g-cream)" stroke="url(#k-rubis-g-cream)" stroke-width="1.2" stroke-linejoin="round"
+            d="M16.9 1.5H21.1V17.4H36.5V21.6H21.1V37.5H16.9V21.6H1.5V17.4H16.9Z"/>
+    </symbol>
+    <symbol id="k-rubis-i-chev" viewBox="0 0 14 22">
+      <path fill="none" stroke="url(#k-rubis-g-rubis)" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" d="M2.6 2.4L11.2 11 2.6 19.6"/>
+    </symbol>
+    <!-- kit icones -->
+    <linearGradient id="k-icones-g-moule" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3C08F"/><stop offset="1" stop-color="#D4AA75"/></linearGradient>
+    <linearGradient id="k-icones-g-moule-rubis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ECD3AB"/><stop offset="1" stop-color="#DDB98B"/></linearGradient>
+    <linearGradient id="k-icones-g-grave" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3E1C0D"/><stop offset="1" stop-color="#55291A"/></linearGradient>
+    <linearGradient id="k-icones-g-grave-plein" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86512D"/><stop offset="1" stop-color="#6C3B1E"/></linearGradient>
+    <linearGradient id="k-icones-g-grave-biscuit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A67F43"/><stop offset="1" stop-color="#A07839"/></linearGradient>
+    <linearGradient id="k-icones-g-rubis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BC4552"/><stop offset="1" stop-color="#A93441"/></linearGradient>
+    <linearGradient id="k-icones-g-rubis-vif" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DC5869"/><stop offset="1" stop-color="#CA4A5B"/></linearGradient>
+    <linearGradient id="k-icones-g-rubis-fonce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8404C"/><stop offset="1" stop-color="#A93441"/></linearGradient>
+    <linearGradient id="k-icones-g-creme" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FAF0DC"/><stop offset="1" stop-color="#E9DABB"/></linearGradient>
+    <linearGradient id="k-icones-g-ivoire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2E2C6"/><stop offset="1" stop-color="#DCC199"/></linearGradient>
+    <filter id="k-icones-moule" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.4" result="d"/>
+      <feOffset in="d" dx="0.35" dy="0.6" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.75" result="d3"/>
+      <feFlood flood-color="#34120A" flood-opacity="0.92"/>
+      <feComposite in2="d3" operator="in" result="groove"/>
+      <feOffset in="d" dx="1.7" dy="2.2" result="l1"/>
+      <feGaussianBlur in="l1" stdDeviation="1.3" result="l2"/>
+      <feFlood flood-color="#C9926A" flood-opacity="0.38"/>
+      <feComposite in2="l2" operator="in" result="lip"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.05" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3.4" specularConstant="0.4" specularExponent="20" lighting-color="#FFF3D6" result="spec">
+        <feDistantLight azimuth="225" elevation="40"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="-1.1" dy="-1.4" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="1.1" result="i2"/>
+      <feFlood flood-color="#8A5526" flood-opacity="0.45"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feMerge><feMergeNode in="lip"/><feMergeNode in="groove"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <filter id="k-icones-moule-rubis" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="d"/>
+      <feOffset in="d" dx="0.5" dy="0.9" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="1.1" result="d3"/>
+      <feFlood flood-color="#6A1520" flood-opacity="0.75"/>
+      <feComposite in2="d3" operator="in" result="groove"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3" specularConstant="1" specularExponent="20" lighting-color="#FFFFFF" result="spec">
+        <feDistantLight azimuth="225" elevation="42"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="-0.9" dy="-1.2" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="1" result="i2"/>
+      <feFlood flood-color="#9A5A3A" flood-opacity="0.5"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feMerge><feMergeNode in="groove"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <filter id="k-icones-grave" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/>
+      <feOffset in="d" dx="0.7" dy="1" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.8" result="d3"/>
+      <feFlood flood-color="#FFF9EA" flood-opacity="0.97"/>
+      <feComposite in2="d3" operator="in" result="halo"/>
+      <feMorphology in="SourceAlpha" operator="erode" radius="1.25" result="e"/>
+      <feGaussianBlur in="e" stdDeviation="0.55" result="e2"/>
+      <feComposite in="SourceAlpha" in2="e2" operator="out" result="ring"/>
+      <feFlood flood-color="#2A0E04" flood-opacity="0.95"/>
+      <feComposite in2="ring" operator="in" result="rim"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3.2" specularConstant="0.5" specularExponent="12" lighting-color="#9A6A4A" result="spec">
+        <feDistantLight azimuth="225" elevation="45"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/><feMergeNode in="spec2"/><feMergeNode in="rim"/></feMerge>
+    </filter>
+    <filter id="k-icones-grave-biscuit" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="d"/>
+      <feOffset in="d" dx="0.6" dy="1" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.8" result="d3"/>
+      <feFlood flood-color="#F7DB98" flood-opacity="0.85"/>
+      <feComposite in2="d3" operator="in" result="halo"/>
+      <feMorphology in="SourceAlpha" operator="erode" radius="1.0" result="e"/>
+      <feGaussianBlur in="e" stdDeviation="0.5" result="e2"/>
+      <feComposite in="SourceAlpha" in2="e2" operator="out" result="ring"/>
+      <feFlood flood-color="#4F3716" flood-opacity="0.8"/>
+      <feComposite in2="ring" operator="in" result="rim"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.3" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2.4" specularConstant="0.8" specularExponent="10" lighting-color="#C9A163" result="spec">
+        <feDistantLight azimuth="225" elevation="45"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/><feMergeNode in="spec2"/><feMergeNode in="rim"/></feMerge>
+    </filter>
+    <filter id="k-icones-noir" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="0.9" dy="1.3" result="s1"/>
+      <feGaussianBlur in="s1" stdDeviation="0.9" result="s2"/>
+      <feFlood flood-color="#0E0502" flood-opacity="0.85"/>
+      <feComposite in2="s2" operator="in" result="shadow"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.9" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2.6" specularConstant="0.55" specularExponent="14" lighting-color="#D8C8BA" result="spec">
+        <feDistantLight azimuth="225" elevation="40"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="-0.8" dy="-1" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="0.8" result="i2"/>
+      <feFlood flood-color="#4A3830" flood-opacity="0.75"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <filter id="k-icones-rubis-fin" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="d"/>
+      <feOffset in="d" dx="0.5" dy="0.8" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.7" result="d3"/>
+      <feFlood flood-color="#F6DC9C" flood-opacity="0.85"/>
+      <feComposite in2="d3" operator="in" result="halo"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2" specularConstant="0.5" specularExponent="14" lighting-color="#F0A0A8" result="spec">
+        <feDistantLight azimuth="225" elevation="42"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <filter id="k-icones-rubis" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="1.3" dy="2.6" result="s1"/>
+      <feGaussianBlur in="s1" stdDeviation="2" result="s2"/>
+      <feFlood flood-color="#5A2A0C" flood-opacity="0.5"/>
+      <feComposite in2="s2" operator="in" result="shadow"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3.6" specularConstant="0.6" specularExponent="16" lighting-color="#F0A0A8" result="spec">
+        <feDistantLight azimuth="225" elevation="40"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="-1" dy="-1.4" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="1.2" result="i2"/>
+      <feFlood flood-color="#6E1423" flood-opacity="0.65"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <symbol id="k-icones-sun" viewBox="215 636 70 66">
+      <g class="k-icones-f">
+        <circle class="k-icones-b" cx="250.2" cy="670.3" r="13.8"/>
+        <rect class="k-icones-b" x="268.8" y="668.75" width="10.2" height="3.1" rx="1.55"/>
+        <rect class="k-icones-b" x="261.86" y="685.51" width="10.2" height="3.1" rx="1.55" transform="rotate(45 266.96 687.06)"/>
+        <rect class="k-icones-b" x="245.1" y="692.45" width="10.2" height="3.1" rx="1.55" transform="rotate(90 250.2 694)"/>
+        <rect class="k-icones-b" x="228.34" y="685.51" width="10.2" height="3.1" rx="1.55" transform="rotate(135 233.44 687.06)"/>
+        <rect class="k-icones-b" x="221.4" y="668.75" width="10.2" height="3.1" rx="1.55" transform="rotate(180 226.5 670.3)"/>
+        <rect class="k-icones-b" x="228.34" y="651.99" width="10.2" height="3.1" rx="1.55" transform="rotate(225 233.44 653.54)"/>
+        <rect class="k-icones-b" x="245.1" y="645.05" width="10.2" height="3.1" rx="1.55" transform="rotate(270 250.2 646.6)"/>
+        <rect class="k-icones-b" x="261.86" y="651.99" width="10.2" height="3.1" rx="1.55" transform="rotate(315 266.96 653.54)"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-partly-cloudy" viewBox="356 635 78 68">
+      <mask id="k-icones-m-partly" maskUnits="userSpaceOnUse" x="350" y="632" width="90" height="72">
+        <rect x="350" y="632" width="90" height="72" fill="#fff"/>
+        <path d="M384.5,697.2 L421.5,697.2 A6.5,6.5 0 0 0 428,690.7 L428,684.6 A7.6,7.6 0 0 0 420.4,677 L420.4,677 A1.2,1.2 0 0 1 419.2,675.8 L419.2,676.3 A12.5,12.5 0 0 0 406.7,663.8 L405.8,663.8 A12.5,12.5 0 0 0 393.3,676.3 L393.3,676.2 A1.2,1.2 0 0 1 392.1,677.4 L390,677.4 A12,12 0 0 0 378,689.4 L378,690.7 A6.5,6.5 0 0 0 384.5,697.2 Z" fill="#000" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+      </mask>
+      <g class="k-icones-f">
+        <g mask="url(#k-icones-m-partly)">
+          <circle class="k-icones-b" cx="388.2" cy="668.1" r="15.0"/>
+        </g>
+        <rect class="k-icones-b" x="383.8" y="644.6" width="8.8" height="3" rx="1.5" transform="rotate(-90 388.2 646.1)"/>
+        <rect class="k-icones-b" x="368.24" y="651.04" width="8.8" height="3" rx="1.5" transform="rotate(-135 372.64 652.54)"/>
+        <rect class="k-icones-b" x="399.36" y="651.04" width="8.8" height="3" rx="1.5" transform="rotate(-45 403.76 652.54)"/>
+        <rect class="k-icones-b" x="361.8" y="666.6" width="8.8" height="3" rx="1.5" transform="rotate(180 366.2 668.1)"/>
+        <rect class="k-icones-b" x="368.24" y="682.16" width="8.8" height="3" rx="1.5" transform="rotate(135 372.64 683.66)"/>
+        <path class="k-icones-b" d="M384.5,697.2 L421.5,697.2 A6.5,6.5 0 0 0 428,690.7 L428,684.6 A7.6,7.6 0 0 0 420.4,677 L420.4,677 A1.2,1.2 0 0 1 419.2,675.8 L419.2,676.3 A12.5,12.5 0 0 0 406.7,663.8 L405.8,663.8 A12.5,12.5 0 0 0 393.3,676.3 L393.3,676.2 A1.2,1.2 0 0 1 392.1,677.4 L390,677.4 A12,12 0 0 0 378,689.4 L378,690.7 A6.5,6.5 0 0 0 384.5,697.2 Z"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-cloud" viewBox="657 643 71 55">
+      <g class="k-icones-f"><path class="k-icones-b" d="M670.25,691.4 L714.75,691.4 A7.15,7.15 0 0 0 721.9,684.25 L721.9,676.5 A10.5,10.5 0 0 0 711.4,666 L710.9,666 A1.5,1.5 0 0 1 709.4,664.5 L709.4,664.4 A14,14 0 0 0 695.4,650.4 L691.5,650.4 A14,14 0 0 0 677.5,664.4 L677.5,667 A1.5,1.5 0 0 1 676,668.5 L675.1,668.5 A12,12 0 0 0 663.1,680.5 L663.1,684.25 A7.15,7.15 0 0 0 670.25,691.4 Z"/></g>
+    </symbol>
+    <symbol id="k-icones-rain" viewBox="805 639 69 68">
+      <g class="k-icones-f">
+        <path class="k-icones-b" d="M818.9,684.6 L860.3,684.6 A6.5,6.5 0 0 0 866.8,678.1 L866.8,669.6 A9,9 0 0 0 857.8,660.6 L857.1,660.6 A1.5,1.5 0 0 1 855.6,659.1 L855.6,656.6 A11,11 0 0 0 844.6,645.6 L836.2,645.6 A11,11 0 0 0 825.2,656.6 L825.2,661.9 A1.5,1.5 0 0 1 823.7,663.4 L822.9,663.4 A10.5,10.5 0 0 0 812.4,673.9 L812.4,678.1 A6.5,6.5 0 0 0 818.9,684.6 Z"/>
+        <rect class="k-icones-b" x="-3" y="-5.3" width="6" height="10.6" rx="3" transform="translate(823.8 694.6) rotate(20)"/>
+        <rect class="k-icones-b" x="-3" y="-5.3" width="6" height="10.6" rx="3" transform="translate(838.9 694.6) rotate(20)"/>
+        <rect class="k-icones-b" x="-3" y="-5.3" width="6" height="10.6" rx="3" transform="translate(853.9 694.6) rotate(20)"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-wind" viewBox="64 840 83 77">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="6.7" d="M76,867.3 L104,867.3 C110,867.3 111.3,862 111.3,857.2 C111.3,852.6 108.6,849.7 105.4,849.7 C102.2,849.7 100.6,852.6 100.6,855.8"/>
+        <path class="k-icones-s" stroke-width="6.7" d="M70.6,879.2 L126.2,879.2 C133.2,879.2 137.4,874.6 137.4,869.2 C137.4,865.2 134.2,862.6 130.6,862.6 C127,862.6 124.9,865 124.9,868.6"/>
+        <path class="k-icones-s" stroke-width="6.7" d="M76,891.3 L107.5,891.3 C114.6,891.3 117.1,895.6 117.1,900 C117.1,904.6 113.6,907.4 109.6,907.4 C105.6,907.4 103.4,904.6 103.4,900.8"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-drop" viewBox="483 841 63 77">
+      <path class="k-icones-n" d="M514.2,845 L532.76,876.01 A21.4,21.4 0 1 1 495.93,876.18 Z"/>
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="7.4" d="M514.2,845 L532.76,876.01 A21.4,21.4 0 1 1 495.93,876.18 Z"/></g>
+    </symbol>
+    <symbol id="k-icones-sunrise" viewBox="62 1009 87 62">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="7.4" d="M91.7,1051.4 V1047.8 A13,13 0 0 1 117.7,1047.8 V1051.4"/>
+        <rect class="k-icones-b" x="69.3" y="1056.9" width="72.4" height="6.6" rx="3.3"/>
+        <rect class="k-icones-b" x="99" y="1018.3" width="11.4" height="5.8" rx="2.9" transform="rotate(90 104.7 1021.2)"/>
+        <rect class="k-icones-b" x="79.9" y="1025.5" width="11.4" height="5.8" rx="2.9" transform="rotate(45 85.6 1028.4)"/>
+        <rect class="k-icones-b" x="118.3" y="1025.5" width="11.4" height="5.8" rx="2.9" transform="rotate(-45 124 1028.4)"/>
+        <rect class="k-icones-b" x="73.9" y="1046.5" width="10.6" height="5.8" rx="2.9"/>
+        <rect class="k-icones-b" x="125.1" y="1046.5" width="10.6" height="5.8" rx="2.9"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-gauge" viewBox="471 1002 86 78">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="7.6" d="M495.08,1068.56 L493.5,1067.82 L491.97,1066.96 L490.5,1065.97 L489.1,1064.87 L487.79,1063.65 L486.56,1062.33 L485.43,1060.92 L484.41,1059.42 L483.5,1057.84 L482.71,1056.19 L482.05,1054.48 L481.51,1052.73 L481.11,1050.94 L480.81,1049.13 L480.61,1047.31 L480.51,1045.48 L480.51,1043.64 L480.62,1041.81 L480.82,1039.99 L481.12,1038.18 L481.53,1036.39 L482.03,1034.63 L482.62,1032.9 L483.32,1031.2 L484.1,1029.54 L484.97,1027.93 L485.94,1026.37 L486.98,1024.86 L488.11,1023.41 L489.31,1022.03 L490.59,1020.72 L491.94,1019.48 L493.36,1018.31 L494.84,1017.23 L496.37,1016.22 L497.96,1015.31 L499.6,1014.48 L501.28,1013.74 L503,1013.1 L504.75,1012.55 L506.52,1012.1 L508.32,1011.75 L510.14,1011.5 L511.97,1011.35 L513.8,1011.3 L515.63,1011.35 L517.46,1011.5 L519.28,1011.75 L521.08,1012.1 L522.85,1012.55 L524.6,1013.1 L526.32,1013.74 L528,1014.48 L529.64,1015.31 L531.23,1016.22 L532.76,1017.23 L534.24,1018.31 L535.66,1019.48 L537.01,1020.72 L538.29,1022.03 L539.49,1023.41 L540.62,1024.86 L541.66,1026.37 L542.63,1027.93 L543.5,1029.54 L544.28,1031.2 L544.98,1032.9 L545.57,1034.63 L546.07,1036.39 L546.48,1038.18 L546.78,1039.99 L546.98,1041.81 L547.09,1043.64 L547.09,1045.48 L546.99,1047.31 L546.79,1049.13 L546.49,1050.94 L546.09,1052.73 L545.55,1054.48 L544.89,1056.19 L544.1,1057.84 L543.19,1059.42 L542.17,1060.92 L541.04,1062.33 L539.81,1063.65 L538.5,1064.87 L537.1,1065.97 L535.63,1066.96 L534.1,1067.82 L532.52,1068.56"/>
+        <path class="k-icones-b" d="M517.66,1046.01 L525.05,1023.72 A1.8,1.8 0 0 0 521.75,1022.28 L510.34,1042.79 Z"/>
+        <circle class="k-icones-b" cx="514.0" cy="1044.4" r="5.7"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-umbrella" viewBox="288 1220 36 36">
+      <g class="k-icones-f">
+        <path class="k-icones-b" d="M294,1240 C294,1232 299.8,1227 307,1227 C314.2,1227 320,1232 320,1240 C318,1237.8 315.3,1238.2 313.7,1240 C312.2,1238.2 309,1238.2 307,1240 C305,1238.2 301.8,1238.2 300.3,1240 C298.7,1238.2 296,1237.8 294,1240 Z"/>
+        <circle class="k-icones-b" cx="307" cy="1226.6" r="1.7"/>
+        <path class="k-icones-s" stroke-width="2.7" d="M306.8,1239 V1246.6 A2.1,2.1 0 0 0 311,1246.6"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-home" viewBox="91 1643 60 56">
+      <g class="k-icones-f">
+        <path class="k-icones-r" d="M121.2,1650.4 L143.6,1669.6 L139.3,1669.6 L139.3,1688.6 Q139.3,1691.6 136.2,1691.6 L127.2,1691.6 L127.2,1680.4 L116.2,1680.4 L116.2,1691.6 L107,1691.6 Q104,1691.6 104,1688.6 L104,1669.6 L98.8,1669.6 Z"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-clock" viewBox="309 1643 54 55">
+      <g class="k-icones-f">
+        <circle class="k-icones-s" stroke-width="3.7" cx="336.5" cy="1670.8" r="19.3"/>
+        <path class="k-icones-s" stroke-width="3.3" d="M336.4,1657.6 V1671 H346.8"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-map" viewBox="526 1645 54 53">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="3" d="M532.6,1658.4 L546.6,1652.4 L560,1659 L573.8,1653.2 L573.8,1685.6 L560,1691.8 L546.6,1685 L532.6,1691 Z M546.6,1652.4 V1685 M560,1659 V1691.8"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-gear" viewBox="741 1643 59 58">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="3.5" d="M766.8,1651.88 L773.6,1651.88 L773.97,1657.06 L778.23,1658.83 L782.16,1655.43 L786.97,1660.24 L783.57,1664.17 L785.34,1668.43 L790.52,1668.8 L790.52,1675.6 L785.34,1675.97 L783.57,1680.23 L786.97,1684.16 L782.16,1688.97 L778.23,1685.57 L773.97,1687.34 L773.6,1692.52 L766.8,1692.52 L766.43,1687.34 L762.17,1685.57 L758.24,1688.97 L753.43,1684.16 L756.83,1680.23 L755.06,1675.97 L749.88,1675.6 L749.88,1668.8 L755.06,1668.43 L756.83,1664.17 L753.43,1660.24 L758.24,1655.43 L762.17,1658.83 L766.43,1657.06 Z"/>
+        <circle class="k-icones-s" stroke-width="4.1" cx="770.2" cy="1672.2" r="5.8"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-pin" viewBox="50 64 58 82">
+      <g class="k-icones-f"><path class="k-icones-b" fill-rule="evenodd" d="M78.6,138.2 L59.96,104.11 A21.7,21.7 0 1 1 97.85,104.45 Z M69.8,94 a9.5,9.5 0 1 0 19,0 a9.5,9.5 0 1 0 -19,0 Z"/></g>
+    </symbol>
+    <symbol id="k-icones-search" viewBox="779 84 47 48">
+      <g class="k-icones-f">
+        <circle class="k-icones-s" stroke-width="5.7" cx="800.4" cy="104.4" r="12.3"/>
+        <path class="k-icones-s" stroke-width="5.5" d="M809.4,113.4 L817.6,121.6"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-plus" viewBox="289 1527 53 52">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.5" d="M297.7,1553.2 H333.3 M315.5,1535.4 V1571"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-chevron" viewBox="830 532 26 38">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="3.9" d="M838.2,540.6 L847.8,551 L838.2,560.6"/>
+      </g>
+    </symbol>
+    <symbol id="k-icones-today" viewBox="45 1733 150 22" preserveAspectRatio="none">
+      <g class="k-icones-f"><rect class="k-icones-b" x="51" y="1739" width="138" height="10.4" rx="5.2"/></g>
+    </symbol>
+    <!-- composant avatar -->
+    <linearGradient id="c-avatar-g-pistache" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d9c66"/><stop offset="1" stop-color="#6f7f4a"/></linearGradient>
+    <linearGradient id="c-avatar-g-griotte" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a323e"/><stop offset="1" stop-color="#7a1f2a"/></linearGradient>
+    <linearGradient id="c-avatar-g-creme" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0dcc0"/><stop offset="1" stop-color="#d9bd98"/></linearGradient>
+    <symbol id="c-avatar-coche" viewBox="0 0 40 40"><g class="k-icones-f"><path class="k-icones-s" stroke-width="6" d="M9,21.5 L17,29.5 L31.5,11.5"/></g></symbol>
+    <symbol id="c-avatar-croix" viewBox="0 0 40 40"><g class="k-icones-f"><path class="k-icones-s" stroke-width="6" d="M11,11 L29,29 M29,11 L11,29"/></g></symbol>
+    <linearGradient id="c-avatar-g-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1e0c2"/><stop offset="1" stop-color="#ead2ac"/></linearGradient>
+    <radialGradient id="c-avatar-g-soleil" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#bf8f68"/><stop offset=".55" stop-color="#9f6a41"/><stop offset="1" stop-color="#85532f"/></radialGradient>
+    <linearGradient id="c-avatar-g-colline-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a97b58"/><stop offset=".35" stop-color="#85563a"/><stop offset="1" stop-color="#613a24"/></linearGradient>
+    <linearGradient id="c-avatar-g-colline-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#72492f"/><stop offset=".5" stop-color="#5a3825"/><stop offset="1" stop-color="#3f271a"/></linearGradient>
+    <symbol id="c-avatar-paysage" viewBox="0 0 200 88" preserveAspectRatio="xMidYMid slice">
+      <rect width="200" height="88" fill="url(#c-avatar-g-ciel)"/>
+      <circle cx="115" cy="26" r="16" fill="url(#c-avatar-g-soleil)"/>
+      <path d="M-4,76 C14,60 34,45 52,44 C72,44 100,66 142,92 L-4,92 Z" fill="url(#c-avatar-g-colline-a)"/>
+      <path d="M68,92 C88,76 120,50 160,40 C178,36 194,44 204,50 L204,92 Z" fill="url(#c-avatar-g-colline-b)"/>
+    </symbol>
+    <!-- composant badge -->
+    <symbol id="c-badge-i-check" viewBox="0 0 24 24"><path d="M4 12.6l5.2 5.1L20 6.3"/></symbol>
+    <symbol id="c-badge-i-alert" viewBox="0 0 24 24"><path d="M12 3.6v10.2"/><circle cx="12" cy="19.4" r="1.15" style="fill:currentColor"/></symbol>
+    <symbol id="c-badge-i-cross" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></symbol>
+    <symbol id="c-badge-i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.6"/><path d="M12 11.3v5.7"/><circle cx="12" cy="7.4" r="1.1" style="fill:currentColor"/></symbol>
+    <!-- composant banniere -->
+    <linearGradient id="c-banniere-g-info" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#855634"/><stop offset=".55" stop-color="#7c4f2e"/><stop offset="1" stop-color="#734827"/></linearGradient>
+    <linearGradient id="c-banniere-g-avertissement" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5a1a"/><stop offset=".6" stop-color="#8a4e15"/><stop offset="1" stop-color="#7c4511"/></linearGradient>
+    <linearGradient id="c-banniere-g-erreur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8c0b0b"/><stop offset=".6" stop-color="#780707"/><stop offset="1" stop-color="#620404"/></linearGradient>
+    <filter id="c-banniere-f-enfonce" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.2" result="d"/>
+      <feOffset in="d" dx="-0.6" dy="-0.9" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.7" result="d3"/>
+      <feFlood flood-color="#6B4A2A" flood-opacity="0.55"/>
+      <feComposite in2="d3" operator="in" result="ombre"/>
+      <feOffset in="d" dx="0.7" dy="1" result="l2"/>
+      <feGaussianBlur in="l2" stdDeviation="0.6" result="l3"/>
+      <feFlood flood-color="#FFF9EA" flood-opacity="0.9"/>
+      <feComposite in2="l3" operator="in" result="levre"/>
+      <feMerge><feMergeNode in="levre"/><feMergeNode in="ombre"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="c-banniere-f-statut" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.7" result="d"/>
+      <feOffset in="d" dx="0.5" dy="0.9" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.9" result="d3"/>
+      <feFlood flood-color="#FFF9EA" flood-opacity="0.97"/>
+      <feComposite in2="d3" operator="in" result="halo"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3" specularConstant="0.45" specularExponent="12" lighting-color="#C79A78" result="spec">
+        <feDistantLight azimuth="225" elevation="45"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <symbol id="c-banniere-i-info" viewBox="0 0 60 60">
+      <g class="k-icones-f"><path class="k-icones-b" d="M3 30a27 27 0 1 0 54 0a27 27 0 1 0 -54 0Z"/><path class="c-banniere-glyphe" d="M30 14.2a3.9 3.9 0 1 1 0 7.8a3.9 3.9 0 1 1 0 -7.8ZM25.2 26.2H32.6V41.6H36.4V45.6H23.4V41.6H26.6V30.2H25.2Z"/></g>
+    </symbol>
+    <symbol id="c-banniere-i-avertissement" viewBox="0 0 60 60">
+      <g class="k-icones-f"><path class="k-icones-b" d="M26.97 10.68Q30.00 5.50 33.03 10.68L54.47 47.32Q57.50 52.50 51.50 52.50L8.50 52.50Q2.50 52.50 5.53 47.32Z"/><path class="c-banniere-glyphe" d="M27 21.5a3 3 0 0 1 6 0v14.5a3 3 0 0 1 -6 0ZM30 41.2a3.4 3.4 0 1 1 0 6.8a3.4 3.4 0 1 1 0 -6.8Z"/></g>
+    </symbol>
+    <symbol id="c-banniere-i-erreur" viewBox="0 0 60 60">
+      <g class="k-icones-f"><path class="k-icones-b" d="M57.25 38.29Q57.25 41.29 55.13 43.41L43.41 55.13Q41.29 57.25 38.29 57.25L21.71 57.25Q18.71 57.25 16.59 55.13L4.87 43.41Q2.75 41.29 2.75 38.29L2.75 21.71Q2.75 18.71 4.87 16.59L16.59 4.87Q18.71 2.75 21.71 2.75L38.29 2.75Q41.29 2.75 43.41 4.87L55.13 16.59Q57.25 18.71 57.25 21.71Z"/><path class="c-banniere-glyphe" d="M36.20 30.00L44.60 38.40L38.40 44.60L30.00 36.20L21.60 44.60L15.40 38.40L23.80 30.00L15.40 21.60L21.60 15.40L30.00 23.80L38.40 15.40L44.60 21.60Z"/></g>
+    </symbol>
+    <symbol id="c-banniere-i-fermer" viewBox="0 0 32 32">
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="3.2" d="M3.5 3.5L28.5 28.5M28.5 3.5L3.5 28.5"/></g>
+    </symbol>
+    <!-- composant barre-superieure -->
+    <symbol id="c-barre-superieure-i-retour" viewBox="0 0 40 46">
+     <g class="k-icones-f"><path class="k-icones-s" stroke-width="6.4" d="M32,5 L8,23 L32,41"/></g>
+    </symbol>
+    <symbol id="c-barre-superieure-i-cloche" viewBox="0 0 54 62">
+     <g class="k-icones-f" transform="translate(1 .3) scale(1.3)"><path class="k-icones-b" d="M21,6 C13.2,6 9.6,12.6 9.6,20.4 V27.6 L5,34 V37 H37 V34 L32.4,27.6 V20.4 C32.4,12.6 28.8,6 21,6 Z"/><circle class="k-icones-b" cx="21" cy="4.6" r="2.8"/><path class="k-icones-b" d="M16.3,40.4 H25.7 C25.2,43.6 23.4,45.4 21,45.4 C18.6,45.4 16.8,43.6 16.3,40.4 Z"/></g>
+    </symbol>
+    <symbol id="c-barre-superieure-i-coche" viewBox="0 0 44 36">
+     <g class="k-icones-f"><path class="k-icones-s" stroke-width="6" d="M5,19 L16,30 L39,6"/></g>
+    </symbol>
+    <!-- composant bouton-icone -->
+    <linearGradient id="c-bouton-icone-g-pistache" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93A860"/><stop offset="1" stop-color="#66803A"/></linearGradient>
+    <linearGradient id="c-bouton-icone-g-griotte" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A3036"/><stop offset="1" stop-color="#7A1F27"/></linearGradient>
+    <linearGradient id="c-bouton-icone-g-biscuit-fonce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8D6428"/><stop offset="1" stop-color="#7C561F"/></linearGradient>
+    <filter id="c-bouton-icone-enfonce" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/>
+      <feOffset in="d" dx="-0.7" dy="-1" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="0.8" result="d3"/>
+      <feFlood flood-color="#FFF9EA" flood-opacity="0.8"/>
+      <feComposite in2="d3" operator="in" result="halo"/>
+      <feMorphology in="SourceAlpha" operator="erode" radius="1.25" result="e"/>
+      <feGaussianBlur in="e" stdDeviation="0.55" result="e2"/>
+      <feComposite in="SourceAlpha" in2="e2" operator="out" result="ring"/>
+      <feFlood flood-color="#2A0E04" flood-opacity="0.95"/>
+      <feComposite in2="ring" operator="in" result="rim"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="3.2" specularConstant="0.5" specularExponent="12" lighting-color="#9A6A4A" result="spec">
+        <feDistantLight azimuth="45" elevation="45"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="halo"/><feMergeNode in="SourceGraphic"/><feMergeNode in="spec2"/><feMergeNode in="rim"/></feMerge>
+    </filter>
+    <symbol id="c-bouton-icone-cloche" viewBox="0 0 60 70">
+      <g class="k-icones-f">
+        <circle class="k-icones-b" cx="30" cy="9.5" r="4.4"/>
+        <path class="k-icones-r" d="M30,13 C19.5,13 15.5,21.5 15.5,31 C15.5,39 13.5,43.5 9.5,47.5 C8.4,48.7 8.9,50.6 10.6,50.6 L49.4,50.6 C51.1,50.6 51.6,48.7 50.5,47.5 C46.5,43.5 44.5,39 44.5,31 C44.5,21.5 40.5,13 30,13 Z"/>
+        <path class="k-icones-r" d="M23.5,55.5 C23.8,60.2 26.4,62.8 30,62.8 C33.6,62.8 36.2,60.2 36.5,55.5 Z"/>
+      </g>
+    </symbol>
+    <symbol id="c-bouton-icone-coche" viewBox="0 0 54 44">
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="8.4" d="M7,23 L20,36.5 L47,7.5"/></g>
+    </symbol>
+    <symbol id="c-bouton-icone-alerte" viewBox="0 0 30 54">
+      <g class="k-icones-f">
+        <rect class="k-icones-r" x="11.8" y="6" width="6.4" height="26" rx="3.2"/>
+        <circle class="k-icones-b" cx="15" cy="44" r="4.6"/>
+      </g>
+    </symbol>
+    <!-- composant bouton-texte -->
+    <symbol id="bt-fleche" viewBox="0 0 6 10.5"><path d="M1 1l4 4.25L1 9.5"/></symbol>
+    <symbol id="bt-corbeille" viewBox="0 0 14 16"><path d="M1.2 3.6h11.6M4.9 3.6V1.5h4.2v2.1M2.4 3.6l.7 10.6c.05.6.5 1.1 1.1 1.1h5.6c.6 0 1.05-.5 1.1-1.1l.7-10.6M5.3 6.6v6M8.7 6.6v6"/></symbol>
+    <!-- composant champ-recherche -->
+    <symbol id="c-champ-recherche-effacer" viewBox="0 0 36 37"><g class="k-icones-f"><path class="k-icones-s" stroke-width="5.2" d="M6.4 6.6 L29.6 30.4 M29.6 6.6 L6.4 30.4"/></g></symbol>
+    <symbol id="c-champ-recherche-filtre" viewBox="0 0 48 49"><g class="k-icones-f"><path class="k-icones-s" stroke-width="4.6" d="M6 7.4 H42 L28.2 24.6 V40.4 L19.8 36.2 V24.6 Z"/></g></symbol>
+    <symbol id="c-champ-recherche-personne" viewBox="0 0 38 39"><g class="k-icones-f"><circle class="k-icones-s" stroke-width="3.3" cx="19" cy="12.4" r="6.6"/><path class="k-icones-s" stroke-width="3.3" d="M6.6 33.6 C6.6 25.2 11.6 21.6 19 21.6 C26.4 21.6 31.4 25.2 31.4 33.6"/></g></symbol>
+    <symbol id="c-champ-recherche-lieu" viewBox="0 0 38 39"><g class="k-icones-f"><path class="k-icones-s" stroke-width="3.2" d="M19 35 L9.4 18.4 A11 11 0 1 1 28.6 18.4 Z"/><circle class="k-icones-s" stroke-width="3" cx="19" cy="14" r="3.6"/></g></symbol>
+    <symbol id="c-champ-recherche-coche-i" viewBox="0 0 44 45"><g class="k-icones-f"><path class="k-icones-s" stroke-width="5.6" d="M7.4 24.2 L17.8 34.6 L36.6 10.6"/></g></symbol>
+    <symbol id="c-champ-recherche-erreur-i" viewBox="0 0 42 43"><g class="k-icones-f">
+      <path class="k-icones-b" d="M13.4 3 H28.6 L39.4 13.8 V29.2 L28.6 40 H13.4 L2.6 29.2 V13.8 Z"/>
+      <path class="k-icones-n" d="M14.4 12.2 L29.8 27.6 L27.4 30 L12 14.6 Z M29.8 14.6 L14.4 30 L12 27.6 L27.4 12.2 Z" transform="translate(0 .4)"/>
+    </g></symbol>
+    <!-- composant champ-texte -->
+    <symbol id="c-champ-texte-i-alerte" viewBox="0 0 16 16">
+      <path d="M8 1.2c.5 0 .95.27 1.2.7l6.3 10.8c.5.87-.12 1.95-1.12 1.95H1.62C.62 14.65 0 13.57.5 12.7L6.8 1.9c.25-.43.7-.7 1.2-.7z"/>
+      <path class="c-champ-texte-signe" d="M7.1 5.2h1.8l-.3 4.4H7.4zM8 10.5a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/>
+    </symbol>
+    <symbol id="c-champ-texte-i-coche" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="7.4"/>
+      <path class="c-champ-texte-signe" d="M4.4 8.2l2.5 2.5 4.8-5" fill="none" stroke="#fbf0d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <!-- composant dialogue -->
+    <symbol id="c-dialogue-i-coche" viewBox="0 0 38 38"><path d="M4.5 20.5 L9.4 15.6 L15.2 21.4 L28.6 7 L33.6 11.9 L15.4 31.6 Z"/></symbol>
+    <symbol id="c-dialogue-i-croix" viewBox="0 0 38 38"><path fill-rule="evenodd" d="M12.2 2.5 H25.8 L35.5 12.2 V25.8 L25.8 35.5 H12.2 L2.5 25.8 V12.2 Z M13 10.6 L19 16.6 L25 10.6 L27.4 13 L21.4 19 L27.4 25 L25 27.4 L19 21.4 L13 27.4 L10.6 25 L16.6 19 L10.6 13 Z"/></symbol>
+    <!-- composant etat-vide -->
+    <symbol id="c-etat-vide-i-coeur" viewBox="0 0 50 46">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="4.4" d="M25,41 C9,29.5 4.2,21.5 4.2,14.8 C4.2,8.8 8.6,4.6 14,4.6 C18.6,4.6 22.6,7.2 25,11.6 C27.4,7.2 31.4,4.6 36,4.6 C41.4,4.6 45.8,8.8 45.8,14.8 C45.8,21.5 41,29.5 25,41 Z"/>
+      </g>
+    </symbol>
+    <symbol id="c-etat-vide-i-nuage-barre" viewBox="657 639 71 62">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="4.2" d="M670.25,691.4 L714.75,691.4 A7.15,7.15 0 0 0 721.9,684.25 L721.9,676.5 A10.5,10.5 0 0 0 711.4,666 L710.9,666 A1.5,1.5 0 0 1 709.4,664.5 L709.4,664.4 A14,14 0 0 0 695.4,650.4 L691.5,650.4 A14,14 0 0 0 677.5,664.4 L677.5,667 A1.5,1.5 0 0 1 676,668.5 L675.1,668.5 A12,12 0 0 0 663.1,680.5 L663.1,684.25 A7.15,7.15 0 0 0 670.25,691.4 Z"/>
+        <path class="k-icones-s" stroke-width="4.6" d="M668,646 L718,697"/>
+      </g>
+    </symbol>
+    <!-- composant icone-illustration -->
+    <filter id="c-icone-illustration-grave-lait" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="1.5" dy="2" result="l1"/>
+      <feGaussianBlur in="l1" stdDeviation="1" result="l2"/>
+      <feFlood flood-color="#E4AC7E" flood-opacity=".6"/>
+      <feComposite in2="l2" operator="in" result="lip"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.1" result="d"/>
+      <feGaussianBlur in="d" stdDeviation=".7" result="d2"/>
+      <feFlood flood-color="#240B03" flood-opacity=".55"/>
+      <feComposite in2="d2" operator="in" result="groove"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="1.6" dy="2.2" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="1.3" result="i2"/>
+      <feFlood flood-color="#0E0300" flood-opacity=".7"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="b"/>
+      <feSpecularLighting in="b" surfaceScale="2.4" specularConstant=".35" specularExponent="12" lighting-color="#B07A58" result="spec">
+        <feDistantLight azimuth="225" elevation="40"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="spec2"/>
+      <feMerge><feMergeNode in="lip"/><feMergeNode in="groove"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/><feMergeNode in="spec2"/></feMerge>
+    </filter>
+    <filter id="c-icone-illustration-presse" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset in="SourceAlpha" dx="-1.2" dy="-1.6" result="l1"/>
+      <feGaussianBlur in="l1" stdDeviation=".9" result="l2"/>
+      <feFlood flood-color="#E4AC7E" flood-opacity=".4"/>
+      <feComposite in2="l2" operator="in" result="lip"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.1" result="d"/>
+      <feGaussianBlur in="d" stdDeviation=".7" result="d2"/>
+      <feFlood flood-color="#240B03" flood-opacity=".7"/>
+      <feComposite in2="d2" operator="in" result="groove"/>
+      <feComponentTransfer in="SourceAlpha" result="inv"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feOffset in="inv" dx="-1.6" dy="-2.2" result="i1"/>
+      <feGaussianBlur in="i1" stdDeviation="1.3" result="i2"/>
+      <feFlood flood-color="#0E0300" flood-opacity=".75"/>
+      <feComposite in2="i2" operator="in"/>
+      <feComposite in2="SourceAlpha" operator="in" result="ish"/>
+      <feMerge><feMergeNode in="lip"/><feMergeNode in="groove"/><feMergeNode in="SourceGraphic"/><feMergeNode in="ish"/></feMerge>
+    </filter>
+    <symbol id="c-icone-illustration-lune" viewBox="3 5 54 56">
+      <g class="k-icones-f">
+        <path class="k-icones-b" d="M25.72,6.34 A27,27 0 1 0 54.67,43.97 A24,24 0 0 1 25.72,6.34 Z"/>
+      </g>
+    </symbol>
+    <symbol id="c-icone-illustration-soleil-nuage" viewBox="0 0 114.31 101.12" overflow="visible">
+      <mask id="c-icone-illustration-trou" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1100">
+        <rect x="-100" y="-100" width="1300" height="1100" fill="#fff"/>
+        <g fill="#000" stroke="#000" stroke-width="28" stroke-linejoin="round"><circle cx="445" cy="700" r="145"/><circle cx="690" cy="535" r="170"/><circle cx="845" cy="693" r="142"/><rect x="320" y="640" width="665" height="220" rx="105"/></g>
+      </mask>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)" stroke="currentColor" stroke-width="56" stroke-linecap="round">
+          <path d="M468 52V160M205 170L270 235M625 235L715 170" fill="none"/>
+          <path d="M70 430H175M185 700L240 640" fill="none"/>
+        </g>
+      </g>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)"><g mask="url(#c-icone-illustration-trou)"><circle cx="490" cy="477" r="242"/></g></g>
+      </g>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)"><circle cx="445" cy="700" r="145"/><circle cx="690" cy="535" r="170"/><circle cx="845" cy="693" r="142"/><rect x="320" y="640" width="665" height="220" rx="105"/></g>
+      </g>
+    </symbol>
+    <!-- composant info-bulle -->
+    <symbol id="c-info-bulle-coeur" viewBox="0 0 50 46">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.5" d="M25 41 C11 31 5 23 5 15.5 C5 9.5 9.3 5.5 14.6 5.5 C19 5.5 22.8 8.2 25 12.6 C27.2 8.2 31 5.5 35.4 5.5 C40.7 5.5 45 9.5 45 15.5 C45 23 39 31 25 41 Z"/>
+      </g>
+    </symbol>
+    <!-- composant lien -->
+    <symbol id="c-lien-i-chev-nu" viewBox="0 0 14 22">
+      <path fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" d="M2.6 2.4L11.2 11 2.6 19.6"/>
+    </symbol>
+    <!-- composant ligne-liste -->
+    <symbol id="c-ligne-liste-bell" viewBox="0 0 60 70">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.6" d="M30,9 C19.5,9 14.5,18 14.5,28.5 L14.5,40.5 C14.5,45.5 11.5,49.5 7.5,53.5 L52.5,53.5 C48.5,49.5 45.5,45.5 45.5,40.5 L45.5,28.5 C45.5,18 40.5,9 30,9 Z"/>
+        <path class="k-icones-s" stroke-width="5.6" d="M30,3.5 L30,9"/>
+        <path class="k-icones-s" stroke-width="5.6" d="M24,61.5 C25.5,65.8 34.5,65.8 36,61.5"/>
+      </g>
+    </symbol>
+    <symbol id="c-ligne-liste-check" viewBox="0 0 40 40">
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="6.4" d="M7.5,21.5 L16,30 L32.5,10.5"/></g>
+    </symbol>
+    <symbol id="c-ligne-liste-erreur" viewBox="0 0 50 50">
+      <g class="k-icones-f">
+        <path class="k-icones-b" d="M17,4 H33 L46,17 V33 L33,46 H17 L4,33 V17 Z"/>
+        <path class="c-ligne-liste-croix" d="M18,18 L32,32 M32,18 L18,32"/>
+      </g>
+    </symbol>
+    <!-- composant onglets-bas -->
+    <symbol id="c-onglets-bas-i-sac" viewBox="0 0 54 55">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.2" d="M12.6,20.4 H41.4 L43.6,46.2 Q43.8,49.4 40.6,49.4 H13.4 Q10.2,49.4 10.4,46.2 Z"/>
+        <path class="k-icones-s" stroke-width="5.2" d="M19.2,23.6 V16.4 A7.8,7.8 0 0 1 34.8,16.4 V23.6"/>
+      </g>
+    </symbol>
+    <symbol id="c-onglets-bas-i-panier" viewBox="0 0 54 55">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.2" d="M4.6,8.4 H11.4 L17.6,36.4 H42.4 L47.4,15.4 H13.2 M17.6,36.4 L15.8,40.6 H44"/>
+        <circle class="k-icones-r" cx="20.4" cy="46.6" r="2.3"/>
+        <circle class="k-icones-r" cx="39.4" cy="46.6" r="2.3"/>
+      </g>
+    </symbol>
+    <symbol id="c-onglets-bas-i-profil" viewBox="0 0 54 55">
+      <g class="k-icones-f">
+        <circle class="k-icones-r" cx="27" cy="16.2" r="9"/>
+        <path class="k-icones-r" d="M10,47.6 Q10,31.4 27,31.4 Q44,31.4 44,47.6 Z"/>
+      </g>
+    </symbol>
+    <symbol id="c-onglets-bas-i-favoris" viewBox="0 0 54 55">
+      <g class="k-icones-f">
+        <path class="k-icones-s" stroke-width="5.2" d="M27,46.6 C13,36 7.6,28.2 7.6,20.4 C7.6,13.6 12.4,9.4 18,9.4 C22,9.4 25.2,11.6 27,15 C28.8,11.6 32,9.4 36,9.4 C41.6,9.4 46.4,13.6 46.4,20.4 C46.4,28.2 41,36 27,46.6 Z"/>
+      </g>
+    </symbol>
+    <!-- composant puce -->
+    <symbol id="c-puce-i-coche" viewBox="0 0 32 25"><g class="k-icones-f"><path class="k-icones-s" stroke-width="6.4" d="M3.8 13.4 L11.8 21 L28.2 4"/></g></symbol>
+    <symbol id="c-puce-i-croix" viewBox="0 0 28 28"><g class="k-icones-f"><path class="k-icones-s" stroke-width="3.6" d="M5 5 L23 23 M23 5 L5 23"/></g></symbol>
+    <!-- composant selecteur -->
+    <linearGradient id="c-selecteur-g-pistache" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6F9446"/><stop offset="1" stop-color="#4E6D2E"/></linearGradient>
+    <linearGradient id="c-selecteur-g-griotte" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A12A2E"/><stop offset="1" stop-color="#7A1519"/></linearGradient>
+    <symbol id="c-selecteur-s-fleche" viewBox="0 0 43 30">
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="3.6" d="M7.5,8 L21.5,22 L35.5,8"/></g>
+    </symbol>
+    <symbol id="c-selecteur-s-coche" viewBox="0 0 48 41">
+      <g class="k-icones-f"><path class="k-icones-s" stroke-width="4.8" d="M8,21.5 L19,32.5 L40,9"/></g>
+    </symbol>
+    <symbol id="c-selecteur-s-calendrier" viewBox="0 0 48 50">
+      <g class="k-icones-f">
+        <rect class="k-icones-s" stroke-width="4.2" x="7.5" y="11.5" width="33" height="31" rx="5"/>
+        <path class="k-icones-s" stroke-width="4.2" d="M7.5,21 H40.5 M17,6 V15 M31,6 V15"/>
+        <path class="k-icones-s" stroke-width="4.6" d="M17,29.5 H18 M24,29.5 H25 M31,29.5 H32 M17,36 H18 M24,36 H25"/>
+      </g>
+    </symbol>
+    <symbol id="c-selecteur-s-erreur" viewBox="0 0 48 48">
+      <g class="k-icones-f">
+        <path class="k-icones-r" stroke-width="3" d="M17,5.5 H31 L42.5,17 V31 L31,42.5 H17 L5.5,31 V17 Z"/>
+        <path class="k-icones-s" stroke-width="4.6" style="stroke:#FBF1DC" d="M17,17 L31,31 M31,17 L17,31"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="ecran k-biscuit-fond k-biscuit-fond-bords" id="ecran">
+
+  <!-- barre d'état -->
+  <div class="t" style="left:28.14px;top:7.3px;font-size:11.87px;font-weight:700;">9:41</div>
+  <svg class="a" style="left:306.02px;top:6.16px;width:65.95px;height:13.19px;color:var(--ch-noir-9a)" viewBox="0 0 150 30" aria-hidden="true">
+    <g fill="currentColor"><rect x="2" y="19" width="6" height="8" rx="1.5"/><rect x="11" y="14" width="6" height="13" rx="1.5"/><rect x="20" y="9" width="6" height="18" rx="1.5"/><rect x="29" y="3" width="6" height="24" rx="1.5"/></g>
+    <g fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M55 12 A18 18 0 0 1 83 12"/><path d="M60 18 A10.5 10.5 0 0 1 78 18"/></g><circle cx="69" cy="25" r="3.2" fill="currentColor"/>
+    <rect x="101" y="3" width="44" height="22" rx="7" fill="currentColor"/>
+  </svg>
+
+  <!-- en-tête -->
+  <svg class="k-icones-i k-icones-rubis ico" style="left:21.98px;top:28.14px;width:25.5px;height:36.05px" viewBox="0 0 58 82" aria-hidden="true"><use href="#k-icones-pin"/></svg>
+  <h1 class="t serif k-estampe-titre" style="left:56.28px;top:28.7px;font-size:20.23px;font-weight:800;margin:0">Lisbon,</h1>
+  <div class="t k-biscuit-creux" style="left:56.28px;top:51.2px;font-size:10.99px;--biscuit-creux-couleur:var(--ch-noir-14)">Portugal</div>
+  <a class="k-blanc-carte" href="#search" aria-label="Search" style="position:absolute;left:336.8px;top:31.22px;width:32.54px;height:32.54px;--blanc-rayon:50%">
+    <svg class="k-icones-i k-icones-grave ico" style="left:5.71px;top:5.71px;width:20.67px;height:21.1px" viewBox="0 0 47 48" aria-hidden="true"><use href="#k-icones-search"/></svg>
+  </a>
+
+  <!-- plaque du temps présent -->
+  <section class="k-lait-plaque plaque" style="position:absolute;left:16.5px;top:70.55px;width:357px;height:153px" aria-label="Lisbon now">
+    <span class="t serif k-estampe-leve" style="left:20.9px;top:2.15px;font-size:69.5px;font-weight:900">21</span>
+    <span class="t serif k-estampe-leve" style="left:86.5px;top:-4.7px;font-size:75px;font-weight:400">°</span>
+    <span class="t serif k-estampe-leve-net" style="translate:0 .055em;left:20.9px;top:73.25px;font-size:18.64px;font-weight:700;letter-spacing:-.2px">Partly cloudy</span>
+    <span class="t" style="left:21.12px;top:97.32px;font-size:13.6px;color:var(--ch-creme-87)">Feels like 20° • H 24° • L 16°</span>
+    <svg class="ico" style="left:229.7px;top:13px;width:114.31px;height:101.12px;overflow:visible" viewBox="0 0 114.31 101.12" aria-hidden="true">
+      <defs>
+        <mask id="ecran-hero-gap" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1300" height="1100">
+          <rect x="-100" y="-100" width="1300" height="1100" fill="#fff"/>
+          <g fill="#000" stroke="#000" stroke-width="28" stroke-linejoin="round"><circle cx="445" cy="700" r="145"/><circle cx="690" cy="535" r="170"/><circle cx="845" cy="693" r="142"/><rect x="320" y="640" width="665" height="220" rx="105"/></g>
+        </mask>
+      </defs>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)" stroke="currentColor" stroke-width="56" stroke-linecap="round">
+          <path d="M468 52V160M205 170L270 235M625 235L715 170" fill="none"/>
+          <path d="M70 430H175M185 700L240 640" fill="none"/>
+        </g>
+      </g>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)"><g mask="url(#ecran-hero-gap)"><circle cx="490" cy="477" r="242"/></g></g>
+      </g>
+      <g class="k-estampe-moule">
+        <g transform="scale(.10992)"><circle cx="445" cy="700" r="145"/><circle cx="690" cy="535" r="170"/><circle cx="845" cy="693" r="142"/><rect x="320" y="640" width="665" height="220" rx="105"/></g>
+      </g>
+    </svg>
+    <span class="k-badge" style="position:absolute;left:18.7px;top:118.55px;--badge-pad-l:10.2px;--badge-pad-r:21.4px">UV 6 High</span>
+    <span class="k-badge" style="position:absolute;left:115px;top:118.95px;--badge-pad-l:11.2px;--badge-pad-r:10.8px;--badge-fs:12.3px;letter-spacing:-.1px">AQI 32&nbsp;<span style="font-weight:600">Good</span></span>
+  </section>
+
+  <!-- prévisions horaires -->
+  <h2 class="t serif k-estampe-titre" style="left:17.6px;top:233px;font-size:18.64px;font-weight:800;letter-spacing:.6px;margin:0">Hourly</h2>
+  <a class="k-rubis-link" href="#next" style="position:absolute;left:312.6px;top:236.6px">Next 24 h<svg class="k-rubis-link-chev" viewBox="0 0 14 22" preserveAspectRatio="none" aria-hidden="true"><use href="#k-rubis-i-chev"/></svg></a>
+
+  <div class="k-rubis-tile now" id="now" style="position:absolute;left:16.6px;top:257.3px;width:58.8px;height:91.5px" role="group" aria-label="Now, 21 degrees, 0 percent">
+    <div class="t k-rubis-ink" style="top:7.4px;font-size:11px;font-weight:500">Now</div>
+    <svg class="ico" style="left:15.1px;top:25.4px;width:27.3px;height:22.9px" viewBox="0 0 62 52" aria-hidden="true"><use href="#k-rubis-i-cloudsun"/></svg>
+    <div class="t k-rubis-ink" style="top:52.8px;font-size:17.8px;font-weight:600">21<span class="deg">°</span></div>
+    <div class="t k-rubis-ink" style="top:74px;font-size:9px;font-weight:500">0%</div>
+  </div>
+  <div class="k-lait-tuile heure" style="position:absolute;left:79.8px;top:256.75px;width:61.1px;height:92.55px">
+    <div class="t h">11:00</div>
+    <svg class="k-icones-i k-icones-moule ico" style="left:14.73px;top:22.89px;width:30.78px;height:29.02px" viewBox="0 0 70 66" aria-hidden="true"><use href="#k-icones-sun"/></svg>
+    <div class="t d">22<span class="deg">°</span></div><div class="t p">0%</div>
+  </div>
+  <div class="k-lait-tuile heure" style="position:absolute;left:144.8px;top:256.75px;width:61.1px;height:92.55px">
+    <div class="t h">12:00</div>
+    <svg class="k-icones-i k-icones-moule ico" style="left:11.73px;top:22.45px;width:34.3px;height:29.9px" viewBox="0 0 78 68" aria-hidden="true"><use href="#k-icones-partly-cloudy"/></svg>
+    <div class="t d">23<span class="deg">°</span></div><div class="t p">5%</div>
+  </div>
+  <div class="k-lait-tuile heure" style="position:absolute;left:209px;top:256.75px;width:61.1px;height:92.55px">
+    <div class="t h">13:00</div>
+    <svg class="k-icones-i k-icones-moule ico" style="left:12.16px;top:22.45px;width:34.3px;height:29.9px" viewBox="0 0 78 68" aria-hidden="true"><use href="#k-icones-partly-cloudy"/></svg>
+    <div class="t d">24<span class="deg">°</span></div><div class="t p">10%</div>
+  </div>
+  <div class="k-lait-tuile heure" style="position:absolute;left:273.7px;top:256.75px;width:61.1px;height:92.55px">
+    <div class="t h">14:00</div>
+    <svg class="k-icones-i k-icones-moule ico" style="left:15.17px;top:25.75px;width:31.22px;height:24.18px" viewBox="0 0 71 55" aria-hidden="true"><use href="#k-icones-cloud"/></svg>
+    <div class="t d">24<span class="deg">°</span></div><div class="t p">20%</div>
+  </div>
+  <div class="k-lait-tuile heure" style="position:absolute;left:338.3px;top:256.75px;width:61.1px;height:92.55px">
+    <div class="t h">15:00</div>
+    <svg class="k-icones-i k-icones-moule ico" style="left:15.65px;top:24.21px;width:30.34px;height:29.9px" viewBox="0 0 69 68" aria-hidden="true"><use href="#k-icones-rain"/></svg>
+    <div class="t d">23<span class="deg">°</span></div><div class="t p">30%</div>
+  </div>
+
+  <!-- cartes -->
+  <div class="k-blanc-carte carte" style="left:calc(38.5 * var(--u));top:calc(812.5 * var(--u));width:calc(399 * var(--u));height:calc(151.5 * var(--u))">
+    <svg class="k-icones-i k-icones-grave ico" style="left:11.21px;top:12.07px;width:36.49px;height:33.86px" viewBox="0 0 83 77" aria-hidden="true"><use href="#k-icones-wind"/></svg>
+    <div class="carte-texte"><div class="lib">Wind</div><div class="val k-estampe-titre"><b>14</b><i>km/h</i></div><div class="sub">NW, gusts 26</div></div>
+  </div>
+  <div class="k-blanc-carte carte" style="left:calc(449 * var(--u));top:calc(812.5 * var(--u));width:calc(400 * var(--u));height:calc(151.5 * var(--u))">
+    <svg class="k-icones-i k-icones-grave ico" style="left:14.94px;top:12.51px;width:27.7px;height:33.86px" viewBox="0 0 63 77" aria-hidden="true"><use href="#k-icones-drop"/></svg>
+    <div class="carte-texte"><div class="lib">Humidity</div><div class="val k-estampe-titre"><b>62%</b></div><div class="sub">Dew point 14°</div></div>
+  </div>
+  <div class="k-blanc-carte carte" style="left:calc(38.5 * var(--u));top:calc(976 * var(--u));width:calc(399 * var(--u));height:calc(151 * var(--u))">
+    <svg class="k-icones-i k-icones-grave ico" style="left:10.33px;top:14.47px;width:38.25px;height:27.26px" viewBox="0 0 87 62" aria-hidden="true"><use href="#k-icones-sunrise"/></svg>
+    <div class="carte-texte"><div class="lib">Sunrise</div><div class="val k-estampe-titre"><b>07:12</b></div><div class="sub">Sunset 19:48</div></div>
+  </div>
+  <div class="k-blanc-carte carte" style="left:calc(449 * var(--u));top:calc(976 * var(--u));width:calc(400 * var(--u));height:calc(151 * var(--u))">
+    <svg class="k-icones-i k-icones-grave ico" style="left:9.66px;top:11.39px;width:37.81px;height:34.3px" viewBox="0 0 86 78" aria-hidden="true"><use href="#k-icones-gauge"/></svg>
+    <div class="carte-texte"><div class="lib">Pressure</div><div class="val k-estampe-titre"><b>1016</b><i>hPa</i></div><div class="sub">Steady</div></div>
+  </div>
+
+  <!-- prévisions sur sept jours -->
+  <h2 class="t serif k-estampe-titre" style="left:17.6px;top:503.9px;font-size:18.64px;font-weight:800;letter-spacing:.2px;margin:0">7-day forecast</h2>
+  <div class="k-blanc-liste liste" style="left:calc(38.5 * var(--u));top:calc(1201.5 * var(--u));width:calc(811 * var(--u));height:calc(205 * var(--u))">
+    <div class="k-blanc-ligne ligne">
+      <span class="jour">Tue</span>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:59.75px;top:3.07px;width:23.27px;height:21.94px" viewBox="0 0 52.92 49.9" aria-hidden="true"><use href="#k-icones-sun"/></svg>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:109.7px;top:6.03px;width:15.83px;height:15.83px" viewBox="0 0 36 36" aria-hidden="true"><use href="#k-icones-umbrella"/></svg>
+      <span class="pct">0%</span><span class="tmin">17°</span>
+      <div class="k-blanc-gouttiere"><div class="k-blanc-barre" style="--blanc-de:42.8%;--blanc-largeur:41.9%"></div></div>
+      <span class="tmax">24°</span>
+    </div>
+    <div class="k-blanc-ligne ligne">
+      <span class="jour">Wed</span>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:58.42px;top:2.29px;width:25.38px;height:22.12px" viewBox="0 0 57.72 50.32" aria-hidden="true"><use href="#k-icones-partly-cloudy"/></svg>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:109.7px;top:5.41px;width:15.83px;height:15.83px" viewBox="0 0 36 36" aria-hidden="true"><use href="#k-icones-umbrella"/></svg>
+      <span class="pct">10%</span><span class="tmin">16°</span>
+      <div class="k-blanc-gouttiere"><div class="k-blanc-barre" style="--blanc-de:26.6%;--blanc-largeur:39.7%"></div></div>
+      <span class="tmax">22°</span>
+    </div>
+    <div class="k-blanc-ligne ligne">
+      <span class="jour">Thu</span>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:59.12px;top:3.7px;width:24.66px;height:19.1px" viewBox="0 0 56.09 43.45" aria-hidden="true"><use href="#k-icones-cloud"/></svg>
+      <svg class="k-icones-i k-icones-grave-plein ico" style="left:109.7px;top:5.87px;width:15.83px;height:15.83px" viewBox="0 0 36 36" aria-hidden="true"><use href="#k-icones-umbrella"/></svg>
+      <span class="pct">20%</span><span class="tmin">15°</span>
+      <div class="k-blanc-gouttiere"><div class="k-blanc-barre" style="--blanc-de:14.4%;--blanc-largeur:41.5%"></div></div>
+      <span class="tmax">21°</span>
+    </div>
+  </div>
+  <div class="k-biscuit-nu nu" style="left:17.6px;top:619.1px;width:355px;height:32.1px">
+    <span class="t k-biscuit-creux" style="left:12.5px;top:8.3px;font-size:12px;font-weight:600;--biscuit-creux-couleur:var(--ch-lait-41a)">Sun</span>
+    <svg class="k-icones-i k-icones-grave-biscuit ico" style="left:59.08px;top:4.84px;width:23.27px;height:21.94px" viewBox="0 0 52.92 49.9" aria-hidden="true"><use href="#k-icones-sun"/></svg>
+    <span class="t k-biscuit-creux" style="left:112.5px;top:10.4px;font-size:11.5px;--biscuit-creux-couleur:var(--ch-lait-41a)">No data yet</span>
+  </div>
+
+  <!-- bouton -->
+  <button class="k-rubis-btn b-add" id="add" type="button" style="position:absolute;left:16.5px;top:660.4px;width:351.3px">
+    <span class="k-rubis-btn-shape"><span class="k-rubis-btn-tranche"></span><span class="k-rubis-btn-face"></span></span>
+    <span class="k-rubis-btn-label k-rubis-ink">
+      <svg class="plus" viewBox="0 0 38 39" aria-hidden="true"><use href="#k-rubis-i-plus"/></svg>
+      Add a location
+    </span>
+    <i class="k-rubis-crumb" style="left:353.9px;top:3.5px;width:6.6px;height:7px"><span class="k-rubis-crumb-body" style="clip-path:polygon(0 37%,43% 0,95% 20%,100% 73%,33% 100%,14% 87%)"></span></i>
+    <i class="k-rubis-crumb" style="left:359.7px;top:18.3px;width:5.3px;height:5px"><span class="k-rubis-crumb-body" style="clip-path:polygon(0 69%,35% 12%,88% 0,100% 38%,76% 88%,35% 100%)"></span></i>
+    <i class="k-rubis-crumb" style="left:356.6px;top:35.6px;width:7.1px;height:6.6px"><span class="k-rubis-crumb-body" style="clip-path:polygon(3% 48%,60% 3%,82% 14%,100% 62%,69% 95%,25% 95%,3% 71%)"></span></i>
+  </button>
+
+  <!-- barre d'onglets -->
+  <nav class="k-noir-bar barre" aria-label="Main">
+    <a class="k-noir-tile couvert" href="#today" aria-hidden="true" tabindex="-1" style="--dx:4; --noir-w: calc(223 * var(--demo-u)); --noir-gap: calc(7 * var(--demo-u))"></a>
+    <a class="k-noir-tile onglet" id="tab-hourly" href="#hourly" style="--dx:-3.3; --noir-w: calc(205.5 * var(--demo-u)); --noir-gap: calc(5 * var(--demo-u))">
+      <div class="tile-content">
+        <svg class="k-icones-i k-icones-noir ico" style="width:23.74px;height:24.18px;margin-top:7.5px" viewBox="0 0 54 55" aria-hidden="true"><use href="#k-icones-clock"/></svg>
+        <span class="k-noir-label" style="margin-left:calc(2 * var(--demo-u))">Hourly</span>
+      </div>
+    </a>
+    <a class="k-noir-tile couvert" href="#radar" aria-hidden="true" tabindex="-1" style="--noir-w: calc(210 * var(--demo-u)); --noir-gap: calc(4 * var(--demo-u))"></a>
+    <a class="k-noir-tile onglet" id="tab-settings" href="#settings" style="--noir-w: calc(219 * var(--demo-u))">
+      <div class="tile-content">
+        <svg class="k-icones-i k-icones-noir ico" style="width:25.94px;height:25.5px;margin-top:7px" viewBox="0 0 59 58" aria-hidden="true"><use href="#k-icones-gear"/></svg>
+        <span class="k-noir-label">Settings</span>
+      </div>
+    </a>
+  </nav>
+  <a class="k-rubis-tab onglet onglet-today" id="tab-today" href="#today" aria-current="page">
+    <svg class="k-rubis-tab-icon" viewBox="0 0 46 44" aria-hidden="true"><use href="#k-rubis-i-home"/></svg>
+    <span class="k-rubis-tab-label">Today</span>
+    <span class="k-rubis-tab-line"></span>
+  </a>
+  <a class="k-biscuit-nu-carre onglet onglet-radar" id="tab-radar" href="#radar">
+    <svg class="k-icones-i k-icones-grave-biscuit ico" style="left:35.1px;top:7.1px;width:23.74px;height:23.3px" viewBox="0 0 54 53" aria-hidden="true"><use href="#k-icones-map"/></svg>
+    <span class="nom k-biscuit-creux" style="--biscuit-creux-couleur:var(--ch-cacao-29)">Radar</span>
+  </a>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  if (!window.gsap) return;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var DETACH = 'drop-shadow(0 3.5px 2.5px rgba(var(--ch-noir-13-rgb),.5))';
+
+  /* tuiles horaires : se détachent au survol, s'enfoncent à l'appui */
+  $('.heure, .now').forEach(function (t) {
+    var over = false, down = false;
+    function rest() {
+      if (reduce) { gsap.set(t, { clearProps: 'all' }); if (down) gsap.set(t, { y: 1.5, filter: 'brightness(.92)' }); return; }
+      if (down) gsap.to(t, { y: 1.6, scale: .985, filter: 'brightness(.9) drop-shadow(0 .3px .3px rgba(var(--ch-noir-13-rgb),.5))', duration: .1, ease: 'power2.out', overwrite: 'auto' });
+      else if (over) gsap.to(t, { y: -3.4, scale: 1.035, filter: 'brightness(1.04) ' + DETACH, duration: .28, ease: 'back.out(2.2)', overwrite: 'auto' });
+      else gsap.to(t, { y: 0, scale: 1, filter: 'brightness(1) drop-shadow(0 0 0 rgba(var(--ch-noir-13-rgb),0))', duration: .3, ease: 'power2.out', overwrite: 'auto', clearProps: 'filter' });
+    }
+    t.addEventListener('pointerenter', function () { over = true; rest(); });
+    t.addEventListener('pointerleave', function () { over = false; down = false; rest(); });
+    t.addEventListener('pointerdown', function () { down = true; rest(); });
+    t.addEventListener('pointerup', function () { down = false; rest(); });
+    t.addEventListener('pointercancel', function () { down = false; over = false; rest(); });
+  });
+
+  /* onglets : l'onglet pressé s'enfonce */
+  $('#tab-today, #tab-hourly, #tab-radar, #tab-settings').forEach(function (t) {
+    function dn() {
+      if (reduce) gsap.set(t, { y: 2 });
+      else gsap.to(t, { y: 2.2, scale: .985, filter: 'brightness(.88)', duration: .09, ease: 'power2.out', overwrite: 'auto' });
+    }
+    function up() {
+      if (reduce) gsap.set(t, { clearProps: 'all' });
+      else gsap.to(t, { y: 0, scale: 1, duration: .45, ease: 'elastic.out(1,.5)', overwrite: 'auto', clearProps: 'filter' });
+    }
+    t.addEventListener('pointerdown', dn);
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (e) { t.addEventListener(e, up); });
+  });
+
+  /* bouton rubis : croqué au clic, miettes qui tombent, la morsure se referme */
+  var btn = document.getElementById('add');
+  if (btn) {
+    var CRUMBS = [
+      'polygon(0 37%,43% 0,95% 20%,100% 73%,33% 100%,14% 87%)',
+      'polygon(0 69%,35% 12%,88% 0,100% 38%,76% 88%,35% 100%)',
+      'polygon(3% 48%,60% 3%,82% 14%,100% 62%,69% 95%,25% 95%,3% 71%)',
+      'polygon(0 20%,60% 0,100% 45%,70% 100%,20% 85%)'
+    ];
+    var bite = { r: -6 }, tl = null, spawned = [];
+    function apply() { btn.style.setProperty('--rubis-morsure-r', bite.r + 'px'); }
+    function clean() { spawned.forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); }); spawned = []; }
+    btn.addEventListener('click', function (ev) {
+      var b = btn.getBoundingClientRect();
+      var scale = b.width / btn.offsetWidth || 1;
+      var x = ev.clientX ? (ev.clientX - b.left) / scale : btn.offsetWidth * .5;
+      x = Math.max(26, Math.min(btn.offsetWidth - 48, x));
+      if (tl) tl.kill(); clean();
+      btn.style.setProperty('--rubis-morsure-x', x + 'px');
+      if (reduce) { bite.r = 11; apply(); setTimeout(function () { bite.r = -6; apply(); }, 1400); return; }
+      bite.r = -6; apply();
+      tl = gsap.timeline();
+      tl.to(btn, { scaleY: .93, scaleX: 1.006, transformOrigin: '50% 100%', duration: .06, ease: 'power2.in' })
+        .to(bite, { r: 14, duration: .14, ease: 'power3.out', onUpdate: apply }, '<')
+        .to(btn, { scaleY: 1, scaleX: 1, duration: .5, ease: 'elastic.out(1,.4)' }, '>-0.02')
+        .add(function () {
+          for (var i = 0; i < 5; i++) {
+            var w = 3.4 + Math.random() * 3.6, h = 3.4 + Math.random() * 3.4;
+            var c = document.createElement('i'); c.className = 'k-rubis-crumb';
+            c.style.cssText = 'left:' + (x - 6 + Math.random() * 12 - w / 2) + 'px;top:' + (2 + Math.random() * 4) + 'px;width:' + w + 'px;height:' + h + 'px;z-index:2';
+            var s = document.createElement('span'); s.className = 'k-rubis-crumb-body'; s.style.clipPath = CRUMBS[i % CRUMBS.length];
+            c.appendChild(s); btn.appendChild(c); spawned.push(c);
+            gsap.fromTo(c, { y: 0, x: 0, rotation: 0, opacity: 1 },
+              { y: 22 + Math.random() * 30, x: (Math.random() - .5) * 26, rotation: (Math.random() - .5) * 420, duration: .5 + Math.random() * .2, ease: 'power1.in', delay: i * .04 });
+            gsap.to(c, { opacity: 0, duration: .25, delay: .45 + i * .04 + Math.random() * .1 });
+          }
+        }, '<.08')
+        .to(bite, { r: -6, duration: .7, ease: 'power2.inOut', onUpdate: apply, onComplete: clean }, '+=1.1');
+    });
+  }
+  window.__ecranGestes = { reduce: reduce };
+})();
+
+</script>
+</body>
+</html>
