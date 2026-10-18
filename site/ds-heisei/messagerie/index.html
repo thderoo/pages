@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>連絡 MESSAGES</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&family=Zen+Kaku+Gothic+New&display=swap">
+<link rel="stylesheet" href="../kit/coque.css">
+<link rel="stylesheet" href="../kit/relief.css">
+<link rel="stylesheet" href="../kit/rainure.css">
+<link rel="stylesheet" href="../kit/vis.css">
+<link rel="stylesheet" href="../kit/verre.css">
+<link rel="stylesheet" href="../kit/phosphore.css">
+<link rel="stylesheet" href="../kit/alerte.css">
+<link rel="stylesheet" href="../kit/bouton.css">
+<link rel="stylesheet" href="../kit/defilement.css">
+<link rel="stylesheet" href="../kit/marque.css">
+<link rel="stylesheet" href="screen.css">
+</head>
+<body class="k-coque">
+<!-- Zone barres : barre d'outils du haut et bande d'état du bas. -->
+
+<!-- Rainures entre plaques (barre du haut). -->
+<div class="k-rainure-filet-v m-plc m-barres-g0"></div>
+<div class="k-rainure-lisere-angle-g m-plc m-barres-g1"></div>
+<div class="k-rainure-filet-v-droit m-plc m-barres-g2"></div>
+<div class="k-rainure m-plc m-barres-g3"></div>
+<div class="k-rainure m-plc m-barres-g4"></div>
+<div class="k-rainure-filet-v-droit m-plc m-barres-g5"></div>
+<div class="k-rainure-lisere-angle-g m-plc m-barres-g6"></div>
+<div class="k-rainure-creux m-plc m-barres-g7"></div>
+<div class="k-rainure-filet-v-droit m-plc m-barres-g8"></div>
+
+<!-- Plaque-titre « 連絡 MESSAGES ». -->
+<div class="k-relief-plaque k-relief-plaque-inverse m-plc m-barres-titre-plaque"></div>
+<span class="m-plc m-barres-titre k-bouton-libelle">連絡 MESSAGES</span>
+
+<!-- Rangée de 4 boutons levés. -->
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-new"><span class="k-bouton-libelle"><span class="k-bouton-jp">新規</span><span class="k-bouton-latin m-barres-latin"> NEW</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-reply"><span class="k-bouton-libelle"><span class="k-bouton-jp">返信</span><span class="k-bouton-latin m-barres-latin"> REPLY</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-forward"><span class="k-bouton-libelle"><span class="k-bouton-jp">転送</span><span class="k-bouton-latin m-barres-latin"> FORWARD</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-delete"><span class="k-bouton-libelle"><span class="k-bouton-jp">削除</span><span class="k-bouton-latin m-barres-latin"> DELETE</span></span></div>
+
+<!-- Champ de recherche en verre, en haut à droite. -->
+<div class="k-verre-cadre m-plc m-barres-verre-recherche"><div class="k-verre"></div></div>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-recherche">検索<span class="m-barres-sep"> SEARCH</span></span>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-saisie">TANAKA</span>
+<div class="k-phosphore-trait m-plc m-barres-curseur"></div>
+
+<!-- Bande d'état du bas : deux champs de verre. -->
+<div class="k-verre-cadre m-plc m-barres-verre-bas-gauche"><div class="k-verre"></div></div>
+<div class="k-verre-cadre m-plc m-barres-verre-bas-droite"><div class="k-verre"></div></div>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-gauche">INBOX 12 / UNREAD 05</span>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-droite">SMTP OK  POP3 OK</span>
+
+<!-- Panneau 箱 FOLDERS : plaque en coin, vis, titre, cadre de verre, rangées de dossiers, quota. -->
+<div class="m-plc k-relief-plaque k-relief-plaque-creux-bas k-relief-plaque-coin m-dossiers-plaque"></div>
+<div class="k-vis m-plc m-dossiers-vis-tl"></div>
+<div class="k-vis m-plc m-dossiers-vis-tr"></div>
+<div class="k-vis m-plc m-dossiers-vis-bl"></div>
+<div class="k-vis m-plc m-dossiers-vis-br"></div>
+<div class="m-plc m-dossiers-titre"><span class="m-dossiers-kanji">箱</span> FOLDERS</div>
+<div class="m-plc k-verre-cadre m-dossiers-cadre"><div class="k-verre"></div></div>
+<div class="m-plc k-rainure-filet-verre m-dossiers-filet"></div>
+<div class="m-plc k-phosphore-texte m-dossiers-quota">QUOTA  412 / 1024 MB</div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-0"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-1"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-2"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-3"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-4"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-5"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-sliver"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-0"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-1"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-2"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-3"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-4"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-5"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-6"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-7"></div>
+<div class="m-plc k-phosphore-selection-sombre m-dossiers-sel m-dossiers-l0"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l0"></div>
+<span class="m-plc k-phosphore-texte-sourd m-dossiers-nom m-dossiers-l0">INBOX</span>
+<span class="m-plc k-phosphore-texte-sourd m-dossiers-compte m-dossiers-l0">12</span>
+<div class="m-plc k-alerte-puce m-dossiers-marque m-dossiers-l1"></div>
+<span class="m-plc k-alerte-texte m-dossiers-nom m-dossiers-l1">URGENT</span>
+<span class="m-plc k-alerte-texte m-dossiers-compte m-dossiers-l1">02</span>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l2"></div>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l2">SENT</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l2">148</span>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l3"></div>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l3">DRAFT</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l3">01</span>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l4"></div>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l4">ARCHIVE</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l4">1204</span>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l5"></div>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l5">PROJECTS</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l5">37</span>
+<div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l6"></div>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l6">TRASH</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l6">09</span>
+
+<!-- Panneau 受信箱 INBOX : plaque, vis, titre, cadre de verre, liste, barre de défilement. -->
+<div class="m-plc k-relief-plaque k-relief-plaque-creux-bas m-liste-plaque"></div>
+<div class="k-vis m-plc m-liste-vis m-liste-vis-tl"></div>
+<div class="k-vis m-plc m-liste-vis m-liste-vis-tr"></div>
+<div class="k-vis m-plc m-liste-vis m-liste-vis-bl"></div>
+<div class="k-vis m-plc m-liste-vis m-liste-vis-br"></div>
+<div class="m-plc m-liste-titre m-liste-titre-jp">受信箱</div>
+<div class="m-plc m-liste-titre m-liste-titre-latin">INBOX</div>
+<div class="k-verre-cadre m-plc m-liste-cadre"></div>
+<div class="k-verre m-plc m-liste-verre"></div>
+<!-- Lignes de messages (11). Chaque ligne : marque, expéditeur, sujet, heure. -->
+  <div class="m-plc m-liste-ligne m-liste-l1 k-phosphore-selection-sombre m-liste-selection">
+    <span class="m-plc m-liste-txt m-liste-expediteur">TANAKA.H</span>
+    <span class="m-plc m-liste-txt m-liste-sujet">RE: SERVER ROOM ACCESS</span>
+    <span class="m-plc m-liste-txt m-liste-heure">23:41</span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l2">
+    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">SATO.M</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">MONTHLY REPORT 10</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">23:12</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l3">
+    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">SYS-ADMIN</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">BACKUP JOB-0412 DONE</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">22:58</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l4">
+    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">YAMADA.K</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">MEETING NOTES 10/30</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">22:30</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l5">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">WATANABE.T</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">LEAVE REQUEST</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">21:47</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l6">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">HR-DEPT</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">NOTICE 07-114</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">20:15</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l7">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">KOBAYASHI.A</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">RE: PRINTER 3F</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">19:52</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l8">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">ITO.S</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">ESTIMATE 0933</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">18:20</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l9">
+    <span class="m-plc m-liste-marque k-alerte-puce"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-alerte-texte">SYS-ADMIN</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-alerte-texte">DISK USAGE WARNING</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-alerte-texte">17:44</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l10">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">NAKAMURA.Y</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">LUNCH ORDER</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">12:05</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+  <div class="m-plc m-liste-ligne m-liste-l11">
+    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">ADM-OFFICE</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">FORM 22 REMINDER</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">09:30</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  </div>
+<!-- Barre de défilement : bouton haut, curseur, glissière, bouton bas. -->
+<div class="k-bouton k-defilement-fleche m-plc m-liste-defil-haut"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere m-plc m-liste-piste"></div>
+<div class="k-bouton k-defilement-curseur m-plc m-liste-curseur"></div>
+<div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-liste-defil-bas"><span class="k-defilement-triangle-bas"></span></div>
+
+<!-- Zone lecture : panneau 本文 MESSAGE (volet de lecture), boîte CSS x 642 à 1275, y 43,67 à 418,67. -->
+<div class="k-relief-plaque k-relief-plaque-inverse m-plc m-lecture-plaque"></div>
+<div class="k-vis m-plc m-lecture-vis-g"></div>
+<div class="k-vis m-plc m-lecture-vis-d"></div>
+
+<!-- Titre sur la coque. -->
+<span class="m-plc m-lecture-titre m-lecture-titre-jp">本文</span>
+<span class="m-plc m-lecture-titre m-lecture-titre-latin">MESSAGE</span>
+
+<!-- Cadre en creux et verre. -->
+<div class="k-verre-cadre m-plc m-lecture-cadre"><div class="k-verre"></div></div>
+
+<!-- En-tête : étiquettes puis valeurs, 4 lignes. -->
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h1">FROM</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h1">TANAKA.H  (SYSTEMS DEPT)</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h2">TO</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h2">YOU</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h3">DATE</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h3">H07.11.03 23:41</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h4">SUBJECT</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h4">RE: SERVER ROOM ACCESS</span>
+
+<!-- Filet de séparation. -->
+<div class="k-rainure-filet-verre-fort m-plc m-lecture-filet"></div>
+
+<!-- Corps du message. -->
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b1">Good evening. The key card for the server room on 5F is ready.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b2">Please collect it from the security desk before Friday.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b3">Access hours are 08:00 to 20:00, and the log is checked weekly.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b4">If the night shift needs entry, contact me first.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b5">Thank you.</span>
+
+<!-- Partie citée (la ligne vide précède, sans élément). -->
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c1">&gt; On 10/30 you wrote:</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c2">&gt; Could I get access to the server room on 5F?</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c3">&gt; I need to replace a drive in the file server.</span>
+
+<!-- Pièce jointe : marque en crochets (un élément), nom et taille. -->
+<div class="k-marque-crochets m-plc m-lecture-crochets"></div>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-nom">ACCESS-FORM.TXT</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-taille">2KB</span>
+
+<!-- Barre de défilement : flèche haut, piste, curseur, flèche bas. Curseur posé en phosphore éteint (voir rapport). -->
+<div class="k-bouton k-defilement-fleche m-plc m-lecture-haut"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-piste-claire m-plc m-lecture-piste"></div>
+<div class="k-phosphore-segment-eteint m-plc m-lecture-curseur"></div>
+<div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-lecture-bas"><span class="k-defilement-triangle-bas"></span></div>
+
+<!-- Zone reponse : panneau 返信 REPLY. Tout est en enfants directs de body (placement absolu, page 1280 x 720). -->
+<div class="k-relief-plaque k-relief-plaque-creux-bas k-relief-plaque-gorge-haut k-coque k-coque-sombre m-plc m-reponse-panneau"></div>
+<div class="k-vis m-plc m-reponse-vis m-reponse-vis-hg"></div>
+<div class="k-vis m-plc m-reponse-vis m-reponse-vis-hd"></div>
+<div class="k-vis m-plc m-reponse-vis m-reponse-vis-bg"></div>
+<div class="k-vis m-plc m-reponse-vis m-reponse-vis-bd"></div>
+<span class="m-plc m-reponse-titre m-reponse-titre-jp">返信</span>
+<span class="m-plc m-reponse-titre m-reponse-titre-lat">REPLY</span>
+
+<!-- Champ TO -->
+<div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-to"></div>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-to-jp">宛先</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etq-to-lat">TO</span>
+<div class="k-verre-cadre m-plc m-reponse-cadre-to"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-to">TANAKA.H</span>
+
+<!-- Champ SUBJECT -->
+<div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-sub"></div>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-sub-jp">件名</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etq-sub-lat">SUBJECT</span>
+<div class="k-verre-cadre m-plc m-reponse-cadre-sub"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-sub">RE: RE: SERVER ROOM ACCESS</span>
+
+<!-- Zone BODY : plaque, verre, trois lignes, curseur, barre de defilement -->
+<div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-body"></div>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-body-jp">本文</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etq-body-lat">BODY</span>
+<div class="k-verre-cadre m-plc m-reponse-cadre-body"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-corps">Thank you for the quick answer. I will come to the security desk<br>tomorrow morning and bring the signed form.<br>I will also need</span>
+<div class="k-phosphore-trait m-plc m-reponse-curseur"></div>
+<div class="k-bouton k-defilement-fleche m-plc m-reponse-sb-haut"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere m-plc m-reponse-sb-piste"></div>
+<div class="k-bouton k-defilement-curseur m-plc m-reponse-sb-pouce"></div>
+<div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-reponse-sb-bas"><span class="k-defilement-triangle-bas"></span></div>
+
+<!-- Rangee de boutons et champ CHARS -->
+<div class="k-bouton m-plc m-reponse-btn-send"><span class="k-bouton-libelle"><span class="k-bouton-jp">送信</span><span class="k-bouton-latin m-reponse-gap"> SEND</span></span></div>
+<div class="k-bouton m-plc m-reponse-btn-save"><span class="k-bouton-libelle"><span class="k-bouton-jp">保存</span><span class="k-bouton-latin m-reponse-gap"> SAVE</span></span></div>
+<div class="k-bouton m-plc m-reponse-btn-cancel"><span class="k-bouton-libelle"><span class="k-bouton-jp">取消</span><span class="k-bouton-latin m-reponse-gap"> CANCEL</span></span></div>
+<div class="k-verre-cadre m-plc m-reponse-cadre-chars"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-jp">文字</span>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-lat">CHARS</span>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-num">118</span>
+
+<!-- Assemblage : jonctions verticales entre zones (rainures du kit) -->
+<div class="k-rainure m-plc m-assemblage-fi"></div>
+<div class="k-rainure m-plc m-assemblage-im"></div>
+
+</body>
+</html>

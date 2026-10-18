@@ -1,0 +1,128 @@
+/*
+ * Matière onglet : plaque d'onglet de la coque (rangée d'onglets au-dessus de la fiche, écran registre).
+ * Biseau à trois niveaux (lumière, face, ombre) par bordures et ombres sans flou, comme le bouton.
+ * Onglet inactif : posé sur la coque, bord bas marqué. Onglet actif : sans bord bas, sa face continue vers la fiche.
+ * Texte : sans-serif de la coque (--kit-sans), couleur mesurée, ligne de base à mi-hauteur de la rangée.
+ *
+ * Relevé (PIL, image cible de l'écran registre, 3840 x 2160 px, 1 px CSS = 3 px image). Format : valeur hex | zone (x0,y0)-(x1,y1) en px image,
+ * bornes x1 et y1 exclues | médiane RGB | écart type RGB. Rangée : onglets BASIC (actif), EMPLOYMENT, QUALIFICATIONS,
+ * HISTORY, FAMILY, ATTACH (inactifs).
+ *
+ *   --k-onglet-face          #ada690 | inactifs, cinq zones de texte exclu (1420,204)-(1760,222) (1830,204)-(2300,222)
+ *                                      (2340,204)-(2670,222) (2710,204)-(3040,222) (3090,204)-(3410,222) : médianes 173,165,144 ;
+ *                                      173,165,144 ; 173,165,144 ; 174,166,145 ; 175,167,146 (écart type 1,2 à 2,5) ; médiane des cinq 173,166,144.
+ *   --k-onglet-actif-face    #b4ad98 | actif BASIC, zone (940,236)-(1360,240) : 180,173,152 (écart type 2,5 ; 2,1 ; 2,3).
+ *   plaque (référence)       #afa792 | zone (1400,116)-(1750,126) : 175,167,146 (écart type 1,0 ; 1,4 ; 1,1).
+ *                                      L'inactif est de 2 à 3 niveaux plus sombre que la plaque, pas davantage.
+ *   fiche (référence)        médiane 176,168,147 de trois zones de marge gauche : (932,300)-(950,600) 178,170,149 ;
+ *                                      (932,620)-(950,900) 176,168,147 ; (932,1300)-(950,1500) 175,168,147 (écarts types 8 à 18).
+ *                                      Écart avec la coque (#b1a991, --k-coque-teinte) : -1, -1, +2 niveaux : la démo prend la teinte de la coque.
+ *   --k-onglet-lumiere       #ddd7c3 | biseau clair haut, inactif : rangées 136 à 138 (médiane 220,212,192) et rangées 227 à 229
+ *                                      (médiane 224,218,197) ; médiane des six rangées 221,215,195.
+ *   --k-onglet-lumiere-cote  #ccc6b2 | biseau clair gauche, inactif : colonnes 1798-1799, 2324-2325, 3058-3059 (médiane 204,198,178,
+ *                                      sans les colonnes du bord sombre voisin). Plus sombre que le haut : écart de 15 niveaux, gardé.
+ *   --k-onglet-ombre         #656855 | bord droit sombre, inactif : colonnes 1794-1796, 2319-2321, 2687-2689, 3054-3056
+ *                                      (médiane 101,104,85, écart type 11-12 : mêlé au bord clair, à la lisière).
+ *   --k-onglet-contour       #949279 | liseré sombre au-dessus de l'inactif, rangées 132 à 135 : 164,160,138 / 144,142,119 /
+ *                                      131,128,106 / 153,148,127 ; moyenne 148,145,123.
+ *   --k-onglet-bas           #6f705c | bord bas sombre, inactif, rangées 224 à 226 : 117,118,97 / 92,94,74 / 125,125,105 ;
+ *                                      moyenne 111,112,92.
+ *   --k-onglet-actif-lumiere #e3dcc7 | biseau clair de l'actif : rangées 131 à 133 (226,218,199) et colonne 921-923 (228,221,199).
+ *   --k-onglet-actif-ombre   #6a6d59 | bord droit de l'actif, colonnes 1371-1373 : 106,109,89 (écart type 8 à 10).
+ *                                      Écart avec --k-onglet-ombre : 5, 5, 4 niveaux, gardé dans une variable à part.
+ *   --k-onglet-actif-contour #74745f | liseré sombre au-dessus de l'actif, rangées 128 et 129 : 125,125,104 / 107,107,86.
+ *   --k-onglet-actif-chanfrein #acaa95 | rangée 130 entre le liseré et le clair de l'actif : 172,170,149.
+ *   --k-onglet-actif-contact #a6a08a | contact à gauche de l'actif, colonnes 919-920 : 162,156,134 / 171,165,143.
+ *   --k-onglet-texte         #030000 | encre des libellés (5 % les plus sombres, boîte d'encre de chaque libellé) : 3,0,0 ; 4,0,0.
+ *
+ * Géométrie (px image -> px CSS, 1 CSS = 3 image) :
+ *   onglet inactif : boîte de la rangée 136 à 226 (sans le liseré haut, 4 px) : haut 45,33 CSS, hauteur 30,33 CSS.
+ *                    bord haut clair 3 px = 1 CSS ; bord bas sombre 3 px = 1 CSS ; bord droit sombre 4 px = 1,33 CSS ;
+ *                    bord gauche clair 3 px = 1 CSS (absent du côté de l'actif : la face de l'actif coupe le bord).
+ *                    Liseré haut 4 px = 1,33 CSS au-dessus de la boîte ; lumière basse 3 px = 1 CSS sous la boîte.
+ *   onglet actif : boîte de la rangée 131 à 240 : haut 43,67 CSS, hauteur 36,33 CSS ; pas de bord bas, la face va jusqu'à la fiche.
+ *                  bord haut clair 3 px = 1 CSS, bord gauche clair 3 px = 1 CSS, bord droit sombre 4 px = 1,33 CSS.
+ *                  Liseré haut 2 px sombre + 1 px de chanfrein (1 CSS au total) ; contact gauche 2 px (0,67 CSS).
+ *   largeurs des onglets de la rangée, px image -> CSS : BASIC 921-1374 = 151,33 ; EMPLOYMENT 1375-1797 = 141 ;
+ *                  QUALIFICATIONS 1798-2322 = 175 ; HISTORY 2323-2690 = 122,67 ; FAMILY 2691-3057 = 122,33 ; ATTACH 3058-3424 = 122,33.
+ *   texte : capitales 169 à 199 px image (10,33 CSS), ligne de base 199 px image = 66,33 CSS, soit 21 CSS sous le haut de l'inactif
+ *           et 22,67 CSS sous le haut de l'actif. Chasse : E à 22 px image = 7,37 CSS. Kanji : pas de 42 px image = 14 CSS, encre 12 CSS.
+ *           Centrage : l'encre est décalée de 4 CSS à gauche du centre pour les onglets à kanji, de 1 CSS pour les latins seuls.
+ *
+ * Écarts avec le kit : aucune matière de coque ou de relief n'est reprise (la plaque et sa vis viennent de relief.css). Le bouton
+ * (bouton.css) n'est pas réutilisé : son biseau est mitré en quatre couleurs, celui de l'image a le bord bas sombre à l'intérieur
+ * et le bord haut clair à l'intérieur du liseré. Aucune couleur n'est atténuée : chaque teinte est une valeur mesurée, en hex.
+ */
+
+/* Rangée : tous les onglets posés en ligne, bas libre. La position de la rangée (haut 43,67 CSS pour la rangée de l'image) est
+   celle de l'écran qui la pose. */
+.k-onglet-rangee {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Libellé : sans-serif de la coque, couleur d'encre mesurée. Le corps latin et le corps japonais sont séparés. */
+.k-onglet-libelle {
+  font-family: var(--kit-sans, system-ui, "DejaVu Sans", sans-serif);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--k-onglet-texte, #030000);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Corps latin (EMPLOYMENT, BASIC, ...) : capitales de 10,33 CSS, chasse de 7,37 CSS par lettre. */
+.k-onglet-latin {
+  font-size: 15.2px;
+  letter-spacing: -0.15px;
+}
+
+/* Onglet inactif. Le texte est centré avec 5 px de marge à droite (décalage de 2,5 CSS vers la gauche, mesuré sur la rangée). */
+.k-onglet {
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 30.33px;
+  margin-top: 1.67px;
+  padding: 7.23px 7.67px 0 0;
+  border-style: solid;
+  border-width: 1px 1.33px 1px 1px;
+  border-color: var(--k-onglet-lumiere, #ddd7c3) var(--k-onglet-ombre, #656855) var(--k-onglet-bas, #6f705c) var(--k-onglet-lumiere-cote, #ccc6b2);
+  background: var(--k-onglet-face, #ada690);
+  box-shadow:
+    0 -1.33px 0 0 var(--k-onglet-contour, #949279),
+    0 1px 0 0 var(--k-onglet-lumiere, #ddd7c3);
+}
+
+/* L'onglet qui suit l'actif reçoit sa face à la place du clair gauche : le bord sombre de l'actif coupe la séparation. */
+.k-onglet-actif + .k-onglet {
+  border-left-color: var(--k-onglet-face, #ada690);
+}
+
+/* Onglet actif. Pas de bord bas : la face continue sous lui, vers la fiche. Hauteur et marge jusqu'à la ligne de la fiche. */
+.k-onglet-actif {
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 36.33px;
+  margin-top: 0;
+  padding: 9.4px 7.67px 0 0;
+  border-style: solid;
+  border-width: 1px 1.33px 0 1px;
+  border-color: var(--k-onglet-actif-lumiere, #e3dcc7) var(--k-onglet-actif-ombre, #6a6d59) transparent var(--k-onglet-actif-lumiere, #e3dcc7);
+  background: var(--k-onglet-actif-face, #b4ad98);
+  box-shadow:
+    0 -0.33px 0 0 var(--k-onglet-actif-chanfrein, #acaa95),
+    0 -1px 0 0 var(--k-onglet-actif-contour, #74745f),
+    -0.67px 0 0 0 var(--k-onglet-actif-contact, #a6a08a);
+}
+
+/* Libellé latin seul (FAMILY, ATTACH) : le centre de l'encre est à 1 CSS à gauche du centre de l'onglet dans l'image,
+   contre 3,2 à 4 CSS pour les libellés à kanji (padding de 7,67 px). Padding droit de 2 px : décalage de 1 CSS. */
+.k-onglet.k-onglet-latin-seul {
+  padding-right: 2px;
+}

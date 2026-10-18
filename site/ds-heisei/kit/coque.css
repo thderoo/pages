@@ -1,0 +1,40 @@
+/*
+ * Matière coque : plastique mat beige, grain fin, quelques variations lentes de ton. Aucun biseau, rainure, vis ni bouton.
+ * Relevé des couleurs (PIL, médiane et écart type RGB par zone, 3 zones par image, 12 zones au total) :
+ * valeur hex | image | zone x0,y0,x1,y1 en px de l'image 3840 x 2160 | médiane RGB | écart type RGB
+ * #b1a992 | maitresse | 1890,20,3010,90 | med 177,169,146 | sd 1.15,1.14,1.23 | barre de menu entre HELP et horloge
+ * #b0a891 | maitresse | 1280,136,2920,200 | med 176,168,145 | sd 1.22,1.16,1.40 | bandeau TOPOLOGY à droite du titre
+ * #b1a992 | maitresse | 3400,140,3700,200 | med 177,169,146 | sd 0.80,0.80,0.82 | bandeau STATUS à droite du titre
+ * #aea68f | messagerie | 2330,14,2990,86 | med 174,166,143 | sd 1.18,1.11,1.23 | barre de menu entre DELETE et SEARCH
+ * #aea68f | messagerie | 460,140,620,190 | med 174,166,143 | sd 0.97,0.85,1.07 | bandeau FOLDERS à droite du titre
+ * #afa68f | messagerie | 2000,1660,2200,1740 | med 175,166,143 | sd 1.32,1.11,0.98 | libellé BODY de la zone REPLY
+ * #afa58c | fichiers | 580,140,820,200 | med 175,165,140 | sd 1.06,1.28,1.30 | bandeau VOLUMES à droite du titre
+ * #b0a58c | fichiers | 1320,185,2100,225 | med 176,165,140 | sd 1.20,1.26,1.36 | en-tête de liste entre NAME et TYPE
+ * #b0a48c | fichiers | 1560,1300,1640,1360 | med 176,164,140 | sd 0.89,0.95,1.04 | fond du panneau COPYING à gauche des boutons
+ * #afa792 | registre | 1200,22,3020,80 | med 175,167,146 | sd 1.06,1.12,1.04 | barre de menu entre REG-JP et OPERATOR
+ * #b1a994 | registre | 3440,880,3700,900 | med 177,169,148 | sd 0.76,0.76,0.76 | marge du groupe FLAGS
+ * #b0a893 | registre | 2380,1930,2670,2010 | med 176,168,147 | sd 0.82,0.84,0.84 | barre du bas entre LAST EDIT et SAVE
+ * Teinte retenue (passe d'harmonisation, 2026-10-18) : #b0a892 (176,168,146) = médiane des 9 zones de maitresse, messagerie
+ * (hors REPLY) et registre. Écarts à cette valeur : maitresse 1 niveau, registre 0 à 1, messagerie 2 à 3 : dans la tolérance.
+ * Les 4 images ne s'accordent pas à 3 niveaux près : fichiers (175,165,140) et le panneau REPLY de la messagerie
+ * (174,165,141) sont à 4 à 6 niveaux de la teinte par défaut, d'où la variante .k-coque-sombre #afa58d (175,165,141), qui les
+ * porte à 1 niveau près. Instances de .k-coque-sombre : écran fichiers (3 zones), panneau REPLY de la messagerie.
+ * Dialogue : dialogue.css redéfinit la teinte (#b0a58c, fichiers) ; il ne suit pas ces valeurs.
+ * Moyennes par image (RGB) : maitresse 176,7 / 168,7 / 145,7 ;
+ * messagerie 174,3 / 166,0 / 143,0 ; fichiers 175,7 / 164,7 / 140,0 ; registre 176,0 / 168,0 / 147,0 (moyenne des 12 médianes : 175,7 / 166,8 / 143,9). Le beige varie d'une image
+ * à l'autre (B de 140 à 147), pas à l'intérieur d'une image (moins d'un niveau) : une seule teinte, sans dégradé.
+ * Bruit mesuré sur les crops K1 à K4 (mesures.md) : écart type par canal 1,1 à 1,3 ; passe-haut rayon 2 px 0,2 à 0,4 ;
+ * passe-bas rayon 8 px 0,6 à 0,9 (niveaux sur 255). Le relief fin est au niveau du bruit de fond de l'image.
+ */
+
+.k-coque {
+  --k-coque-teinte: #b0a892;
+  background-color: var(--k-coque-teinte, #b0a892);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='g' filterUnits='userSpaceOnUse' x='0' y='0' width='320' height='320' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='2' seed='11' stitchTiles='stitch' result='t1'/%3E%3CfeColorMatrix in='t1' type='matrix' values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1' result='m1'/%3E%3CfeComponentTransfer in='m1' result='lent'%3E%3CfeFuncR type='linear' slope='0.0540' intercept='0.4730'/%3E%3CfeFuncG type='linear' slope='0.0540' intercept='0.4730'/%3E%3CfeFuncB type='linear' slope='0.0540' intercept='0.4730'/%3E%3C/feComponentTransfer%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' seed='5' stitchTiles='stitch' result='t2'/%3E%3CfeColorMatrix in='t2' type='matrix' values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1' result='m2'/%3E%3CfeComponentTransfer in='m2' result='fin'%3E%3CfeFuncR type='linear' slope='0.0330' intercept='0.4835'/%3E%3CfeFuncG type='linear' slope='0.0330' intercept='0.4835'/%3E%3CfeFuncB type='linear' slope='0.0330' intercept='0.4835'/%3E%3C/feComponentTransfer%3E%3CfeComposite in='lent' in2='fin' operator='arithmetic' k1='0' k2='0.5' k3='0.5' k4='0'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url%28%23g%29'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  background-size: 320px 320px;
+}
+/* Variante de coque plus sombre (écran fichiers, panneau REPLY de la messagerie). Même grain, autre teinte. */
+.k-coque-sombre {
+  --k-coque-teinte: #afa58d;
+}

@@ -1,0 +1,113 @@
+/*
+ * Matière marque : petites marques carrées de liste (carré plein, carré creux, contour sombre, crochets de pièce jointe).
+ * Couleurs unies, bords plats, sans flou ni halo. Pas de bitmap, pas de transparence.
+ *
+ * Relevé : PIL et numpy sur les images de référence (3840 x 2160 px, 1 px CSS = 3 px image).
+ * Une ligne par valeur : nom, valeur hex, image, zone (x0,y0,x1,y1 en px image), médiane RGB, écart type RGB.
+ * Règles : aplat = médiane de l'intérieur de la marque ; cœur du trait = 5 % les plus clairs de la bande de bord ;
+ * liseré sombre = 5 % les plus sombres de la bande de bord.
+ *
+ * Carré plein, messagerie et maitresse (puces des listes) : médiane des 3 puces de messagerie (liste) 136,193,163 ;
+ *   7 puces de messagerie (dossiers) 137,194,163 ; 12 puces de maitresse 138,196,165 ; médiane des 22 puces
+ *   137,195,164 : à 3 niveaux près de k-phosphore-segment (140,197,165). Pas de classe nouvelle : k-phosphore-segment.
+ *   Taille : 12 x 12 px CSS (liste de messagerie), 11,67 x 12,33 (dossiers), 9,33 x 9,67 (maitresse) : placement de l'écran.
+ * Puce d'alerte : messagerie liste 226,134,48 ; messagerie dossiers 230,136,47 ; maitresse ND-011 226,138,53 :
+ *   à 3 niveaux près de k-alerte-puce (227,137,51). Pas de classe nouvelle : k-alerte-puce.
+ *
+ * Carré plein, registre (11 marques, zone 1 à 11 de la liste, 32 x 31 px image) : médiane 148,206,176 (écart type 1,2 ; 1,2 ; 1,1).
+ *   Écart avec k-phosphore-segment supérieur à 3 niveaux : variante.
+ *   --k-marque-carre-clair #94ceb0 (148,206,176) : registre, zone 1 (96,846)-(128,877) et suivantes.
+ *   Liseré clair sur les bords gauche et droit, 1 px image à l'intérieur de la marque (0,33 px CSS), médiane sur les
+ *   11 marques : gauche 159,215,188 (+10 sur le vert, étendue 7 à 14), droite 170,219,196 (+13, étendue 9 à 19).
+ *   Haut et bas : pas de liseré (haut -6, bas +0,5 sur le vert). Reproduit par deux ombres intérieures de 0,333 px CSS.
+ *   Cause probable : le bord franc de la marque est lu avec un dépassement, JPEG compris ; non démontré.
+ *
+ * Carré creux, messagerie (6 marques lues, 36 x 36 px image, à y 252, 291, 331, 370, 449 et 488 px CSS de la liste, x 257,33) :
+ *   cœur du trait (médiane des 6) #a7d5c1 (167,213,193), écart type 3,2 ; 1,6 ; 1,9 : zone (772,756)-(808,792) pour la première.
+ *   épaisseur du trait clair : 2 px image (0,67 px CSS) : profil central, px 0 et 1 pleins, px -1 et 2 partiels.
+ *   liseré sombre intérieur, 1 px image, médiane (0,27,17) : --k-marque-carre-creux-ombre #001b11.
+ *   Liseré sombre extérieur (1 px image, à 2 px du bord) : non reproduit, sous la résolution d'une marque CSS.
+ *
+ * Contour sombre, registre, ligne 1 de la liste de recherche (sélection, zone (96,770)-(129,803) : boîte 33 x 33 px image,
+ *   soit 11 x 11 px CSS à (32 ; 256,67)) : contour pooled (1,8 ; 34,7 ; 20,5) : #022315 (2,35,21), écart type 2 ; 3 ; 1 par bord (top, bot, left, right).
+ *   épaisseur du contour : 1 px image (profil G : px 96 foncé, px 128 foncé) = 0,333 px CSS.
+ *   fond de la marque : 148,206,176 (même que le carré clair, k-marque-carre-clair).
+ *
+ * Contour sombre, maitresse ND-004 (ligne sélectionnée, boîte 31,98 ; 160,66 à 41,31 ; 171 px CSS) :
+ *   contour pooled (14,2 ; 45,0 ; 31,7) : #0e2d20 (14,45,32) ; écart avec k-phosphore-selection-trait (10,45,41) :
+ *   4, 0, 9 : au-delà de 3 niveaux, donc variante.
+ *   fond intérieur (médiane 87,125,106, écart type 15 : fond non uniforme, plus sombre en bas) : #577d6a.
+ *   Fond de la ligne sélectionnée autour : 114,149,129 (k-phosphore-selection).
+ *   épaisseur (profils G, zone (96,482)-(124,513)) : 1 px à gauche, 2 px en haut et en bas, 1,5 px à droite (sombre
+ *   sur 2 px de large à droite) : 0,5 px CSS retenu, pour une épaisseur moyenne de 1,5 px image.
+ *   Décision contour / contour-sel : deux classes gardées. Le fond (148,206,176 contre 87,125,106, soit 61 à 81 niveaux)
+ *   et le contour (2,35,21 contre 14,45,32, soit 10 à 12 niveaux) ne sont pas dans 3 niveaux, et l'épaisseur passe de 1 px
+ *   à 1,5 px image : fusion refusée.
+ *   ND-004 : le relevé prime sur la description du mandat (« carré creux un peu plus clair »). La marque mesurée est
+ *   un contour sombre sur fond sombre, pas un carré creux.
+ *
+ * Crochets de pièce jointe, messagerie (lecture, zone (670,376,66)-(684,33 ; 394,66), origine 2010,1130 px image) :
+ *   couleur pleine (pixels à 95 % de couverture, 122 pixels) : médiane 151,203,177 (écart type 7 ; 5 ; 7) : #97cbb1.
+ *   Géométrie mesurée (px CSS depuis l'origine de la marque, couverture G, fond 40, cœur 207) :
+ *   montant gauche x 0,12, 1,15 de large, pleine hauteur 18 ;
+ *   montant droit x 12,75, 1,0 de large, pleine hauteur 18 ;
+ *   barre haute gauche y 0,08, de x 0 à 6,0, 1,74 de haut ; barre haute droite y 0,08, de x 8,0 à 14,0, 1,59 de haut ;
+ *   barre basse continue y 16,27, de x 0 à 13,67, 1,26 de haut ;
+ *   pointe y 2,67, x 6,67, 2 x 1,67 ;
+ *   languette : tige x 6,9, 1,13 de large, y 8,25 sur 3,8 ; bloc haut x 6,0, y 6,15, 2,8 x 2,1 ; bloc bas x 6,0, y 12,03, 2,7 x 2,1.
+ *   Coins vifs, antialias d'environ 1 px image. Une seule marque : boîte 13,75 x 18 px CSS (le montant droit dépasse 13,67).
+ *   Montant droit : aucun pixel à 95 % de couverture (couverture maximale 0,89) ; son cœur mesuré (140,187,168) est plus
+ *   sombre que la classe de 11, 16, 9 niveaux : écart rapporté, non corrigé (trait de 1 px image, antialias).
+ *   Les cinq autres traits sont à 7 niveaux ou moins de la couleur de la classe.
+ *   Écart avec k-phosphore-trait (165,215,185) : 14, 12, 8 : variante.
+ */
+
+/* Carré plein de registre : même matière que les carrés de liste, teinte plus claire.
+   Liseré clair 0,333 px CSS sur les bords gauche et droit (deux ombres intérieures, sans flou ni opacité). */
+.k-marque-carre-clair {
+    background-color: var(--k-marque-carre-clair, #94ceb0);
+    box-shadow:
+        inset 0.333px 0 0 0 var(--k-marque-carre-clair-rebord-gauche, #9fd7bc),
+        inset -0.333px 0 0 0 var(--k-marque-carre-clair-rebord-droite, #aadbc4);
+}
+
+/* Carré creux : trait clair de 0,67 px CSS dans la boîte (2 px image), liseré sombre à l'intérieur du trait (1 px image).
+   Deux ombres intérieures sans flou : la première (trait clair) est au-dessus de la seconde (liseré). */
+.k-marque-carre-creux {
+    box-shadow:
+        inset 0 0 0 0.667px var(--k-marque-carre-creux, #a7d5c1),
+        inset 0 0 0 1px var(--k-marque-carre-creux-ombre, #001b11);
+}
+
+/* Contour sombre : fond uni, contour intérieur de 1 px image. Les variantes ne changent que les deux variables. */
+.k-marque-contour {
+    background-color: var(--k-marque-contour-fond, #94ceb0);
+    box-shadow: inset 0 0 0 0.333px var(--k-marque-contour, #022315);
+}
+
+/* Contour sombre sur sélection : fond sombre intérieur, contour plus clair que la sélection (ND-004).
+   Seule classe à poser sur la marque (elle ne dépend pas de .k-marque-contour). */
+.k-marque-contour-sel {
+    --k-marque-contour-fond: #577d6a;
+    --k-marque-contour: #0e2d20;
+    background-color: var(--k-marque-contour-fond);
+    box-shadow: inset 0 0 0 0.5px var(--k-marque-contour);
+}
+
+/* Crochets de pièce jointe : une seule marque de 13,75 x 18 px CSS, dessinée par des aplats (dégradés à arrêt franc
+   d'une seule couleur). Géométrie : voir le relevé en tête de fichier. Une seule variable de couleur pour tous les traits. */
+.k-marque-crochets {
+    --k-marque-crochets-trait: var(--k-marque-crochets, #97cbb1);
+    width: 13.75px;
+    height: 18px;
+    background:
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 0.12px 0 / 1.15px 18px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 12.75px 0 / 1px 18px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 0 0.08px / 6px 1.74px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 8px 0.08px / 6px 1.59px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 0 16.27px / 13.67px 1.26px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 6.67px 2.67px / 2px 1.67px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 6.9px 8.25px / 1.13px 3.8px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 6px 6.15px / 2.8px 2.1px no-repeat,
+        linear-gradient(var(--k-marque-crochets-trait), var(--k-marque-crochets-trait)) 6px 12.03px / 2.7px 2.1px no-repeat;
+}

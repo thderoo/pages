@@ -1,0 +1,301 @@
+/* Matière rainure (ds-heisei) : creux, lèvres et filets dessinés en px CSS. Le fond est transparent : la coque de
+   l'appelant se voit. Le profil part du bord de départ de la boîte (haut ou gauche) en px fixes. Exception : pour
+   .k-rainure et .k-rainure-creux-levre, la lèvre claire est collée au bord de fin, donc la largeur de la boîte de
+   l'appelant compte.
+   Relevé : PIL et numpy sur les images cibles (3840 x 2160 px, 1 px CSS = 3 px image), boîtes des instances des 4 écrans,
+   3 zones le long de l'arête pour les instances longues, médiane par colonne, écart type en niveaux RGB moyen.
+   Valeurs : médiane des instances de la classe, bande par bande. Une bande est une plage de colonnes image (rainure
+   verticale) ou de lignes image (rainure horizontale), mesurée en travers de la rainure.
+
+  .k-rainure : maitresse 11.
+    Zone : (834,123)-(866,1545) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #6c6c58 | 6 px image | med 108,107,88 | sd 2.5
+    #e5ddc9 | 3 px image | med 229,221,201 | sd 0.6
+
+  .k-rainure-fine : maitresse 4.
+    Zone : (1320,0)-(1328,102) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #9a9581 | 1 px image | med 154,149,129 | sd 0.0
+    #746e5a | 2 px image | med 115,110,90 | sd 2.5
+    #817d69 | 1 px image | med 129,125,105 | sd 0.0
+    #e0dac5 | 2 px image | med 224,218,197 | sd 0.3
+    #d0c5b0 | 1 px image | med 208,197,176 | sd 0.0
+    #aca28a | 1 px image | med 172,162,138 | sd 0.0
+
+  .k-rainure-creux : registre 6, registre 11, registre 12, registre 16, registre 17, registre 22, registre 23, registre 27, registre 28.
+    Zone : (1129,0)-(1136,102) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #656450 | 3 px image | med 101,100,82 | sd 5.0
+
+  .k-rainure-creux-h : registre 13, registre 14, registre 15, registre 18, registre 19, registre 24, registre 25, registre 26, registre 29, registre 30, registre 31.
+    Zone : (960,401)-(985,411) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #74745f | 3 px image | med 84,86,71 | sd 3.2
+
+  .k-rainure-h : fichiers 10.
+    Zone : (19,1992)-(3822,2001) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #797965 | 7 px image | med 121,121,101 | sd 4.8
+    #8c8771 | 1 px image | med 140,135,113 | sd 0.0
+    #b5ab92 | 1 px image | med 181,171,146 | sd 0.0
+
+  .k-rainure-h-fine : fichiers 11.
+    Zone : (20,2142)-(3818,2149) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #777763 | 5 px image | med 119,119,99 | sd 3.2
+    #9b9580 | 1 px image | med 155,149,128 | sd 0.0
+    #b0a892 | 1 px image | med 176,168,146 | sd 0.0
+
+  .k-rainure-h-joint-barre : fichiers 2.
+    Zone : (0,105)-(3840,112) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #7e7b66 | 1 px image | med 126,123,102 | sd 0.0
+    #797a69 | 1 px image | med 121,122,105 | sd 0.0
+    #585d50 | 1 px image | med 88,93,80 | sd 0.0
+    #33382a | 1 px image | med 51,56,42 | sd 0.0
+    #4a5042 | 1 px image | med 74,80,66 | sd 0.0
+    #6f7160 | 1 px image | med 111,113,96 | sd 0.0
+    #8e8b77 | 1 px image | med 142,139,119 | sd 0.0
+
+  .k-rainure-h-joint-titre : messagerie, jonction sous la barre du haut (y 35 CSS, x 0.00, largeur 1280.00 CSS).
+    Zone : (0,105)-(3840,113) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #6b6d5b | 3 px image | med 107,109,91 | sd 1.8
+    #404535 | 1 px image | med 64,69,53 | sd 0.0
+    #3b3f2f | 1 px image | med 59,63,47 | sd 0.0
+    #646756 | 1 px image | med 100,103,86 | sd 0.0
+    #848471 | 1 px image | med 132,132,113 | sd 0.0
+    #a19b85 | 1 px image | med 161,155,133 | sd 0.0
+
+  .k-rainure-filet-v : fichiers 3.
+    Zone : (45,3)-(52,103) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #6e6c59 | 4 px image | med 110,108,89 | sd 11.2
+    #cac2ad | 3 px image | med 202,194,173 | sd 10.4
+
+  .k-rainure-filet-v-droit : fichiers 7.
+    Zone : (3802,0)-(3809,111) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #7a7a67 | 1 px image | med 122,122,103 | sd 0.0
+    #5e5f4f | 1 px image | med 94,95,79 | sd 0.0
+    #646250 | 2 px image | med 100,98,80 | sd 1.2
+    #c6bfa9 | 1 px image | med 198,191,169 | sd 0.0
+    #d2cab1 | 1 px image | med 210,202,177 | sd 0.0
+    #c8bca2 | 1 px image | med 200,188,162 | sd 0.0
+
+  .k-rainure-lisere-bas : fichiers 4.
+    Zone : (65,92)-(540,96) px image, boîte h, 1re instance. Médiane RGB et écart type par bande :
+    #a79e86 | 2 px image | med 167,157,133 | sd 2.3
+    #bcb49c | 2 px image | med 188,180,156 | sd 0.8
+
+  .k-rainure-lisere-angle-g : fichiers 5.
+    Zone : (64,86)-(76,96) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #aea48c | 1 px image | med 174,164,140 | sd 0.0
+    #aca48c | 1 px image | med 172,164,140 | sd 0.0
+    #aca68c | 1 px image | med 172,166,140 | sd 0.0
+
+  .k-rainure-lisere-angle-d : fichiers 6.
+    Zone : (530,84)-(542,96) px image, boîte v, 1re instance. Médiane RGB et écart type par bande :
+    #b1a68f | 1 px image | med 177,166,143 | sd 0.0
+    #a69d85 | 1 px image | med 166,157,133 | sd 0.0
+    #9c947c | 1 px image | med 156,148,124 | sd 0.0
+
+   Relevé du mandat harmonisation.kit-divers (points 1a, 1b, 1c) : PIL, médiane par ligne (filets) ou par colonne (rail),
+   3 zones le long de l'arête, écart type en niveaux RGB moyen. 1 px CSS = 3 lignes image.
+
+  .k-rainure-filet-verre : messagerie, filet de dossiers (.m-dossiers-filet), 5 lignes image = 1,667 px CSS.
+    Zone : colonnes 200..500 px image, lignes 1743..1747. Médiane RGB et écart type par ligne :
+    #03201b | ligne 1743 | med 4,33,28 | sd 1.2
+    #325549 | ligne 1744 | med 51,86,74 | sd 3.4
+    #8db2a1 | ligne 1745 (coeur) | med 141,178,161 | sd 10.0
+    #325549 | ligne 1746 | med 49,84,73 | sd 7.6
+    #03201b | ligne 1747 | med 2,32,26 | sd 1.7
+    Fond du verre autour : 15,41,40 (lignes 1738..1742 et 1748..1751).
+
+  .k-rainure-filet-verre-fort : messagerie, filet de la lecture (.m-lecture-filet), 5 lignes image = 1,667 px CSS.
+    Zone : colonnes 2100..3500 px image, lignes 540..544. Médiane RGB et écart type par ligne :
+    #001911 | ligne 540 | med 0,25,16 | sd 1.2
+    #4d7463 | ligne 541 | med 77,116,99 | sd 4.5
+    #9acbb5 | ligne 542 (coeur) | med 154,203,181 | sd 3.1
+    #6a9885 | ligne 543 | med 106,152,133 | sd 6.3
+    #001a13 | ligne 544 | med 0,26,19 | sd 1.0
+    Écart avec .k-rainure-filet-verre : coeur +13/+25/+20, lignes du bas +55/+68/+60 : variante et non fusion.
+
+  .k-rainure-creux-levre : fichiers, bord gauche du statut (.fi-status-rainure-gauche), 2 px CSS = 6 colonnes image 14..19.
+    Zone : lignes 2040..2060 px image, colonnes 0..29 px image. Médiane RGB et écart type par colonne :
+    #8e8872 | col 14 | med 142,136,114 | sd 1.7
+    #6b6650 | col 15 (creux) | med 107,102,80 | sd 4.5
+    #908875 | col 16 | med 144,136,117 | sd 2.6
+    #e6ddc9 | cols 17..19 (lèvre) | med 230,221,201 | sd 1.1..3.2
+    #b6aa94 | col 20 | med 182,170,148 | sd 1.4
+    Panneau de part et d'autre : 176,164,142 (cols 0..13 et 21..29).
+
+  .k-rainure-h-entete-bas : registre, bas de l'entête (.reg-entete-h-bas-haut), lignes 2045..2057 image (13 lignes, 4,333 px CSS).
+    Zone : colonnes 600..3000 px image, lignes 2045..2057. Médiane RGB et écart type par ligne :
+    #8b8a75 | ligne 2045 | med 139,138,117 | sd 9.7
+    #747662 | lignes 2046..2049 (mur sombre) | med 113..118, 115..120, 94..99 | sd 7..8
+    #8c8c77 | ligne 2050 | med 140,140,119 | sd 4.7
+    #84826d | lignes 2051..2052 | med 133,131,111 / 131,128,107 | sd 3..4
+    #797560 | ligne 2053 | med 121,117,96 | sd 4.3
+    #b1ac96 | ligne 2054 | med 177,172,150 | sd 6.7
+    #dbd5bf | ligne 2055 | med 219,213,191 | sd 4.6
+    #d9d2bd | ligne 2056 | med 217,210,189 | sd 3.6
+    #cbc3ae | ligne 2057 | med 203,195,174 | sd 4.1
+    Mur sombre de 7 lignes (2046..2052 à 2045 et 2053 près) : la classe k-rainure-h n'en porte que 3 CSS (9 lignes) avec 7 lignes sombres
+    et 2 lignes claires, mais la cible a 4 lignes claires sous le mur (2054..2057) : d'où la classe.
+
+   Fichiers, rail du tableau (.fi-table-rail, 3736..3789 px image) : relevé identique à .k-defilement-glissiere
+   (même bandes, écart 1 à 3 niveaux sauf 3784 et 3790) : la matière rainure n'en porte pas, voir defilement.css.
+
+   Ce que cette matière ne porte pas : la coque, les pistes de défilement, le verre, le texte.
+*/
+
+.k-rainure {
+  background: linear-gradient(90deg,
+    #6c6c58 0 2px,
+    transparent 2px calc(100% - 1px),
+    #e5ddc9 calc(100% - 1px) 100%);
+}
+
+.k-rainure-fine {
+  background: linear-gradient(90deg,
+    #9a9581 0 0.333px,
+    #746e5a 0.333px 1px,
+    #817d69 1px 1.333px,
+    #e0dac5 1.333px 2px,
+    #d0c5b0 2px 2.333px,
+    #aca28a 2.333px 2.667px,
+    transparent 2.667px 100%);
+}
+
+.k-rainure-creux {
+  background: linear-gradient(90deg,
+    #656450 0 1px,
+    transparent 1px 100%);
+}
+
+.k-rainure-creux-h {
+  background: linear-gradient(180deg,
+    #74745f 0 1px,
+    transparent 1px 100%);
+}
+
+.k-rainure-h {
+  background: linear-gradient(180deg,
+    #797965 0 2.333px,
+    #8c8771 2.333px 2.667px,
+    #b5ab92 2.667px 3px,
+    transparent 3px 100%);
+}
+
+.k-rainure-h-fine {
+  background: linear-gradient(180deg,
+    #777763 0 1.667px,
+    #9b9580 1.667px 2px,
+    #b0a892 2px 2.333px,
+    transparent 2.333px 100%);
+}
+
+.k-rainure-h-joint-barre {
+  background: linear-gradient(180deg,
+    #7e7b66 0 0.333px,
+    #797a69 0.333px 0.667px,
+    #585d50 0.667px 1px,
+    #33382a 1px 1.333px,
+    #4a5042 1.333px 1.667px,
+    #6f7160 1.667px 2px,
+    #8e8b77 2px 2.333px,
+    transparent 2.333px 100%);
+}
+
+.k-rainure-h-joint-titre {
+  background: linear-gradient(180deg,
+    #6b6d5b 0 1px,
+    #404535 1px 1.333px,
+    #3b3f2f 1.333px 1.667px,
+    #646756 1.667px 2px,
+    #848471 2px 2.333px,
+    #a19b85 2.333px 2.667px,
+    transparent 2.667px 100%);
+}
+
+.k-rainure-filet-v {
+  background: linear-gradient(90deg,
+    #6e6c59 0 1.333px,
+    #cac2ad 1.333px 2.333px,
+    transparent 2.333px 100%);
+}
+
+.k-rainure-filet-v-droit {
+  background: linear-gradient(90deg,
+    #7a7a67 0 0.333px,
+    #5e5f4f 0.333px 0.667px,
+    #646250 0.667px 1.333px,
+    #c6bfa9 1.333px 1.667px,
+    #d2cab1 1.667px 2px,
+    #c8bca2 2px 2.333px,
+    transparent 2.333px 100%);
+}
+
+.k-rainure-lisere-bas {
+  background: linear-gradient(180deg,
+    #a79e86 0 0.667px,
+    #bcb49c 0.667px 1.333px,
+    transparent 1.333px 100%);
+}
+
+/* Filet de la messagerie sur le verre, 5 lignes image (1,667 px CSS), coeur clair entre deux lignes médianes et
+   deux lignes sombres. Les caller posent la largeur et la position (top = ligne 1743 / 3 = 581,0 px CSS pour le filet des dossiers). */
+.k-rainure-filet-verre {
+  height: 1.667px;
+  background: linear-gradient(180deg,
+    #03201b 0 0.333px,
+    #325549 0.333px 0.667px,
+    #8db2a1 0.667px 1px,
+    #325549 1px 1.333px,
+    #03201b 1.333px 1.667px,
+    transparent 1.667px 100%);
+}
+
+/* Filet de la lecture de la messagerie : même structure, coeur plus clair et lignes médianes plus fortes (écart mesuré,
+   donc classe à part). Position : top = 540 / 3 = 180,0 px CSS. */
+.k-rainure-filet-verre-fort {
+  height: 1.667px;
+  background: linear-gradient(180deg,
+    #001911 0 0.333px,
+    #4d7463 0.333px 0.667px,
+    #9acbb5 0.667px 1px,
+    #6a9885 1px 1.333px,
+    #001a13 1.333px 1.667px,
+    transparent 1.667px 100%);
+}
+
+/* Creux à lèvre claire, verticale, 2 px CSS (6 px image) : creux sombre de 1 px image au centre, lèvre claire de 3 px image
+   à droite. Pose : bord gauche du statut des fichiers, left 4,67 px CSS (14 px image), width 2 px, hauteur 51,33 px. */
+.k-rainure-creux-levre {
+  background: linear-gradient(90deg,
+    #8e8872 0 0.333px,
+    #6b6650 0.333px 0.667px,
+    #908875 0.667px 1px,
+    #e6ddc9 1px 100%);
+}
+
+/* Bas de l'entête du registre : mur sombre de 7 lignes image (2046 à 2052), lèvre claire de 4 lignes (2053 : sombre, 2054 à 2057),
+   sur 12 lignes image (4 px CSS). Le moteur aligne la boîte sur le px CSS entier : la pose est donc à top 682 px CSS
+   (2046 px image), et la ligne 2045 (demi-ton entre le panneau et le mur, 1 px image) n'est pas peinte. */
+.k-rainure-h-entete-bas {
+  height: 4px;
+  background: linear-gradient(180deg,
+    #747662 0 1.333px,
+    #8c8c77 1.333px 1.667px,
+    #84826d 1.667px 2.333px,
+    #797560 2.333px 2.667px,
+    #b1ac96 2.667px 3px,
+    #dbd5bf 3px 3.333px,
+    #d9d2bd 3.333px 3.667px,
+    #cbc3ae 3.667px 100%);
+}
+
+.k-rainure-lisere-angle-g {
+  background:
+    linear-gradient(180deg, transparent 0 1.667px, #726c56 1.667px 2.333px, #918b75 2.333px 2.667px, #dad1bb 2.667px 3px, #c2b7a1 3px 3.333px) 0.333px 0 / 3px 3.333px no-repeat,
+    linear-gradient(90deg, #afa991 0 0.333px, #76725a 0.333px 1px, transparent 1px) 0 0 / 4px 2.667px no-repeat;
+}
+
+.k-rainure-lisere-angle-d {
+  background:
+    linear-gradient(180deg, transparent 0 2px, #898572 2px 2.333px, #74705e 2.333px 2.667px, #6a6653 2.667px 3px, #b2ac98 3px 3.333px, #d6d0bc 3.333px 3.667px, #b8b19a 3.667px 4px) 0 0 / 2.667px 4px no-repeat,
+    linear-gradient(90deg, #6f6b58 0 0.333px, #625d4a 0.333px 0.667px, #857e6b 0.667px 1px) 2.333px 1px / 1px 2px no-repeat,
+    linear-gradient(90deg, #cbc1a9 0 0.333px, #c2b9a1 0.333px 0.667px) 3.333px 0 / 0.667px 3px no-repeat;
+}

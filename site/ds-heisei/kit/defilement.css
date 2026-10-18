@@ -1,0 +1,212 @@
+/* Matière défilement (barre de défilement verticale de l'écran fichiers, bord droit du verre). Charger après bouton.css :
+   les flèches et le curseur sont des .k-bouton dont les bords, les couleurs et l'ombre extérieure sont redéfinis ici.
+
+   Relevé (mandat screens-fichiers.kit.defilement) : PIL sur la capture de l'écran fichiers (3840 x 2160 px, 1 px CSS = 3 px image).
+   Format : valeur hex | zone (x0,y0)-(x1,y1) en px image, bornes exclues | médiane RGB | écart type RGB.
+   Bord = largeur mesurée sur le profil (médiane le long de l'arête), en px image puis en px CSS.
+
+   Rail (glissière), zone 3746..3782 x 430..1800 :
+   #717766 | fond du rail (zone 3746,430)-(3783,1800) | 113,119,102 | sd 2.4,1.7,1.7
+   Bandes horizontales du rail, colonnes 3736..3790 (médiane sur y 430..1800), 1 px image = 0,333 px CSS :
+     3736 #989987 (bord, partiel) ; 3737 #e2dac2 ; 3738 #ccc4af ; 3739 #b1a994 ; 3740..3741 #a49b85 ; 3742 #a7a08b (paroi
+     claire, 6 px image = 2 px CSS, dégradé de clair à beige) ; 3743 #7e7a66 ; 3744 #656856 ; 3745 #686e5d (liseré en creux
+     à gauche, 3 px image) ; 3746..3782 #717766 (fond) ; 3783 #73735e ; 3784 #a8a38d ; 3785..3786 #b9b29b ; 3787 #a6a08b
+     (liseré clair en creux à droite) ; 3788 #757461 ; 3789 #6d7060 ; 3790 #6a7165 (paroi sombre, 3 px image).
+   Butée sous le rail (zone 3745,y)-(3781,y) : #b2a993 | 1855..1858 | 178,169,147 | sd 6.8,4.3,4.5 (lèvre, 4 px image)
+     #70725c | 1859..1861 | 111,114,92 | sd 13.8,10.9,11.1 (rainure, 3 px image)
+     #b1a790 | 1862..1874 | 177,167,144 | sd 3.9,3.7,4.7 (butée, 13 px image)
+     #585e4d | 1875..1878 | 88,94,77 | sd 10.3,8.1,8.3 (rainure avant la flèche du bas, 4 px image)
+
+   Flèche haute (zone 3745,265)-(3781,339) ; bord gauche (3737,280)-(3739,330) ; bord droit (3787,280)-(3791,330) :
+   Boîte : x 3736..3790 (55 px = 18,33 px CSS), y 264,5..339,5 (75 px = 25 px CSS).
+   #dad2be | lumière : moyenne du bord haut 265..267 (#ded9c5, 222,217,197, sd 19,7,20,3,22,1) et du bord gauche (#d5ccb8, 213,204,184, sd 11,9,9,9)
+   #666a58 | ombre : moyenne du bord droit (#6c7061, 108,112,97, sd 18,5,15,0,13,4) et du bas 335..338 (#616450, 97,99,80, sd 16,7,16,1,12,6)
+   #b1a58d | face (177,165,141) : moyenne de deux zones sous et sur le triangle, sd 2,5..4,7
+   Bords : haut 4 px image = 1,33 px CSS ; gauche 3 px = 1 px ; droit 4 px = 1,33 px ; bas 5 px = 1,67 px.
+   Triangle : #050401 (coeur, lum < 40, médiane 5,4,1), base x 3749..3777 (28 px = 9,33 px CSS), pointe x 3763, y 289,5..311,5
+     (22 px = 7,33 px CSS), bord haut du triangle à 25 px sous le bord haut de la boîte (8,33 px CSS).
+
+   Curseur (zone 3745,341)-(3781,420) ; bord gauche (3737,350)-(3739,410) ; bord droit (3787,350)-(3791,410) :
+   Boîte : x 3736..3790, y 340,5..419,5 (79 px = 26,33 px CSS).
+   #dad2bd | lumière : moyenne du bord haut 341..343 (#d5cdb5, 213,205,181, sd 9,7,11,4,14,0) et du bord gauche (#e0d8c4, 224,216,196, sd 16,3,16,2,15,0)
+   #5e6252 | ombre : moyenne du bord droit (#686d5d, 104,109,93, sd 5,2,3,2,3,4) et du bas 415..419 (#555848, 85,88,72, sd 13,4,11,3,9,9)
+   #afa48c | face (175,164,140), sd 2,6,2,4,2,3 (zone 3742,344)-(3782,412)
+   Bords : mêmes épaisseurs que la flèche haute (1,33 / 1 / 1,33 / 1,67 px CSS).
+
+   Flèche basse (zone 3745,1879)-(3781,1951) ; bord gauche (3737,1890)-(3739,1940) ; bord droit (3787,1890)-(3791,1940) :
+   Boîte : x 3736..3790, y 1878,5..1951,5 (73 px = 24,33 px CSS).
+   #d2c5ae | lumière : moyenne du bord haut 1879..1881 (#cdc1aa, 205,193,170) et du bord gauche (#d6c9b3, 214,201,179)
+   #686b5a | ombre : moyenne du bord droit (#6b6d5f, 107,109,95) et du bas 1947..1950 (#666956, 102,105,86)
+   #aca189 | face (172,161,137), sd 2,4..3,3 (zone 3742,1882)-(3782,1946)
+   Triangle : base x 3750..3776 (27 px), pointe x 3763, y 1902,5..1923,5 (21 px = 7 px CSS) ; même couleur que la flèche haute.
+
+   Messagerie, liste de lecture (mandat harmonisation.kit-divers, point 5), image de l'écran messagerie, zone 3730..3780 x 310..880 (piste)
+   et 3722..3790 x 1636..1686 (pouce de réponse), 3722..3790 x 1690..1756 (piste de réponse) :
+   #aea48c | piste claire de la lecture (174,164,140), sd 0,5..1,1, zone (3730,310)-(3778,880) : face de la piste hors curseur.
+             Curseur de la lecture non relevé ici : 115,122,106 (sd 0,8..3,4, zone (3735,904)-(3770,1132)), il reste sur
+             k-phosphore-segment-eteint (écart signalé dans le rapport, point 5 ne le demande pas).
+   #dad0ba | lèvre claire à gauche : 3726..3728 (médiane 218,208,186), 1 px CSS.
+   #585b48 | creux à droite : 3781..3783 (médiane 88,91,72), 1 px CSS ; #49534a (73,83,74) sur le dernier tiers de px CSS.
+   Piste de réponse : 115,122,106 (sd 1,0..1,5, zone 3734,1690)-(3774,1754), classe glissière à 2..4 niveaux (fusionnée).
+   Pouce de réponse : face 173,165,142 (sd 0,7..1,0, zone 3730,1640)-(3776,1684), classe curseur à 2..4 niveaux (fusionnée) ;
+             lèvre haute 1 px (202,196,175) et bord bas sombre, comme la classe.
+
+   Valeurs de classe (médiane du plus grand groupe d'instances à 3 niveaux près l'une de l'autre) :
+     .k-defilement-fleche      face #ada58e (173,165,142), 7 instances : messagerie liste haut et bas, messagerie lecture haut et bas,
+                               registre recherche haut et bas, registre historique bas (fichiers haut et bas sont hors groupe)
+     .k-defilement-fleche-clair face #b0a992 (176,169,146) : maitresse haut et bas, registre historique haut (1 niveau)
+     .k-defilement-curseur     face #afa792 (175,167,146) : maitresse, registre recherche, registre historique
+     .k-defilement-glissiere   rail #717766 (113,119,102) : fichiers, maitresse, registre recherche, piste messagerie liste (3 à 4 niveaux, fusionnée), piste de réponse messagerie (2 à 4 niveaux)
+     .k-defilement-piste-claire canal #aea48c sur coque : piste de la liste de lecture messagerie (point 5, ajoutée)
+   Écarts (instances hors classe, non nommées, un seul cas par profil) : voir le rapport.
+
+   Écarts connus (démo) : bords de la glissière et lèvre, butée et rainure à 1 px image près ; coins arrondis de la cible
+   (1 px image sombre par coin, rayon d'environ 2 px image) non reproduits : le retrait de 1 px par masque les rend carrés ;
+   base du triangle de la cible légèrement échancrée, non reproduite ; triangles au centre de la boîte (±0,3 CSS selon les écrans, le triangle de l'historique de registre est 2 px image plus petit).
+*/
+
+/* Glissière : rail en creux entre les flèches. Fond gris-vert mat, parois beige à gauche et à droite, liserés en creux
+   (bandes horizontales mesurées ci-dessus, 1 px image = 0,333 px CSS). Le navigateur arrondit la boîte au px CSS entier :
+   la première et la dernière bande de 1 px image sont donc transparentes et laissent voir le verre, ce qui place le bord
+   gauche de la paroi à 3736 px image et le bord droit à 3790 px image (dernier px peint) comme sur la cible.
+   Les parois de droite sont ancrées au bord droit de la boîte (calc(100% - ...)) : la largeur est libre. */
+.k-defilement-glissiere {
+  position: relative;
+  box-sizing: border-box;
+  background-color: transparent;
+  background-image: linear-gradient(to right,
+    transparent 0 0.333px,
+    #989987 0.333px 0.667px,
+    #e2dac2 0.667px 1px,
+    #ccc4af 1px 1.333px,
+    #b1a994 1.333px 1.667px,
+    #a49b85 1.667px 2.333px,
+    #a7a08b 2.333px 2.667px,
+    #7e7a66 2.667px 3px,
+    #656856 3px 3.333px,
+    #686e5d 3.333px 3.667px,
+    #717766 3.667px calc(100% - 3px),
+    #73735e calc(100% - 3px) calc(100% - 2.667px),
+    #a8a38d calc(100% - 2.667px) calc(100% - 2.333px),
+    #b9b29b calc(100% - 2.333px) calc(100% - 1.667px),
+    #a6a08b calc(100% - 1.667px) calc(100% - 1.333px),
+    #757461 calc(100% - 1.333px) calc(100% - 1px),
+    #6d7060 calc(100% - 1px) calc(100% - 0.667px),
+    #6a7165 calc(100% - 0.667px) calc(100% - 0.333px),
+    transparent calc(100% - 0.333px) 100%);
+}
+
+/* Lèvre et rainure au bas du rail (1855 à 1861 px image). Boîte collée au bas du rail (100 %), quelle que soit sa hauteur. */
+.k-defilement-glissiere::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 3px;
+  mask-image: linear-gradient(to right, transparent 0 0.333px, #000 0.333px calc(100% - 0.333px), transparent calc(100% - 0.333px));
+  background: linear-gradient(to bottom, transparent 0 0.333px, #b2a993 0.333px 1.667px, #70725c 1.667px 2.667px, transparent 2.667px);
+  pointer-events: none;
+}
+
+/* Butée sous le rail (1862 à 1874 px image) puis rainure avant la flèche basse (1875 à 1878). Boîte à 1860 px image
+   (2 px CSS sous le bas du rail). Retrait de 1 px image à gauche et à droite par masque (la boîte est au bord de la paroi, les arrêts
+   à 0,333 px CSS ne peuvent pas être placés sur la boîte qui s'arrondit au px CSS). */
+.k-defilement-glissiere::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 2px);
+  height: 6px;
+  mask-image: linear-gradient(to right, transparent 0 0.333px, #000 0.333px calc(100% - 0.333px), transparent calc(100% - 0.333px));
+  background: linear-gradient(to bottom, transparent 0 0.667px, #b1a790 0.667px 5px, #585e4d 5px 6px, transparent 6px);
+  pointer-events: none;
+}
+
+/* Piste claire : canal de la liste de lecture de la messagerie, posé sur la coque beige (pas sur le rail gris-vert).
+   Une lèvre claire de 1 px CSS à gauche, une face beige, un creux sombre de 1 px CSS puis un bord sombre à droite.
+   Pas de bords de bouton : la boîte est la piste (20 x 287 px CSS à 1241,67 ; 99 sur l'écran). */
+.k-defilement-piste-claire {
+  box-sizing: border-box;
+  background-image: linear-gradient(to right,
+    var(--k-defilement-piste-claire-lumiere, #dad0ba) 0 1px,
+    var(--k-defilement-piste-claire-face, #aea48c) 1px 18.333px,
+    var(--k-defilement-piste-claire-creux, #585b48) 18.333px 19.333px,
+    var(--k-defilement-piste-claire-ombre, #49534a) 19.333px 100%);
+}
+
+/* Flèche (haute ou basse) et curseur : boîte de bouton levé, mais bords, couleurs et ombre propres à la barre.
+   Le moteur arrondit la largeur d'une bordure au px CSS entier (1,33 donne 1 px = 3 px image, 1,67 donne 1 px) :
+   chaque bordure est donc de 1 px CSS, et la partie fractionnaire du bord mesuré (1 px image en haut, 1 px image à
+   droite, 2 px image en bas) est un liseré intérieur par box-shadow, de la couleur du bord. Les quatre bords ont
+   chacun leur couleur mesurée : lumière haut, lumière gauche, ombre droite, ombre bas (relevé en tête de fichier).
+   La géométrie et l'ombre extérieure du .k-bouton ne tombent pas sur la cible : elles sont annulées ici. */
+.k-defilement-fleche,
+.k-defilement-curseur {
+  position: relative;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 1px;
+  border-top-color: var(--k-defilement-lumiere-haut, #ded9c5);
+  border-left-color: var(--k-defilement-lumiere-gauche, #d5ccb8);
+  border-right-color: var(--k-defilement-ombre-droite, #6c7061);
+  border-bottom-color: var(--k-defilement-ombre-bas, #616450);
+  background: var(--k-defilement-face, #ada58e);
+  box-shadow:
+    inset 0 0.3334px 0 0 var(--k-defilement-lumiere-haut, #ded9c5),
+    inset -0.3334px 0 0 0 var(--k-defilement-ombre-droite, #6c7061),
+    inset 0 -0.6667px 0 0 var(--k-defilement-ombre-bas, #616450);
+}
+
+.k-defilement-fleche {
+  --k-defilement-lumiere-haut: #ded9c5;
+  --k-defilement-lumiere-gauche: #d5ccb8;
+  --k-defilement-ombre-droite: #6c7061;
+  --k-defilement-ombre-bas: #616450;
+  --k-defilement-face: #ada58e;
+}
+
+.k-defilement-curseur {
+  --k-defilement-lumiere-haut: #d5cdb5;
+  --k-defilement-lumiere-gauche: #e0d8c4;
+  --k-defilement-ombre-droite: #686d5d;
+  --k-defilement-ombre-bas: #555848;
+  --k-defilement-face: #afa792;
+}
+
+/* Flèche basse : bords et couleurs mesurés sur sa propre zone (ils ne sont pas ceux de la flèche haute). */
+.k-defilement-fleche-bas {
+  --k-defilement-lumiere-haut: #cdc1aa;
+  --k-defilement-lumiere-gauche: #d6c9b3;
+  --k-defilement-ombre-droite: #6b6d5f;
+  --k-defilement-ombre-bas: #666956;
+}
+
+/* Variante claire (maitresse, flèches haute et basse ; registre historique haut, à 1 niveau près). */
+.k-defilement-fleche-clair {
+  --k-defilement-face: #b0a992;
+}
+
+/* Triangles pleins, pointe en haut ou en bas, centrés dans la flèche (base 9,33 px CSS, hauteur 7,33 px CSS). Position
+   relative au rembourrage de la flèche (bord intérieur de 1 px à gauche et 1,33 px en haut). */
+.k-defilement-triangle-haut,
+.k-defilement-triangle-bas {
+  position: absolute;
+  left: calc(50% - 4.833px);
+  width: 9.333px;
+  height: 7.333px;
+  background: var(--k-defilement-triangle, #050401);
+  pointer-events: none;
+}
+
+.k-defilement-triangle-haut {
+  top: calc(50% - 3.917px);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.k-defilement-triangle-bas {
+  top: calc(50% - 3.917px);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}

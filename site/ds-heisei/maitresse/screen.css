@@ -1,0 +1,348 @@
+/* Feuille partagée de l'écran maîtresse : placement, taille et interlignes seuls. Aucune couleur ici :
+   les couleurs viennent des classes du kit (kit/*.css).
+   Valeurs copiées de KIT/assemblage.html (mesurées sur la maîtresse). Les zones ajoutent leurs propres classes. */
+
+body {
+  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --kit-mono: "PixelMplus12", ui-monospace, monospace;
+  margin: 0;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  position: relative;
+  font-kerning: none;
+  font-synthesis: none;
+  color: var(--k-bouton-libelle);
+}
+
+/* Placement seul : position absolue sur les éléments des matières. */
+.plc { position: absolute; box-sizing: border-box; }
+
+/* Texte posé sur le verre (matière phosphore ou alerte) : taille et interligne de la démo phosphore. */
+.txt {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  /* Chasse native 6 px CSS (PixelMplus12 12 px, letter-spacing 0) ; pas cible 7,67 px CSS = 23 px image ;
+     letter-spacing = 1,67 px (mesure d'encre : ND-001, GW-TOKYO, 02ms). */
+  letter-spacing: 1.67px;
+  white-space: pre;
+  /* Texte mesuré 3 px d'image (1 px CSS) trop bas au centre de la ligne. Placement seul. */
+  margin-top: -1px;
+}
+/* Colonne heure centrée, centre d'encre mesuré 4 px d'image (1,33 px CSS) à droite de la cible : décalage de placement. */
+.txt-centre { text-align: center; width: 40px; padding-left: 1.33px; }
+
+/* Titre de panneau sur la coque (police de la coque, --kit-sans). */
+.titre {
+  position: absolute;
+  font-family: var(--kit-sans);
+  font-size: 16px;
+  line-height: 16px;
+  white-space: pre;
+}
+
+/* ---------- zone : haut ---------- */
+/* Zone haut : barre de menu (coque, 0 à 34 px CSS). Placement et tailles seuls, mesurés dans S/haut/mesures.md.
+   Aucune couleur ici : les couleurs viennent des classes du kit. */
+
+.m-haut-barre { left: 0px; top: 0px; width: 1280px; height: 34px; }
+
+/* Plaque de titre : cadre en creux, sans verre (la coque reste visible). */
+.m-haut-titre-cadre { left: 15px; top: 0px; width: 141.33px; height: 30.67px; }
+
+/* Rainures entre cellules : 2,67 px CSS de large, pleine barre. */
+.m-haut-rainure { top: 0px; width: 2.67px; height: 34px; }
+.m-haut-rainure-2 { left: 174.67px; }
+.m-haut-rainure-3 { left: 317.33px; }
+.m-haut-rainure-4 { left: 379px; }
+.m-haut-rainure-5 { left: 440px; }
+.m-haut-rainure-6 { left: 503px; }
+.m-haut-rainure-7 { left: 560px; }
+.m-haut-rainure-8 { left: 623.33px; }
+.m-haut-rainure-9 { left: 1009px; }
+.m-haut-rainure-10 { left: 1176.33px; }
+.m-haut-rainure-11 { left: 1267px; }
+
+/* Textes de la coque (--kit-sans). Corps tiré de la capitale mesurée (capitale / 0,700 pour Barlow). */
+.m-haut-texte {
+  position: absolute;
+  font-family: var(--kit-sans);
+  white-space: pre;
+}
+.m-haut-titre { left: 28.5px; top: 7.67px; font-size: 16.67px; line-height: 16.67px; word-spacing: 8px; }
+.m-haut-nom { top: 9.28px; font-size: 15.24px; line-height: 15.24px; word-spacing: 8px; }
+.m-haut-menu { top: 9px; font-size: 14.29px; line-height: 14.29px; }
+.m-haut-file { left: 334.83px; }
+.m-haut-view { left: 396.2px; }
+.m-haut-node { left: 457.53px; }
+.m-haut-log { left: 520.83px; }
+.m-haut-help { left: 577.53px; }
+.m-haut-netwatch { left: 189.13px; }
+
+/* Horloge et SYS OK : texte sur verre (matière phosphore, police mono du kit via la classe). */
+.m-haut-horloge {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 1.67px;
+  white-space: pre;
+}
+/* Horloge sur beige (image : pas de verre, texte sombre). Police de code (--kit-mono) : sur le macro, les glyphes sont carrés (0 droit, point dans sa case), donc police de code, pas sans-serif. Taille native 12 px ; interligne et écart mesurés comme pour l'horloge du verre (top 11 : centre d'encre au plus près, écart de chasse 1,83 px CSS = 8 px image sur 17 intervalles). */
+.m-haut-horloge-texte {
+  left: 1024.33px;
+  top: 11px;
+  font-family: var(--kit-mono);
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 1.83px;
+  font-synthesis: none;
+  font-kerning: none;
+}
+
+/* Cadres de verre de l'horloge et de SYS OK. */
+.m-haut-horloge-cadre { left: 1015px; top: 5.33px; width: 157.33px; height: 24.33px; }
+.m-haut-sysok-cadre { left: 1183px; top: 5.33px; width: 81px; height: 24.33px; }
+.m-haut-sysok-texte { left: 1200px; top: 12px; letter-spacing: 2.2px; }
+
+/* ---------- zone : noeuds ---------- */
+/* Zone noeuds (panneau NODE LIST et ses 3 boutons). Placement seul, en px CSS de l'écran 1280 x 720.
+   Mesures sur IMG : S/noeuds/mesures.md (px image / 3). Aucune couleur ici : les couleurs viennent des classes du kit. */
+
+/* Plaque, rainure à sa droite, vis. */
+.m-noeuds-plaque { left: 5.67px; top: 41px; width: 272.33px; height: 474px; }
+.m-noeuds-rainure { left: 278px; top: 41px; width: 10.67px; height: 474px; }
+/* Vis (classe k-vis, boîte 8,38 px) : coin haut gauche de la boîte, centres mesurés à 1 px image près. */
+.m-noeuds-vis-tl { left: 12px; top: 48px; }
+.m-noeuds-vis-tr { left: 262.33px; top: 48px; }
+.m-noeuds-vis-bl { left: 9px; top: 503px; }
+.m-noeuds-vis-br { left: 268.33px; top: 503px; }
+
+/* Titre du panneau, sur la coque : kanji et latin posés séparément (leurs écarts diffèrent de la cible).
+   Corps 15 px : à 16 px la capitale latine mesure 35 px image contre 33 px sur IMG (même méthode), soit 16 x 33/35.
+   Kanji : encre à x 91 (cible) ; latin : encre à x 248 (cible) ; espace entre mots : 36 - 16 = 20 px image = 6,67 CSS. */
+.m-noeuds-titre-jp { left: 27.33px; top: 48.67px; font-size: 15px; }
+.m-noeuds-titre-latin { left: 81.5px; top: 49.33px; font-size: 15px; word-spacing: 6.67px; }
+
+/* Cadre en creux du verre. */
+.m-noeuds-cadre { left: 17px; top: 73.67px; width: 252.33px; height: 378.67px; }
+
+/* Ligne sélectionnée ND-004 : aplat, marque de contour. Les enfants sont en coordonnées de l'aplat. */
+.m-noeuds-sel { left: 21.33px; top: 155px; width: 243.5px; height: 23.33px; }
+.m-noeuds-sel-marque { left: 10.67px; top: 5.67px; width: 9.33px; height: 10.33px; }
+.m-noeuds-sel-code { left: 30px; top: 5.67px; }
+.m-noeuds-sel-nom { left: 99px; top: 5.67px; }
+.m-noeuds-sel-lat { left: 196.33px; top: 5.67px; }
+
+/* Lignes du verre : chaque ligne est ancrée à son haut (mNN), ses enfants sont posés en colonnes. */
+.m-noeuds-ligne { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.m-noeuds-ligne > * { top: 0; }
+.m-noeuds-pastille { left: 32px; width: 9.33px; height: 9.67px; }
+.m-noeuds-code { left: 51.33px; }
+.m-noeuds-nom { left: 120.33px; }
+.m-noeuds-lat { left: 217.67px; }
+.m-noeuds-l01 { top: 91.67px; }
+.m-noeuds-l02 { top: 114px; }
+.m-noeuds-l03 { top: 137.33px; }
+.m-noeuds-l05 { top: 184px; }
+.m-noeuds-l06 { top: 207.33px; }
+.m-noeuds-l07 { top: 230px; }
+.m-noeuds-l08 { top: 253.33px; }
+.m-noeuds-l09 { top: 277px; }
+.m-noeuds-l10 { top: 300.33px; }
+.m-noeuds-l11 { top: 324px; }
+.m-noeuds-l12 { top: 347px; }
+.m-noeuds-l13 { top: 370.67px; }
+.m-noeuds-l14 { top: 394px; }
+
+/* Rangée de boutons levés. Tops et hauteurs communs ; gauche et largeur par bouton. */
+.m-noeuds-bouton { top: 461.33px; height: 40.67px; }
+.m-noeuds-link { left: 19.33px; width: 78px; }
+.m-noeuds-retry { left: 104px; width: 80.67px; }
+.m-noeuds-config { left: 191.67px; width: 76.67px; }
+
+/* ---------- zone : topologie ---------- */
+/* Zone topologie : placement et réglages seuls, mesurés dans S/topologie/mesures.md. Aucune couleur ici :
+   les couleurs viennent des classes du kit. */
+
+/* Titre : kanji en Zen Kaku (--kit-sans, repli de la coque), corps = pas mesuré 14,33 px (chasse d'un caractère). */
+.m-topologie-kanji {
+  position: absolute;
+  font-family: var(--kit-sans);
+  font-size: 14.33px;
+  line-height: 14.33px;
+  white-space: pre;
+}
+/* Titre latin : Barlow, capitale mesurée 11,33 px CSS, corps 11,33 / 0,700 = 16,19 px, arrondi 16 px. */
+.m-topologie-titre {
+  position: absolute;
+  font-family: var(--kit-sans);
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.29px;
+  white-space: pre;
+}
+/* Cadre de verre : bourrage haut mesuré à 2,33 px CSS (le verre commence à 71 px, le cadre à 68,67 px). */
+.m-topologie-cadre { padding-top: 2.33px; }
+
+.m-topologie-origine { border-radius: 50%; }
+
+/* Textes sur le verre : PixelMplus12 native 12 px, interligne 12 px. */
+.m-topologie-noeud {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 0.57px;
+  text-align: center;
+  white-space: pre;
+  margin-left: 0.14px;
+}
+.m-topologie-lien {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  white-space: pre;
+}
+.m-topologie-graduation {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  text-align: right;
+  white-space: pre;
+}
+.m-topologie-graduation-x { text-align: center; }
+
+/* ---------- zone : bande ---------- */
+/* Zone bande (écran maîtresse). Classes m-bande-*. Aucune couleur ni texture ici : la courbe (k-phosphore-courbe) et l'aire (k-graphe-aire) viennent du kit. */
+.m-bande-titre { white-space: pre; }
+.m-bande-lecture { font-size: 14px; line-height: 14px; }
+.m-bande-kanji { font-size: 14.5px; }
+.m-bande-grad { position: absolute; font-family: var(--kit-mono); font-size: 12px; line-height: 12px; letter-spacing: 0; white-space: pre; }
+.m-bande-y { text-align: right; }
+.m-bande-x { width: 30px; text-align: center; }
+.m-bande-trace { left: 0; top: 0; width: 1280px; height: 720px; pointer-events: none; }
+.m-bande-aire-in { left: 361.67px; top: 376.33px; width: 256.33px; height: 103.67px; clip-path: polygon(1px 103.67px, 1px 72px, 4px 70.34px, 7px 73px, 10px 74.34px, 13px 73.34px, 16px 74px, 19px 72px, 22px 73.67px, 25px 72px, 28px 72.67px, 31px 67.67px, 34px 66.34px, 37px 67.34px, 40px 68px, 43px 65.34px, 46px 66.67px, 49px 72.34px, 52px 73.34px, 55px 74.34px, 58px 73.67px, 61px 75px, 64px 73.34px, 67px 75px, 70px 75px, 73px 74px, 76px 72.34px, 79px 72.67px, 82px 75px, 85px 73px, 88px 72.67px, 91px 71.34px, 94px 68.34px, 97px 66.34px, 100px 67.34px, 103px 70.67px, 106px 69.67px, 109px 71px, 112px 72px, 115px 71.67px, 118px 73px, 121px 74px, 124px 72.34px, 127px 72px, 130px 71.67px, 133px 66.67px, 136px 69.67px, 139px 66.34px, 142px 61.67px, 145px 60px, 148px 56.34px, 151px 54px, 154px 51px, 157px 48.34px, 160px 47px, 163px 47px, 166px 49.67px, 169px 53.34px, 172px 56.67px, 175px 61.34px, 178px 61px, 181px 67.67px, 184px 65.34px, 187px 64.67px, 190px 63.34px, 193px 64.67px, 196px 69.34px, 199px 73.67px, 202px 72.34px, 205px 72.67px, 208px 72.67px, 211px 73.34px, 214px 70.34px, 217px 72px, 220px 70.34px, 223px 71.34px, 226px 72.67px, 229px 73px, 232px 72px, 235px 72.34px, 238px 71.34px, 241px 70px, 244px 66.67px, 247px 67.67px, 250px 67.67px, 253px 69.34px, 253px 103.67px); }
+.m-bande-aire-out { left: 715.67px; top: 376.33px; width: 256.33px; height: 103.67px; clip-path: polygon(0.66px 103.67px, 0.66px 93px, 3.66px 93px, 6.66px 95px, 9.66px 94.34px, 12.66px 93.67px, 15.66px 92.34px, 18.66px 91px, 21.66px 90.34px, 24.66px 91.67px, 27.66px 93px, 30.66px 93px, 33.66px 92px, 36.66px 89.67px, 39.66px 88px, 42.66px 88.67px, 45.66px 91.67px, 48.66px 93.34px, 51.66px 93px, 54.66px 91.67px, 57.66px 89.67px, 60.66px 88.34px, 63.66px 88.34px, 66.66px 91.34px, 69.66px 91px, 72.66px 93.34px, 75.66px 93.34px, 78.66px 94.34px, 81.66px 96.34px, 84.66px 95.67px, 87.66px 96.34px, 90.66px 96.34px, 93.66px 95px, 96.66px 95px, 99.66px 95px, 102.66px 95.34px, 105.66px 93.34px, 108.66px 91.67px, 111.66px 91px, 114.66px 93px, 117.66px 92.67px, 120.66px 93px, 123.66px 91.67px, 126.66px 91px, 129.66px 90px, 132.66px 88.67px, 135.66px 88px, 138.66px 87.67px, 141.66px 85.67px, 144.66px 85.67px, 147.66px 82px, 150.66px 81px, 153.66px 80.67px, 156.66px 79px, 159.66px 78px, 162.66px 77.34px, 165.66px 77.34px, 168.66px 79.67px, 171.66px 82.34px, 174.66px 84px, 177.66px 85.67px, 180.66px 86.34px, 183.66px 89px, 186.66px 88.67px, 189.66px 89px, 192.66px 90.34px, 195.66px 90.34px, 198.66px 91.67px, 201.66px 91px, 204.66px 91.67px, 207.66px 91px, 210.66px 90.34px, 213.66px 89.67px, 216.66px 88px, 219.66px 88px, 222.66px 87.34px, 225.66px 87.67px, 228.66px 86.34px, 231.66px 87.34px, 234.66px 90px, 237.66px 90.34px, 240.66px 90.67px, 243.66px 89px, 246.66px 88px, 249.66px 86.34px, 252.66px 87.67px, 255.66px 88.34px, 255.66px 103.67px); }
+
+/* ---------- zone : etat ---------- */
+/* Zone etat (colonne STATUS). Placement et tailles seuls : aucune couleur ici.
+   Couleurs : classes du kit (phosphore, alerte, relief, verre). Textes : .txt et .titre de screen.css. */
+
+.m-etat-cellule {
+  width: 7.4px;
+  height: 13px;
+}
+
+/* Libellés : bord gauche de la colonne de texte, placement de la ligne. */
+.m-etat-libelle {
+  white-space: pre;
+}
+
+/* Valeurs alignées à droite dans une boîte de 80 px ; la boîte finit à la droite de l'encre + 2,17 px CSS. */
+.m-etat-valeur {
+  width: 80px;
+  text-align: right;
+}
+
+.m-etat-titre {
+  font-size: 16px;
+}
+
+.m-etat-alerte {
+  white-space: pre;
+}
+
+/* Jauges : libellés et valeurs au pas mesuré de l'image (7,0 px CSS par caractère, soit letter-spacing 1 px) ;
+   mesure : largeur d'encre de CPU, MEM, LOSS, LINK, TEMP-5F à +/- 1 px CSS. Les compteurs gardent le pas du kit. */
+.m-etat-jauge {
+  letter-spacing: 1px;
+}
+
+/* ---------- zone : bas ---------- */
+/* Zone bas : panneau LOG (plaque pleine largeur, 2 vis, titre, cadre de verre, 9 lignes, défilement) et barre
+   F1 à F10 avec champ d'état. Placement et tailles seuls, mesurés dans S/bas/mesures.md (px image / 3).
+   Aucune couleur ici : les couleurs viennent des classes du kit. */
+
+/* Plaque LOG : pleine largeur, 515 à 682,33 px CSS. */
+.m-bas-plaque { left: 5.67px; top: 519.5px; width: 1268px; height: 162.83px; }
+
+/* Vis de la plaque (classe k-vis, boîte 8,38 px) : coin haut gauche de la boîte, centres mesurés à 1 px image près. */
+.m-bas-vis-g { left: 11px; top: 525.33px; }
+.m-bas-vis-d { left: 1257.33px; top: 526px; }
+
+/* Titre « 記録 LOG » sur la coque : corps 15,71 px = capitale mesurée 11 px / 0,700 (Barlow). Kanji : encre 26,67 px de large. */
+.m-bas-titre { font-size: 15.71px; line-height: 15.71px; }
+.m-bas-titre-kanji { left: 28px; top: 527px; font-size: 14.25px; line-height: 14.25px; }
+.m-bas-titre-latin { left: 66px; top: 525px; }
+
+/* Cadre de verre du journal : 15, 544, 1250 x 138 ; verre à l'intérieur (16,67 à 1243,67 ; 545,67 à 679,67). */
+.m-bas-cadre { left: 15px; top: 544px; width: 1250px; height: 138px; }
+.k-verre-cadre > .m-bas-verre {
+  position: absolute;
+  left: 1.67px;
+  top: 1.67px;
+  width: 1227px;
+  height: 134px;
+}
+
+/* Lignes du journal : PixelMplus12 12 px, pas de caractère 7,07 px CSS (chasse 6 + 1,07). Interligne 12 px.
+   Tops entiers (interligne en px entiers) : haut d'encre mesuré arrondi, décalé de 2 px pour le haut de la boîte. */
+.m-bas-log {
+  margin-top: 0;
+  letter-spacing: 1.07px;
+}
+.m-bas-c-heure { left: 28px; }
+.m-bas-c-nd { left: 96.67px; }
+.m-bas-c-msg { left: 152.67px; }
+.m-bas-r1 { top: 550px; }
+.m-bas-r2 { top: 564px; }
+.m-bas-r3 { top: 579px; }
+.m-bas-r4 { top: 593px; }
+.m-bas-r5 { top: 608px; }
+.m-bas-r6 { top: 622px; }
+.m-bas-r7 { top: 636px; }
+.m-bas-r8 { top: 651px; }
+.m-bas-r9 { top: 665px; }
+
+/* Barre de défilement (matières du kit defilement) : glissière, curseur et deux flèches.
+   Colonne x 1245 à 1263 ; haut bouton 546,67 à 563 ; glissière 563 à 659,33 ; bas bouton 659,33 à 676,67. */
+.m-bas-defile-glissiere { left: 1245px; top: 563px; width: 18px; height: 96.33px; }
+.m-bas-defile-haut { left: 1245px; top: 546.67px; width: 18px; height: 16.33px; }
+.m-bas-defile-curseur { left: 1245px; top: 565.67px; width: 18px; height: 20px; }
+.m-bas-defile-bas { left: 1245px; top: 659.33px; width: 18px; height: 17.33px; }
+
+
+/* Touches F1 à F10 : levées, hauteur 33 px, haut 686,83 ; gauche et largeur mesurées par touche. */
+.m-bas-f1, .m-bas-f2, .m-bas-f3, .m-bas-f4, .m-bas-f5,
+.m-bas-f6, .m-bas-f7, .m-bas-f8, .m-bas-f9, .m-bas-f10 { top: 686.83px; height: 33px; }
+.m-bas-f1 { left: 9.67px; width: 99.67px; }
+.m-bas-f2 { left: 113px; width: 96.67px; }
+.m-bas-f3 { left: 213.67px; width: 96px; }
+.m-bas-f4 { left: 313.33px; width: 96.33px; }
+.m-bas-f5 { left: 413.33px; width: 94.33px; }
+.m-bas-f6 { left: 511.33px; width: 92.33px; }
+.m-bas-f7 { left: 607.33px; width: 94.67px; }
+.m-bas-f8 { left: 705.67px; width: 97px; }
+.m-bas-f9 { left: 806.33px; width: 97.67px; }
+.m-bas-f10 { left: 907.67px; width: 100.33px; }
+
+/* Libellés des touches et du champ d'état : corps de la coque 13,33 px = capitale 9,33 px / 0,700 (Barlow). */
+.m-bas-libelle {
+  font-size: 13.33px;
+  line-height: 13.33px;
+  white-space: pre;
+}
+/* Écart entre le numéro et le nom (encre à encre mesurée 13,17 px CSS). */
+.m-bas-touche-nom { margin-left: 11.5px; }
+/* Libellés dans les touches : posés 1,33 px plus bas que la position du libellé du kit (-2 px), écart mesuré à l encre (cible 697 à 706,33 ; rendu 693,67 à 703). */
+.k-bouton .m-bas-libelle { top: 1.33px; }
+
+/* Champ d'état en creux, sans verre : 1020,67 ; 684,33 ; 245,33 x 33. */
+.m-bas-etat { left: 1020.67px; top: 686.83px; width: 245.33px; height: 33px; }
+.m-bas-etat-mot { position: absolute; top: 696px; }
+.m-bas-etat-poll { left: 1065.67px; }
+.m-bas-etat-5s { left: 1101.67px; }
+.m-bas-etat-nd { left: 1131.33px; }
+.m-bas-etat-14 { left: 1154px; }
+.m-bas-etat-err { left: 1183px; }
+.m-bas-etat-1 { left: 1212.33px; }

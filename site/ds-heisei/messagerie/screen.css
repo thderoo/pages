@@ -1,0 +1,268 @@
+/* Feuille de l'ecran messagerie : socle, puis une section par zone. Pas de couleur ici (kit/). */
+@font-face { font-family: "PixelMplus12"; src: url("https://cdn.jsdelivr.net/gh/itouhiro/PixelMplus@master/PixelMplus12-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+body {
+  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --kit-mono: "PixelMplus12", ui-monospace, monospace;
+  margin: 0; width: 1280px; height: 720px; overflow: hidden; position: relative;
+  font-kerning: none; font-synthesis: none; color: var(--k-bouton-libelle);
+}
+.m-plc { position: absolute; box-sizing: border-box; }
+
+/* ===== Zone barres ===== */
+/* Zone barres (messagerie) : barre d'outils du haut (y 0 à 37 px CSS) et bande d'état du bas (y 681 à 720).
+   Toutes les valeurs viennent de mesures sur l'image cible (px image / 3). Pas de couleur, pas de fichier. */
+
+/* Rainures entre plaques, barre du haut. */
+.m-barres-g0 { left: 15.33px;  top: 0; width: 2.33px; height: 37px; }
+.m-barres-g1 { left: 181.33px;    top: 0; width: 2.67px; height: 37px; }
+.m-barres-g2 { left: 209.67px; top: 0; width: 3px;    height: 37px; }
+.m-barres-g3 { left: 336.67px; top: 0; width: 4px;    height: 37px; }
+.m-barres-g4 { left: 469.67px; top: 0; width: 3.67px; height: 37px; }
+.m-barres-g5 { left: 619.67px; top: 0; width: 3.67px; height: 37px; }
+.m-barres-g6 { left: 767.67px; top: 0; width: 2px;    height: 37px; }
+.m-barres-g7 { left: 997.67px; top: 0; width: 2px;    height: 37px; }
+.m-barres-g8 { left: 1266.67px; top: 0; width: 2px;   height: 37px; }
+
+/* Plaque-titre. */
+.m-barres-titre-plaque { left: 16.67px; top: 1.33px; width: 165px; height: 30.67px; }
+.m-barres-titre { left: 27.67px; top: 9px; font-size: 16px; line-height: 16px; white-space: pre; }
+
+/* Boutons : même bande que la barre (y 1,33 à 37 px CSS). */
+.m-barres-btn { top: 1.33px; height: 35.67px; }
+.m-barres-btn-new     { left: 211px; width: 125.33px; }
+.m-barres-btn-reply   { left: 340.67px; width: 129px; }
+.m-barres-btn-forward { left: 473.33px; width: 145.33px; }
+.m-barres-btn-delete  { left: 622.33px; width: 144px; }
+.m-barres-latin { margin-left: 11.67px; }
+
+/* Champ de recherche en verre. */
+.m-barres-verre-recherche { left: 1001.33px; top: 4.67px; width: 262.33px; height: 30px; }
+
+/* Textes sur verre : taille native, pas mesuré par letter-spacing (pas de pitch de 7,5 px CSS). */
+.m-barres-txt { font-size: 12px; line-height: 12px; letter-spacing: 1.5px; white-space: pre; }
+.m-barres-recherche { left: 1012.17px; top: 12px; }
+.m-barres-saisie { left: 1109.17px; top: 12px; }
+.m-barres-curseur { left: 1154.33px; top: 11.67px; width: 0.33px; height: 15px; }
+
+/* Bande d'état du bas. */
+.m-barres-verre-bas-gauche { left: 15px; top: 681.33px; width: 1071.33px; height: 29px; }
+.m-barres-verre-bas-droite { left: 1091px; top: 681.33px; width: 172.67px; height: 29px; }
+.m-barres-etat { letter-spacing: 2.55px; top: 689px; }
+.m-barres-etat-gauche { left: 26.16px; }
+.m-barres-sep { margin-left: 2.67px; }
+.m-barres-etat-droite { left: 1109.5px; }
+
+/* ===== Zone dossiers ===== */
+/* Zone dossiers (panneau 箱 FOLDERS). Placement et espacements seuls ; matieres dans kit/. Coordonnees page 1280 x 720 px CSS. */
+.m-dossiers-plaque { left: 6.33px; top: 43.83px; width: 226.67px; height: 625.5px; }
+/* Vis : boite du kit (8,38 px, croix centree). Position = centre de la vis image / 3, moins 4,19 px, au tiers de px. */
+.m-dossiers-vis-tl { left: 12.33px; top: 52px; }
+.m-dossiers-vis-tr { left: 212.33px; top: 52px; }
+.m-dossiers-vis-bl { left: 12.33px; top: 657.67px; }
+.m-dossiers-vis-br { left: 217.67px; top: 657.67px; }
+.m-dossiers-titre { left: 30.67px; top: 52.58px; font-family: var(--kit-sans); font-size: 14.67px; line-height: 16px; letter-spacing: 0.93px; white-space: pre; }
+.m-dossiers-kanji { font-family: var(--kit-sans); margin-right: 7.33px; position: relative; top: 0.67px; }
+.m-dossiers-cadre { left: 18px; top: 76px; width: 202.67px; height: 582.33px; }
+.m-dossiers-filet { left: 28.67px; top: 581px; width: 182.67px; }
+.m-dossiers-quota { left: 31px; top: 597.47px; font-size: 12px; line-height: 12px; letter-spacing: 1.86px; white-space: pre; }
+.m-dossiers-case-0 { left: 30.33px; top: 621.33px; width: 10.67px; height: 16px; }
+.m-dossiers-case-1 { left: 43.67px; top: 621.33px; width: 11px; height: 16px; }
+.m-dossiers-case-2 { left: 57.33px; top: 621.33px; width: 11.67px; height: 16px; }
+.m-dossiers-case-3 { left: 71.67px; top: 621.33px; width: 11px; height: 16px; }
+.m-dossiers-case-4 { left: 84.33px; top: 621.33px; width: 9.33px; height: 16px; }
+.m-dossiers-case-5 { left: 95.33px; top: 621.33px; width: 10.67px; height: 16px; }
+.m-dossiers-sliver { left: 108.33px; top: 621.33px; width: 1.67px; height: 16px; }
+.m-dossiers-eteint-0 { left: 110.33px; top: 621.33px; width: 9.67px; height: 16px; }
+.m-dossiers-eteint-1 { left: 123.67px; top: 621.33px; width: 11px; height: 16px; }
+.m-dossiers-eteint-2 { left: 137px; top: 621.33px; width: 11.33px; height: 16px; }
+.m-dossiers-eteint-3 { left: 149.33px; top: 621.33px; width: 5px; height: 16px; }
+.m-dossiers-eteint-4 { left: 155.33px; top: 621.33px; width: 10.33px; height: 16px; }
+.m-dossiers-eteint-5 { left: 169px; top: 621.33px; width: 11px; height: 16px; }
+.m-dossiers-eteint-6 { left: 183.67px; top: 621.33px; width: 11px; height: 16px; }
+.m-dossiers-eteint-7 { left: 198px; top: 621.33px; width: 10.67px; height: 16px; }
+.m-dossiers-marque { left: 31px; width: 11.67px; height: 12.33px; }
+.m-dossiers-nom { left: 59px; font-size: 12px; line-height: 12px; letter-spacing: 2px; white-space: pre; }
+.m-dossiers-compte { right: 1069.76px; font-size: 12px; line-height: 12px; letter-spacing: 2px; white-space: pre; }
+.m-dossiers-sel { left: 25px; width: 189.67px; height: 35.67px; }
+.m-dossiers-l0.m-dossiers-marque { top: 99px; }
+.m-dossiers-l0.m-dossiers-nom { top: 99.34px; }
+.m-dossiers-l0.m-dossiers-compte { top: 99.34px; }
+.m-dossiers-l1.m-dossiers-marque { top: 136.34px; }
+.m-dossiers-l1.m-dossiers-nom { top: 136.67px; }
+.m-dossiers-l1.m-dossiers-compte { top: 136.67px; }
+.m-dossiers-l2.m-dossiers-marque { top: 173.67px; }
+.m-dossiers-l2.m-dossiers-nom { top: 174px; }
+.m-dossiers-l2.m-dossiers-compte { top: 174px; }
+.m-dossiers-l3.m-dossiers-marque { top: 210.67px; }
+.m-dossiers-l3.m-dossiers-nom { top: 211px; }
+.m-dossiers-l3.m-dossiers-compte { top: 211px; }
+.m-dossiers-l4.m-dossiers-marque { top: 247.67px; }
+.m-dossiers-l4.m-dossiers-nom { top: 248px; }
+.m-dossiers-l4.m-dossiers-compte { top: 248px; }
+.m-dossiers-l5.m-dossiers-marque { top: 284.5px; }
+.m-dossiers-l5.m-dossiers-nom { top: 284.84px; }
+.m-dossiers-l5.m-dossiers-compte { top: 284.84px; }
+.m-dossiers-l6.m-dossiers-marque { top: 321.33px; }
+.m-dossiers-l6.m-dossiers-nom { top: 321.67px; }
+.m-dossiers-l6.m-dossiers-compte { top: 321.67px; }
+.m-dossiers-l0.m-dossiers-sel { top: 87.67px; }
+
+/* ===== Zone liste ===== */
+/* Zone liste (panneau 受信箱 INBOX). Placement et espacement seulement : pas de couleur, pas de fichier externe.
+   Toutes les valeurs viennent de mesures PIL sur l'image cible (px image / 3). */
+.m-liste-plaque { left: 236.33px; top: 43.67px; width: 400.33px; height: 625.67px; }
+.m-liste-vis-tl { left: 243.33px; top: 52px; }
+.m-liste-vis-tr { left: 620px; top: 52.33px; }
+.m-liste-vis-bl { left: 242px; top: 657px; }
+.m-liste-vis-br { left: 624.33px; top: 657.33px; }
+.m-liste-titre { font-family: var(--kit-sans); font-size: 16px; line-height: 16px; white-space: pre; }
+.m-liste-titre-jp { left: 262px; top: 53.67px; }
+.m-liste-titre-latin { left: 317.33px; top: 53.17px; }
+.m-liste-cadre { left: 246.67px; top: 75.33px; width: 381px; height: 583.33px; }
+.m-liste-verre { left: 248.67px; top: 77px; width: 357px; height: 579.33px; }
+.m-liste-defil-haut { left: 606px; top: 78px; width: 19.33px; height: 19.67px; }
+.m-liste-curseur { left: 606px; top: 100px; width: 19.33px; height: 74px; }
+.m-liste-piste { left: 606px; top: 98px; width: 19.33px; height: 538px; }
+.m-liste-defil-bas { left: 606px; top: 636.67px; width: 19.33px; height: 19.33px; }
+.m-liste-ligne { left: 252.33px; width: 349px; height: 36px; }
+.m-liste-l1 { top: 85.33px; }
+.m-liste-l2 { top: 122.9px; }
+.m-liste-l3 { top: 162.26px; }
+.m-liste-l4 { top: 201.62px; }
+.m-liste-l5 { top: 240.98px; }
+.m-liste-l6 { top: 280.34px; }
+.m-liste-l7 { top: 319.7px; }
+.m-liste-l8 { top: 359.06px; }
+.m-liste-l9 { top: 398.42px; }
+.m-liste-l10 { top: 437.78px; }
+.m-liste-l11 { top: 477.14px; }
+.m-liste-marque { left: 5px; top: 11px; width: 12px; height: 12px; }
+.m-liste-txt { font-family: var(--kit-mono); font-size: 12px; line-height: 12px; white-space: pre; font-kerning: none; font-synthesis: none; letter-spacing: 1.26px; top: 11.42px; }
+.m-liste-expediteur { left: 36.67px; }
+.m-liste-sujet { left: 131px; }
+.m-liste-heure { right: 3.07px; }
+.m-liste-filet { left: 1.67px; width: 345.33px; height: 0.5px; top: 35.6px; }
+.m-liste-ligne .m-liste-filet { top: 35.6px; }
+
+/* ===== Zone lecture ===== */
+/* Zone lecture : panneau 本文 MESSAGE. Placement et espacement seuls, en px CSS de la page 1280 x 720
+   (1 px CSS = 3 px image). Couleurs, relief et polices viennent du kit (harnais). */
+
+/* Plaque, vis (haut seulement, l'image n'en montre pas en bas). */
+.m-lecture-plaque { left: 643.67px; top: 43.67px; width: 631.67px; height: 374px; }
+.m-lecture-vis-g { left: 648.67px; top: 52px; }
+.m-lecture-vis-d { left: 1257px; top: 52px; }
+
+/* Titre sur la coque : cap 10,67 px mesurée, Barlow cap 0,70 em => 15,33 px. */
+.m-lecture-titre { top: 51.71px; font-family: var(--kit-sans); font-size: 15.33px; line-height: 1.2; white-space: pre; }
+.m-lecture-titre-jp { left: 666.67px; }
+.m-lecture-titre-latin { left: 707px; }
+
+/* Cadre de verre (bord extérieur mesuré : 652,67 / 75,67 / 1264 / 407,67). */
+.m-lecture-cadre { left: 652.67px; top: 75.67px; width: 611.33px; height: 332px; }
+
+/* Texte sur le verre : avance native 6 px, pas mesuré 7,86 px => espacement 1,86 px. */
+.m-lecture-txt { font-size: 12px; line-height: 12px; letter-spacing: 1.86px; white-space: pre; }
+
+/* Colonnes (bord gauche de l'encre). */
+.m-lecture-col-etiq { left: 664.33px; }
+.m-lecture-col-val { left: 750.33px; }
+.m-lecture-col-corps { left: 666px; }
+
+/* En-tête : lignes à centre d'encre mesuré (94,17 ; 116,5 ; 139,17 ; 161,5). */
+.m-lecture-h1 { top: 88.07px; }
+.m-lecture-h2 { top: 110.4px; }
+.m-lecture-h3 { top: 133.07px; }
+.m-lecture-h4 { top: 155.4px; }
+
+/* Filet de séparation. */
+.m-lecture-filet { left: 663.67px; top: 180px; width: 567px; }
+
+/* Corps : tops d'encre 190,67 / 211,33 / 232,33 / 252,33 / 273,33 ; citation 307,67 / 327,67 / 348,33. */
+.m-lecture-b1 { top: 190.4px; }
+.m-lecture-b2 { top: 211.07px; }
+.m-lecture-b3 { top: 232.07px; }
+.m-lecture-b4 { top: 252.07px; }
+.m-lecture-b5 { top: 273.07px; }
+.m-lecture-c1 { top: 306.57px; }
+.m-lecture-c2 { top: 326.57px; }
+.m-lecture-c3 { top: 347.9px; }
+
+/* Pièce jointe : marque en crochets (élément unique du kit, 13,75 x 18 px). */
+.m-lecture-crochets { left: 670px; top: 376.67px; }
+.m-lecture-pj-nom { left: 698.67px; top: 380.23px; }
+.m-lecture-pj-taille { left: 834.67px; top: 380.23px; }
+
+/* Barre de défilement (bords mesurés sur la cible). */
+.m-lecture-haut { left: 1241.67px; top: 77.67px; width: 20px; height: 21.33px; }
+.m-lecture-piste { left: 1241.67px; top: 99px; width: 20px; height: 287px; }
+.m-lecture-curseur { left: 1243.67px; top: 296.67px; width: 14.67px; height: 85.67px; }
+.m-lecture-bas { left: 1241.67px; top: 386px; width: 20px; height: 19.67px; }
+
+
+/* ===== Zone reponse ===== */
+/* Zone reponse (panneau 返信 REPLY) : placement seul, coordonnees de la page 1280 x 720 CSS.
+   Matieres : classes du kit (zone.html). Aucune couleur ici. */
+
+/* Panneau, vis */
+/* Le moteur pose la boîte au px CSS entier (417,67 donne 418, soit une rangée image de trop) : décalage de 1 px image rétabli. */
+.m-reponse-panneau { left: 642px; top: 417.67px; width: 633.33px; height: 252.33px; transform: translateY(-0.333px); }
+.m-reponse-vis-hg { left: 648.33px; top: 426.33px; }
+.m-reponse-vis-hd { left: 1256.67px; top: 427px; }
+.m-reponse-vis-bg { left: 648.67px; top: 657.33px; }
+.m-reponse-vis-bd { left: 1258.33px; top: 657.33px; }
+
+/* Titre sur la coque */
+.m-reponse-titre { font-family: var(--kit-sans); font-size: 16px; line-height: 16px; white-space: pre; }
+.m-reponse-titre-jp { left: 666.67px; top: 425.8px; font-size: 14.4px; }
+.m-reponse-titre-lat { left: 707px; top: 425.8px; }
+
+/* Etiquettes des champs (police de la coque) */
+.m-reponse-etiquette { font-family: var(--kit-sans); font-size: 14px; line-height: 14px; white-space: pre; }
+.m-reponse-etiquette-jp { font-size: 12.4px; }
+.m-reponse-etq-to { left: 656px; top: 450.67px; width: 106px; height: 32.33px; }
+.m-reponse-etq-sub { left: 656px; top: 485px; width: 106px; height: 32.67px; }
+.m-reponse-etq-body { left: 656px; top: 519.33px; width: 106px; height: 88.67px; }
+.m-reponse-etq-to-jp { left: 666px; top: 460.5px; }
+.m-reponse-etq-to-lat { left: 701px; top: 460.5px; }
+.m-reponse-etq-sub-jp { left: 665.67px; top: 496.2px; }
+.m-reponse-etq-sub-lat { left: 701.33px; top: 496.2px; }
+.m-reponse-etq-body-jp { left: 666px; top: 530.2px; }
+.m-reponse-etq-body-lat { left: 701.67px; top: 530.2px; }
+
+/* Cadres de verre */
+.m-reponse-cadre-to { left: 763.33px; top: 454.33px; width: 501.33px; height: 28.67px; }
+.m-reponse-cadre-sub { left: 763.33px; top: 487.67px; width: 501.33px; height: 30px; }
+.m-reponse-cadre-body { left: 763.33px; top: 520.67px; width: 501.33px; height: 87.33px; }
+.m-reponse-cadre-chars { left: 1080px; top: 615.67px; width: 183.33px; height: 35px; }
+
+/* Texte sur verre (taille native 12 px) */
+.m-reponse-verre { font-size: 12px; line-height: 12px; white-space: pre; font-kerning: none; font-synthesis: none; }
+.m-reponse-to { left: 774.67px; top: 462.03px; letter-spacing: 2px; }
+.m-reponse-sub { left: 774.67px; top: 496.37px; letter-spacing: 2px; }
+.m-reponse-corps { left: 774.67px; top: 528.45px; line-height: 18.5px; letter-spacing: 0.86px; }
+.m-reponse-chars-jp { left: 1093px; top: 626.67px; }
+.m-reponse-chars-lat { left: 1127.67px; top: 626.67px; letter-spacing: 1.6px; }
+.m-reponse-chars-num { left: 1190.33px; top: 626.67px; letter-spacing: 1.6px; }
+
+/* Curseur bloc */
+.m-reponse-curseur { left: 889.33px; top: 566.67px; width: 7px; height: 15.67px; }
+
+/* Boutons */
+.m-reponse-btn-send { left: 656.33px; top: 616.67px; width: 126.67px; height: 35px; }
+.m-reponse-btn-save { left: 793px; top: 616.67px; width: 125.33px; height: 35px; }
+.m-reponse-btn-cancel { left: 928px; top: 616.67px; width: 123px; height: 35px; }
+.m-reponse-btn-send .k-bouton-libelle { left: 1.67px; }
+.m-reponse-btn-save .k-bouton-libelle { left: 1.5px; }
+.m-reponse-btn-cancel .k-bouton-libelle { left: 0.83px; }
+.m-reponse-gap { margin-left: 8.5px; letter-spacing: 1px; }
+
+/* Barre de defilement du corps */
+.m-reponse-sb-haut { left: 1240.67px; top: 522px; width: 22.67px; height: 22px; }
+.m-reponse-sb-piste { left: 1240.67px; top: 544px; width: 22.67px; height: 44.33px; }
+.m-reponse-sb-pouce { left: 1240.67px; top: 545.33px; width: 22.67px; height: 17px; }
+.m-reponse-sb-bas { left: 1240.67px; top: 588.33px; width: 22.67px; height: 20px; }
+
+/* ===== Assemblage : jonctions entre zones (rainures verticales du kit) ===== */
+.m-assemblage-fi { left: 229.33px; top: 45.67px; width: 8px; height: 635.67px; }
+.m-assemblage-im { left: 636.33px; top: 43.67px; width: 7.33px; height: 625.67px; }

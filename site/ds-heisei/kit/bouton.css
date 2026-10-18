@@ -1,0 +1,191 @@
+/* Matière bouton (boutons de coque : levé, enfoncé, libellé). Valeurs de repli ci-dessous ; la face vient de la matière coque (--k-bouton-face).
+
+   Relevé (mandat kit.bouton, étape 2) : médiane RGB et écart type, échantillonnage PIL des quatre images de référence
+   (3840 × 2160 px), zone (x0, y0, x1, y1) en px de l'image, sélection « tout » ou « sombre » (luminance < 100).
+   hex      image       zone                        sélection  médiane RGB     écart type RGB
+   #b2aa93  maitresse   (100, 1395, 240, 1420)      tout       178,170,147     1.7,1.5,2.4     face levé, LINK
+   #b3ab93  maitresse   (340, 1395, 480, 1420)      tout       179,171,147     2.0,1.9,2.6     face levé, RETRY
+   #b0a890  maitresse   (600, 1395, 740, 1420)      tout       176,168,144     1.8,1.9,2.3     face levé, CONFIG
+   #b0a58d  fichiers    (1950, 1302, 2290, 1316)    tout       176,165,141     1.1,1.2,1.3     face levé, PAUSE
+   #aea691  registre    (2700, 1936, 3000, 1952)    tout       174,166,145     1.3,1.6,1.6     face levé, SAVE
+   #a49b83  fichiers    (1150, 14, 1320, 30)        tout       164,155,131     1.6,1.7,2.0     face enfoncé, COPY
+   #e5ddc8  maitresse   (110, 1384, 230, 1389)      tout       229,221,200     12.6,14.0,14.0  liseré haut levé
+   #e8e2ce  maitresse   (59, 1400, 63, 1460)        tout       232,226,206     8.5,8.4,8.8     liseré gauche levé
+   #7e7a64  maitresse   (110, 1380, 230, 1383)      tout       126,122,100     4.5,4.5,4.2     bord haut levé, extérieur
+   #807a64  maitresse   (55, 1400, 58, 1460)        tout       128,122,100     10.5,10.5,10.3  bord gauche levé, extérieur
+   #7e7d67  maitresse   (284, 1400, 291, 1460)      tout       126,125,103     11.0,9.9,9.8    bord droit levé
+   #7e7a64  maitresse   (100, 1496, 240, 1505)      tout       126,122,100     12.3,10.9,10.9  bord bas levé
+   #6a6c5b  fichiers    (1120, 4, 1300, 11)         tout       106,108,91      17.2,16.8,15.2  bord haut enfoncé
+   #646555  fichiers    (1089, 25, 1096, 85)        tout       100,101,85      17.0,16.0,14.1  bord gauche enfoncé
+   #d2c8b1  fichiers    (1120, 94, 1300, 98)        tout       210,200,177     16.3,16.2,16.4  liseré bas enfoncé
+   #cac0aa  fichiers    (1330, 25, 1335, 85)        tout       202,192,170     11.5,11.5,11.7  liseré droit enfoncé
+   #74735f  fichiers    (1081, 25, 1084, 85)        tout       116,115,95      8.6,8.0,8.5     contour gauche sombre, extérieur, enfoncé
+   #aca691  fichiers    (1085, 25, 1087, 85)        tout       172,166,145     10.6,10.5,10.2  contour gauche clair, extérieur, enfoncé
+   #c9c1ab  fichiers    (1340, 25, 1342, 85)        tout       201,193,171     14.9,14.4,14.4  contour droit clair, extérieur, enfoncé
+   #7e7865  fichiers    (1120, 99, 1300, 100)       tout       126,120,101     12.0,11.7,11.6  contour bas sombre, extérieur, enfoncé
+   #0c0802  maitresse   (200, 1420, 262, 1480)      sombre     12,8,2          29.1,28.2,24.6  libellé LINK
+   #0e0900  fichiers    (1155, 35, 1300, 70)        sombre     14,9,0          29.6,29.2,25.1  libellé COPY
+   #b2aa92  maitresse   (20, 1372, 50, 1516)        tout       178,170,146     6.8,6.6,6.7     fond autour de LINK (fond du premier passage, plus utilisé)
+   #b0a78e  fichiers    (1100, 0, 1330, 2)          tout       176,167,142     14.4,12.6,12.6  barre au-dessus de COPY (fond du premier passage, plus utilisé)
+
+   Valeurs retenues : --k-bouton-lumiere = moyenne des deux liserés levés ; --k-bouton-ombre = bord levé
+   intérieur (un seul ton sur les quatre bords) ; --k-bouton-ombre-enfonce et --k-bouton-lumiere-enfonce =
+   moyennes des bords enfoncés. Voile du plateau enfoncé (second passage) : multiplication par rgb(236, 234, 230),
+   soit la médiane du plateau enfoncé COPY (164,155,131, ligne #a49b83 ci-dessus) divisée par le beige de la coque
+   (177,169,145 = #b1a991, décision N0). Le premier passage utilisait 0,09 de noir : son plateau enfoncé mesurait
+   162,155,134 contre 164,155,131 dans la cible (mesure dans pass1-mesures.md) : 3 unités de trop sur le bleu,
+   au-delà de la tolérance de ± 2.
+
+   Soulignement d'accélérateur (kit.polices.3, point 3) : trait sous « 設 » et sous « CONFIG » dans la maîtresse
+   (image maîtresse, 3840 × 2160 px). Trait mesuré sur les lignes 1468 à 1470 ; encre des lettres : luminance < 100.
+   zone (x0, y0, x1, y1)            épaisseur                 médiane RGB (encre du trait)   longueur                    lignes vides entre encre et trait
+   CONFIG (688, 1466, 784, 1472)    3 px image = 1 px CSS     46,47,32 (#2e2f20)             96 px image = 32 px CSS     9 px image (3 px CSS), dernière encre des lettres à 1458
+   設 (594, 1466, 628, 1472)        3 px image = 1 px CSS     107,105,87 (#6b6957), plus clair, moins uniforme   34 px image = 11 px CSS   6 px image (2 px CSS), dernière encre à 1461
+   Aucun autre bouton (PAUSE, messagerie, registre) ne porte ce trait à l'œil. Valeur retenue pour .k-bouton-accel : celle
+   de CONFIG (le trait du 設 est plus clair : écart rapporté dans kit.polices.3.md). */
+/* Libellés (harmonisation.bouton, 2026-10-18) : centre d'encre mesuré dans le rendu à 14,5 px latin, DPR 3 : top -1 px donne -1,5 / -1,5 / -2,0 px image sur LINK, RETRY, CONFIG (image : -1,5 / -1,5 / -2,0) et 0 px sur COPY enfoncé (image : 0). Le top -2 px d'avant donnait -4 px image à 14 px de corps. */
+
+/* Bouton levé : plaque en saillie, lumière en haut à gauche. Relevé (harmonisation.bouton, 2026-10-18) sur les bords
+   des boutons du groupe fichiers / registre / messagerie (PAUSE, CANCEL de registre, SAVE, SEND ; médianes RGB, px image) :
+   contact sombre extérieur haut 2 px (#7f7d66) et gauche 2 px (#716b58) ; lumière intérieure haut 5 px (#d3ccb7) et
+   gauche 4 px (#d6d0bc) ; ombre intérieure bas 7 px (#737461) et droite 5 px (#6d6f5c) ; liseré clair extérieur bas
+   1 px (#a4a08a) et droite 1 px (#a6a38f). Le moteur arrondit une bordure au px CSS (1 px CSS = 3 px image) : chaque
+   bande est une bordure (1 ou 2 px) plus un liseré intérieur en ombre interne (0,33 à 0,67 px), même couleur.
+   Variante de la maîtresse : .k-bouton-clair, plus bas. CANCEL de fichiers (ombre 92) reste hors classe. */
+.k-bouton {
+  --k-bouton-haut-trait: 0.67px;
+  --k-bouton-gauche-trait: 0.33px;
+  --k-bouton-bas-trait: 0.33px;
+  --k-bouton-droite-trait: 0.67px;
+  --k-bouton-contact-haut-trait: 0.67px;
+  --k-bouton-contact-gauche-trait: 0.67px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1px 1px 2px 1px;
+  border-color: var(--k-bouton-lumiere-haut, #d3ccb7) var(--k-bouton-ombre-droite, #6d6f5c) var(--k-bouton-ombre-bas, #737461) var(--k-bouton-lumiere-gauche, #d6d0bc);
+  border-radius: 1px;
+  background: var(--k-bouton-face, #b2aa93);
+  box-shadow:
+    0 calc(-1 * var(--k-bouton-contact-haut-trait)) 0 0 var(--k-bouton-contact-haut, #7f7d66),
+    calc(-1 * var(--k-bouton-contact-gauche-trait)) 0 0 0 var(--k-bouton-contact-gauche, #716b58),
+    0 0.33px 0 0 var(--k-bouton-bord-bas, #a4a08a),
+    0.33px 0 0 0 var(--k-bouton-bord-droite, #a6a38f),
+    inset 0 var(--k-bouton-haut-trait) 0 0 var(--k-bouton-lumiere-haut, #d3ccb7),
+    inset var(--k-bouton-gauche-trait) 0 0 0 var(--k-bouton-lumiere-gauche, #d6d0bc),
+    inset calc(-1 * var(--k-bouton-droite-trait)) 0 0 0 var(--k-bouton-ombre-droite-fonce, #6d6f5c),
+    inset 0 calc(-1 * var(--k-bouton-bas-trait)) 0 0 var(--k-bouton-ombre-bas-fonce, #737461);
+}
+
+/* Variante maîtresse (LINK, RETRY, CONFIG ; médianes RGB, px image) : lumière haute 6 px (#e4dac6) et gauche 5 px
+   (#dfd8c6) ; contact extérieur haut et gauche 3 px (#7f7a65, #7e7a66) ; bas en deux bandes, foncée 5 px (#73725d) côté
+   extérieur puis moyenne 5 px (#7f7d68) ; droite en deux bandes, foncée 3 px (#6c6d57) côté extérieur puis moyenne 4 px (#797864). Les bandes
+   du bas et de droite sont donc plus épaisses et à deux tons, ce que la classe de base n'a pas. */
+.k-bouton-clair {
+  --k-bouton-haut-trait: 1px;
+  --k-bouton-gauche-trait: 0.67px;
+  --k-bouton-bas-trait: 1.33px;
+  --k-bouton-droite-trait: 1.33px;
+  --k-bouton-contact-haut-trait: 1px;
+  --k-bouton-contact-gauche-trait: 1px;
+  --k-bouton-lumiere-haut: #e4dac6;
+  --k-bouton-lumiere-gauche: #dfd8c6;
+  --k-bouton-contact-haut: #7f7a65;
+  --k-bouton-contact-gauche: #7e7a66;
+  --k-bouton-ombre-bas: #73725d;
+  --k-bouton-ombre-bas-fonce: #7f7d68;
+  --k-bouton-ombre-droite: #6c6d57;
+  --k-bouton-ombre-droite-fonce: #797864;
+  --k-bouton-bord-bas: #b6b39c;
+  --k-bouton-bord-droite: #96917c;
+}
+
+/* Bouton enfoncé : biseau inversé (sombre en haut et à gauche, clair en bas et à droite), largeurs mesurées
+   haut 2,67 px CSS, gauche 3,33, droite 2,67, bas 1,67 (partie fractionnaire en liseré intérieur, voir ci-dessus) ;
+   plateau plus bas par multiplication de la face (voile multiplicatif, valeur dans l'en-tête). */
+.k-bouton-enfonce {
+  position: relative;
+  border-width: 2px 2px 1px 3px;
+  border-color: var(--k-bouton-ombre-enfonce, #676858) var(--k-bouton-lumiere-enfonce, #cec4ae) var(--k-bouton-lumiere-enfonce, #cec4ae) var(--k-bouton-ombre-enfonce, #676858);
+  background-image: linear-gradient(var(--k-bouton-voile-enfonce, rgb(236 234 230)), var(--k-bouton-voile-enfonce, rgb(236 234 230)));
+  background-blend-mode: multiply;
+  box-shadow:
+    0 0.33px 0 0 var(--k-bouton-contour-sombre-bas, #7e7865),
+    inset 0 0.67px 0 0 var(--k-bouton-ombre-enfonce, #676858),
+    inset 0.33px 0 0 0 var(--k-bouton-ombre-enfonce, #676858),
+    inset -0.67px 0 0 0 var(--k-bouton-lumiere-enfonce, #cec4ae),
+    inset 0 -0.67px 0 0 var(--k-bouton-lumiere-enfonce, #cec4ae);
+}
+
+/* Liseré extérieur du bouton enfoncé (contour du logement, relevé sur l'image fichiers, voir l'en-tête) : sombre à
+   gauche (1 px CSS) et clair à gauche puis à droite (0,67 px), posés hors de la boîte par deux pseudo-éléments
+   dont les bords sont mesurés depuis la zone intérieure (bordures comprises) ; sombre en bas (0,33 px) par l'ombre
+   externe de la boîte ci-dessus. Les bords des pseudo-éléments sont des positions : le moteur les arrondit au px
+   CSS, l'écart restant est reporté dans mesures.md. */
+.k-bouton-enfonce::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -2px;
+  right: -2px;
+  bottom: -2.67px;
+  box-shadow: inset 1px 0 0 0 var(--k-bouton-contour-sombre-gauche, #74735f);
+  pointer-events: none;
+}
+
+.k-bouton-enfonce::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -2px;
+  right: -4px;
+  bottom: -2px;
+  box-shadow:
+    inset 0.67px 0 0 0 var(--k-bouton-contour-clair-gauche, #aca691),
+    inset -0.67px 0 0 0 var(--k-bouton-contour-clair-droit, #c9c1ab);
+  pointer-events: none;
+}
+
+/* Soulignement d'accélérateur : trait de 1 px CSS sous le texte qui le porte (la lettre d'accès, ici « 設 » et « CONFIG »),
+   couleur et décalage du relevé en tête de fichier. Le trait suit le texte porteur (text-decoration). */
+.k-bouton-accel {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--k-bouton-accel, #2e2f20);
+  text-underline-offset: 2.7px;
+}
+
+/* Libellé : noir chaud, sans-serif de la coque (police choisie par l'utilisateur, --kit-sans). Le corps vient des
+   deux classes ci-dessous (latin, japonais), une valeur par rôle.
+
+   Corps latin : 11,9 px (harmonisation.bouton, décision N1 : les largeurs priment). Capitale mesurée sur LINK,
+   RETRY, CONFIG (maîtresse, px image) : image 30, 30, 31 ; rendu à 11,9 px 25 px (8,3 px CSS). Taille à capitale
+   égale (14,5 px) : rendu 30, 30, 31 px, mais la largeur d'encre dépasse le bouton de l'image (cible / rendu à 14 px,
+   px image : LINK 69 / 73, RETRY 80 / 96, CONFIG 93 / 117). Écart de capitale rapporté, dû à la police Barlow Semi
+   Condensed (plus large que la police de l'image) : décision de l'utilisateur entre les deux tailles.
+   Corps japonais : 12,6 px, inchangé (japonais : largeurs cible / rendu, LINK 74 / 82, RETRY 100 / 114, CONFIG 74 / 79).
+   La taille est une seule valeur par rôle, sans réglage par bouton. */
+.k-bouton-libelle {
+  font-family: var(--kit-sans, system-ui, "DejaVu Sans", sans-serif);
+  line-height: 1;
+  color: var(--k-bouton-libelle, #0c0802);
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  top: -2px;
+}
+
+/* Libellé latin (LINK, RETRY, CONFIG, COPY) : corps 11,9 px, voir l'en-tête de la matière. */
+.k-bouton-latin {
+  font-size: 11.9px;
+}
+
+/* Libellé japonais (接続, 再試行, 設定, 複写) : corps de la maîtresse, voir l'en-tête de la matière. Le span
+   japonais enveloppe tout le mot japonais, y compris le 定 de CONFIG et la lettre d'accès 設. */
+.k-bouton-jp {
+  font-size: 12.6px;
+}
+
+/* Libellé enfoncé : même pose que le levé (top -1 px, ci-dessus) ; COPY mesuré à 0 px image, comme dans l'image. */

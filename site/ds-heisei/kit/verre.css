@@ -1,0 +1,164 @@
+/* Matière verre : verre de CRT sombre bleu-vert froid, stries fines horizontales, cadre en creux.
+   Aucun halo, aucune courbure d'écran, aucun reflet, aucune ombre floue. Aucune police, aucune bitmap.
+   Le texte et les segments posés sur le verre relèvent de la matière phosphore, pas d'ici.
+
+   Relevé (troisième passage ; valeurs hex ; zones en px de l'image 3840 × 2160 désignée sans extension ;
+   luminance = 0.2126 R + 0.7152 G + 0.0722 B) :
+   #0f2c2c  fond du verre : luminance 37.83 (valeur du passage 3, mesurée à nouveau).
+      Crops plats : maîtresse (100,1250)-(700,1340), messagerie (800,1580)-(1700,1850), fichiers (100,1260)-(800,1680).
+      Luminance moyenne du verre, cible : 34.91, 36.15, 34.90 (moyenne 35.32). Rendu : 35.36, 35.34, 35.32 (moyenne 35.34).
+      Écart rendu − cible : +0.02 en moyenne, de −0.80 à +0.45 par crop.
+   #7c7b67  paroi gauche en creux : maîtresse, colonnes 23 à 25 du coin (médiane 124, 123, 103).
+   #b7af98  liseré clair au bord gauche de la paroi (colonne 21 du coin, lum 175) ; #a69e87 colonne 22 (lum 158).
+   #495248  bord de la paroi gauche (colonne 26, lum 79) ; #0b1a15 filet sombre au bord du verre (colonne 27, lum 22).
+   #6b6c58  cadre en creux, côté haut : maîtresse (300,221)-(600,225) med (107,108,88).
+   #d7d1be  cadre en creux, côté droit (lèvre claire) : maîtresse (804,560)-(808,1100) med (215,209,190).
+   #04120b  filet sombre au bord droit du verre : maîtresse (803,560)-(804,1100) med (4,18,11).
+   Lèvre du bas : ancrée au bord bas de la boîte (dégradé « to top », mêmes arrêts et épaisseurs qu'en haut), donc la même
+      quel que soit la hauteur. Profil de la colonne centrale, du haut de la lèvre vers le bas (luminance) :
+      cible (maîtresse, panneau NODE LIST, colonne 400, lignes 1352 à 1355) : 224, 199, 199, 163 ;
+      rendu, boîtes de 60, 300 et 1125 px CSS (lip.html, même profil aux trois hauteurs) : 218, 191, 194, 163.
+      Écart : −6, −8, −5, 0 (la lèvre reste plus sombre de 2 à 3 % ; les couleurs sont celles du passage 3).
+      Au bas du verre, deux lignes sombres #283730 et #0c2423 (au-dessus de la lèvre).
+   Stries (pas une couleur) : une couche, un seul ::after, filtre SVG qui additionne deux bruits sur le canal R (aucune bitmap).
+      Bruit A : fréquence horizontale 0 (une valeur par ligne), verticale 0.43, graine 11, poids 0.45. Il porte l'amplitude
+      d'une ligne à l'autre et le rythme vertical.
+      Bruit B : fréquence horizontale 0.051, verticale 0.35, graine 5, poids 0.216. Il porte le grain horizontal.
+      Fréquence horizontale faible mais non nulle : sans elle, le résidu horizontal est nul et la mesure de grain n'existe pas.
+      Alpha noir = 0.45 R_A + 0.216 R_B + 0.465 − 0.7319 : moyenne 0.0661, donc luminance moyenne 35.3.
+      Mesures (moyenne des 3 crops ; cible / rendu ; écart) :
+        période (passages par zéro de l'autocorrélation verticale) 17.2 / 16.6 px image (−3.4 %) ;
+        amplitude (écart type des moyennes de ligne) 1.43 / 1.55 (+8.9 %) ;
+        variation de ligne à ligne (écart type de la différence) 0.75 / 0.74 (−1.1 %) ;
+        corrélation verticale du résidu à 1 px 0.79 / 0.85 (+7.5 %), à 3 px 0.54 / 0.51 (−5.9 %) ;
+        corrélation horizontale du résidu (1/e) 26.8 / 26.7 px image (−0.3 %).
+      Écart restant : asymétrie des moyennes de ligne, +0.41 dans la cible, −0.38 dans le rendu. Les rangées sombres
+      sont plus marquées que les claires (le rendu écrête à zéro la partie claire du bruit).
+   Épaisseurs du cadre : gauche 7/3 px CSS (7 px image : liseré, paroi, bord, filet) ; haut, droite 4/3 px ;
+      bas 4/3 px (4 px image) ; filets du verre 1/3 px. Rayon du verre 2.5 px, rayon du cadre 3.5 px.
+      Tailles en tiers de px pour que les bords tombent sur la grille de l'image.
+
+   Relevé 2 (creux plats et coins ; px image ; médiane RGB par paroi ; moyenne des instances quand il y en a deux ou quatre) :
+   Creux à cadre, sans verre (horloge : maîtresse, x 3040-3524, y 16-89 ; champ d'état : maîtresse, x 3060-3804, y 2066-2148) :
+     haut, 4 px sombres : horloge #72705a, état #837e69 ; moyenne #7b7762.
+     gauche, 3 px sombres puis 1 px de transition : horloge #75705a, état #807b67 ; moyenne #7b7661.
+     droite, 1 px sombre (3 px image) puis 2 px clairs : sombre horloge #928b73, état #827d68, moyenne #8a846e ;
+        clair horloge #ebe3cb, état #dcd5bf, moyenne #e4dcc5.
+     bas, 3 px sombres puis 3 px clairs (clair le plus proche du bord) : sombre horloge #928c75, état #948f77,
+        moyenne #938e76 ; clair horloge #e4dcc6, état #cac3ad, moyenne #d7d0ba.
+     Écart horloge / état > 3 niveaux sur 4 parois (jusqu'à 15 niveaux, clair de droite) : rapporté, pas fondu.
+   Creux plat de titre (plaques sans cadre fermé : maîtresse x 45-469, messagerie, fichiers, registre) :
+     gauche, sombre 3 px : maîtresse #5c5c4b, fichiers #585949, messagerie #6c6a56 (4 px), registre #70715d ;
+        moyenne #646452 (écart jusqu'à 24 niveaux en rouge : variable de rechange par écran).
+     gauche, clair 3 px : maîtresse #cac4ae, fichiers #cbc5b0, messagerie #d0c8b2, registre #bfb9a5 ; moyenne #c9c3ad.
+     bas, ombre 1 px (3 px image ; maîtresse 4 px, messagerie 2 px) puis filet clair 2 px :
+        ombre maîtresse #aea68f, messagerie #a89f88, moyenne #aba38c ; filet maîtresse #c3bba4, messagerie #cec6af,
+        moyenne #c9c1aa.
+     haut : aucune paroi (maîtresse, messagerie). Droite : aucune (maîtresse, messagerie) ; fichiers a une paroi
+        sombre de 3 px à droite et une paroi basse sombre de 4 à 5 px (#575644 et #303324 en ligne de filet) :
+        structure différente, rapportée, hors de la classe.
+   Coins extérieurs (cadre à verre, px image, décalage mesuré le long de la diagonale ; 0 = paroi) :
+     chanfrein à 45 degrés : fichiers chemin, décalage 7 puis 7 à 8 sur 5 lignes ; maîtresse noeuds 7 ; messagerie liste 8.
+        Moyenne 7,5 px image = 2,5 px CSS (cadre). Marche de 1 px par ligne (escalier du rendu).
+     arrondi, non chanfrein : fichiers arbre, 11 au bord puis 8 au milieu puis 10 : rapporté, pas reproduit.
+   Verre (zone sombre intérieure, luminance < 60) : chanfrein 6 à 7 px image, moyenne 7 px = 2,333 px CSS.
+   Couleur de la diagonale du cadre (quatre coins, médiane RGB) : #585948, #66624f, #716c56, #6f6e58 ; moyenne #686551.
+*/
+
+/* Coins biseautés à 45 degrés (chanfrein --_c, mesuré : 7 px image, voir l'en-tête), pas arrondis. */
+.k-verre {
+  --_c: var(--k-verre-chanfrein, 2.3333333px);
+  position: relative;
+  isolation: isolate;
+  clip-path: polygon(var(--_c) 0, calc(100% - var(--_c)) 0, 100% var(--_c), 100% calc(100% - var(--_c)), calc(100% - var(--_c)) 100%, var(--_c) 100%, 0 calc(100% - var(--_c)), 0 var(--_c));
+  background-color: var(--k-verre-fond, #0f2c2c);
+  box-shadow:
+    inset 0.3333333px 0 0 0 var(--k-verre-filet-gauche, #0c1a17),
+    inset -0.3333333px 0 0 0 var(--k-verre-filet-droite, #04120b);
+}
+
+/* Une couche de stries : somme de deux bruits (bruit A, une valeur par ligne ; bruit B, grain horizontal), alpha noir = 0.45 R_A + 0.216 R_B + 0.465 − 0.7319 (détail dans l'en-tête). */
+.k-verre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='120'%3E%3Cfilter id='f' x='0' y='0' width='1200' height='120' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0 0.43' numOctaves='1' seed='11' stitchTiles='stitch' result='a'/%3E%3CfeColorMatrix in='a' type='matrix' values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1' result='ar'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.051 0.35' numOctaves='1' seed='5' stitchTiles='stitch' result='b'/%3E%3CfeColorMatrix in='b' type='matrix' values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1' result='br'/%3E%3CfeComposite in='ar' in2='br' operator='arithmetic' k1='0' k2='0.45' k3='0.216' k4='0.465' result='s'/%3E%3CfeColorMatrix in='s' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 -0.7319'/%3E%3C/filter%3E%3Crect width='1200' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
+  background-size: 1200px 120px;
+  background-repeat: repeat;
+}
+
+/* Le cadre : les parois gauche et basse sont des dégradés à arrêts nets (un tiers de px = un pixel de l'image).
+   Le moteur aligne les boîtes sur le px CSS entier : le cadre tient donc sur des px entiers (gauche 2 px, bas 2 px
+   de padding), et le tiers de px restant est porté par le dégradé ou par le filet du verre. Haut et droite : ombres.
+   La lèvre du bas est ancrée au bord bas (to top) : elle tient pour toute hauteur de boîte. */
+.k-verre-cadre {
+  --_c: var(--k-verre-cadre-chanfrein, 2.5px);
+  box-sizing: border-box;
+  clip-path: polygon(var(--_c) 0, calc(100% - var(--_c)) 0, 100% var(--_c), 100% calc(100% - var(--_c)), calc(100% - var(--_c)) 100%, var(--_c) 100%, 0 calc(100% - var(--_c)), 0 var(--_c));
+  /* Fond sous les parois : remplit le coin entre le chanfrein du verre et l'angle du cadre (couleur de la diagonale mesurée). */
+  background-color: var(--k-verre-cadre-coin, #686551);
+  padding: 1.3333333px 1.3333333px 2px 2px;
+  background-image:
+    linear-gradient(to top,
+      transparent 0.6666667px,
+      #ada38b 0.6666667px, #ada38b 1px,
+      #ccc1a9 1px, #ccc1a9 1.3333333px,
+      #cabea5 1.3333333px, #cabea5 1.6666667px,
+      #dedbc8 1.6666667px, #dedbc8 2px,
+      transparent 2px),
+    linear-gradient(to right,
+      #b7af98 0.3333333px, #a69e87 0.3333333px, #a69e87 0.6666667px,
+      #7c7b67 0.6666667px, #7c7b67 1.6666667px,
+      #495248 1.6666667px, #495248 2px,
+      transparent 2px);
+  box-shadow:
+    inset 0 1.3333333px 0 0 var(--k-verre-cadre-haut, #6b6c58),
+    inset -1.3333333px 0 0 0 var(--k-verre-cadre-droite, #d7d1be);
+}
+
+/* Dans le cadre, le verre porte son filet gauche et droit et ses deux lignes basses (sombres, au-dessus de la lèvre). */
+.k-verre-cadre > .k-verre {
+  width: 100%;
+  height: 100%;
+  box-shadow:
+    inset 0.3333333px 0 0 0 #0b1a15,
+    inset -0.3333333px 0 0 0 #04120b,
+    inset 0 -0.3333333px 0 0 #283730,
+    inset 0 -0.6666667px 0 0 #0c2423;
+}
+
+/* Creux plat sans verre, cadre fermé (horloge, champ d'état de la maîtresse) : paroi sombre en haut (4 px image)
+   et à gauche (4 px), lèvre claire au bord droit (2 px) puis sombre (3 px) ; bas : clair au bord (3 px) puis sombre
+   (3 px). Intérieur : la coque. Mesures : en-tête, « Relevé 2 ». */
+.k-verre-creux {
+  box-sizing: border-box;
+  background-color: var(--k-verre-creux-fond, #b1a991);
+  background-image: linear-gradient(to top,
+      var(--k-verre-creux-bas-clair, #d7d0ba) 1px,
+      var(--k-verre-creux-bas-sombre, #938e76) 1px, var(--k-verre-creux-bas-sombre, #938e76) 2px,
+      transparent 2px);
+  box-shadow:
+    inset 0 1.3333333px 0 0 var(--k-verre-creux-haut, #7b7762),
+    inset 1.3333333px 0 0 0 var(--k-verre-creux-gauche, #7b7661),
+    inset -0.6666667px 0 0 0 var(--k-verre-creux-droite-clair, #e4dcc5),
+    inset -1.6666667px 0 0 0 var(--k-verre-creux-droite, #8a846e);
+}
+
+/* Creux plat de titre (plaque sans cadre fermé : barre de menu de la maîtresse, messagerie, fichiers, registre) :
+   paroi sombre à gauche au bord (3 px image), transition, lumière (3 px) ; bas : lumière au bord (3 px, filet clair
+   et transition) puis ombre (5 px). Pas de paroi haute ni droite. Mesures : en-tête, « Relevé 2 ». */
+.k-verre-creux-plaque {
+  box-sizing: border-box;
+  background-color: var(--k-verre-creux-fond, #b1a991);
+  background-image:
+    linear-gradient(to top,
+      var(--k-verre-creux-plaque-bas-clair, #c9c1aa) 1px,
+      var(--k-verre-creux-plaque-bas-ombre, #aba38c) 1px, var(--k-verre-creux-plaque-bas-ombre, #aba38c) 2.6666667px,
+      transparent 2.6666667px),
+    linear-gradient(to right,
+      var(--k-verre-creux-plaque-gauche, #646452) 1px,
+      #82806b 1px, #82806b 1.3333333px,
+      var(--k-verre-creux-plaque-gauche-clair, #c9c3ad) 1.3333333px, var(--k-verre-creux-plaque-gauche-clair, #c9c3ad) 2.3333333px,
+      transparent 2.3333333px);
+}

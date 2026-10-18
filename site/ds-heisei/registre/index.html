@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&family=Zen+Kaku+Gothic+New&display=swap">
+<link rel="stylesheet" href="../kit/coque.css">
+<link rel="stylesheet" href="../kit/relief.css">
+<link rel="stylesheet" href="../kit/verre.css">
+<link rel="stylesheet" href="../kit/phosphore.css">
+<link rel="stylesheet" href="../kit/alerte.css">
+<link rel="stylesheet" href="../kit/bouton.css">
+<link rel="stylesheet" href="../kit/rainure.css">
+<link rel="stylesheet" href="../kit/vis.css">
+<link rel="stylesheet" href="../kit/onglet.css">
+<link rel="stylesheet" href="../kit/formulaire.css">
+<link rel="stylesheet" href="../kit/marque.css">
+<link rel="stylesheet" href="../kit/defilement.css">
+<style>
+  @font-face { font-family: "PixelMplus12"; src: url("https://cdn.jsdelivr.net/gh/itouhiro/PixelMplus@master/PixelMplus12-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+</style>
+<link rel="stylesheet" href="screen.css">
+</head>
+<body class="k-coque">
+<!-- Zone entete : bandeau du haut (0 a 34 px CSS) et barre du bas (683,33 a 716 px CSS). Classes reg-entete-*. -->
+<div class="plc k-rainure-h-fine reg-entete-h-haut"></div>
+<div class="plc k-rainure-filet-v reg-entete-plaque-g"></div>
+<div class="plc k-rainure-filet-v-droit reg-entete-plaque-d"></div>
+<div class="plc k-rainure-lisere-bas reg-entete-plaque-b"></div>
+<div class="plc k-rainure-creux reg-entete-v-1"></div>
+<div class="plc k-rainure-creux reg-entete-v-2"></div>
+<div class="plc k-rainure-creux reg-entete-v-3"></div>
+<span class="titre reg-entete-titre reg-entete-titre-personnel">人事 PERSONNEL REGISTRY</span>
+<span class="titre reg-entete-titre reg-entete-titre-jp">REG-JP</span>
+<span class="titre reg-entete-titre reg-entete-titre-v21">V2.1</span>
+
+<div class="plc k-verre-cadre reg-entete-cadre-operateur"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-operateur">OPERATOR SATO-K</span>
+<div class="plc k-verre-cadre reg-entete-cadre-usuario"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-usuario">USER 07</span>
+
+<div class="plc k-rainure-h-entete-bas reg-entete-h-bas-haut"></div>
+<div class="plc k-rainure-lisere-bas reg-entete-h-bas-bas"></div>
+<div class="plc k-verre-cadre reg-entete-cadre-rec"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-rec">REC 0042 / 0318</span>
+<div class="plc k-verre-cadre reg-entete-cadre-lock"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-lock">LOCK NONE</span>
+<div class="plc k-verre-cadre reg-entete-cadre-mode"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-mode">MODE EDIT</span>
+
+<!-- Zone recherche : colonne de gauche (plaque, rainure, grand verre, champs, liste, ascenseur, champ d'état). -->
+<div class="k-relief-plaque plc reg-recherche-plaque"></div>
+<div class="k-rainure plc reg-recherche-rainure"></div>
+<div class="k-vis plc reg-recherche-vis-tl"></div>
+<div class="k-vis plc reg-recherche-vis-tr"></div>
+<div class="k-vis plc reg-recherche-vis-br"></div>
+
+<div class="titre reg-recherche-titre">検索 <span class="reg-recherche-titre-latin">SEARCH</span></div>
+
+<div class="k-verre-cadre plc reg-recherche-verre"><div class="k-verre"></div></div>
+
+<!-- Champ de saisie TANAKA, curseur bloc après le texte, bouton GO. -->
+<div class="k-verre-cadre plc reg-recherche-champ-texte"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-saisie">TANAKA</span>
+<div class="k-phosphore-trait plc reg-recherche-curseur"></div>
+<div class="k-bouton plc reg-recherche-go"><span class="k-bouton-libelle"><span class="k-bouton-latin">GO</span></span></div>
+
+<!-- Liste déroulante DEPT : libellé, champ en verre, bouton à flèche levé. -->
+<span class="txt k-phosphore-texte reg-recherche-etiq-dept">DEPT</span>
+<div class="k-verre-cadre plc reg-recherche-champ-dept"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-valeur-dept">ALL</span>
+<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-dept"></div>
+
+<!-- Liste déroulante STATUS : libellé, champ en verre, bouton à flèche levé. -->
+<span class="txt k-phosphore-texte reg-recherche-etiq-statut">STATUS</span>
+<div class="k-verre-cadre plc reg-recherche-champ-statut"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-valeur-statut">ACTIVE</span>
+<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-statut"></div>
+
+<!-- Case à cocher INCLUDE RETIRED, décochée. -->
+<div class="k-formulaire-case plc reg-recherche-case"></div>
+<span class="txt k-phosphore-texte reg-recherche-case-libelle">INCLUDE RETIRED</span>
+
+<!-- Barre de la ligne sélectionnée (fond phosphore), posée avant la liste. -->
+<div class="k-phosphore-selection plc reg-recherche-barre"></div>
+
+<!-- Ascenseur : bouton haut, rail, curseur, bouton bas. -->
+<div class="k-defilement-fleche plc reg-recherche-sb-haut"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere plc reg-recherche-sb-rail"></div>
+<div class="k-defilement-curseur plc reg-recherche-sb-curseur"></div>
+<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-recherche-sb-bas"><span class="k-defilement-triangle-bas"></span></div>
+
+<!-- Liste de 12 résultats : marque, code, nom, code de service. La ligne 1 est sur la barre. -->
+<div class="reg-recherche-liste">
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-contour plc reg-recherche-marque reg-recherche-marque-sel"></div>
+    <span class="txt k-phosphore-selection reg-recherche-code">E-0042</span>
+    <span class="txt k-phosphore-selection reg-recherche-nom">TANAKA H.</span>
+    <span class="txt k-phosphore-selection reg-recherche-svc">GA</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0043</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANAKA M.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0117</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAHASHI K.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">EN</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0118</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANABE S.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">GA</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0119</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANIGUCHI R.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">FN</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0120</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKADA Y.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0121</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANAKA T.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">HR</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0122</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKEDA N.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">EN</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0123</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANIMOTO J.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">GA</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0124</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAGI A.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">FN</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0125</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAMURA E.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  </div>
+  <div class="reg-recherche-ligne">
+    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0126</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAYAMA O.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc">HR</span>
+  </div>
+</div>
+
+<!-- Champ d'état : 12 HITS / 0318. -->
+<div class="k-verre-cadre plc reg-recherche-etat"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-etat-texte">12 HITS / 0318</span>
+
+<!-- Zone onglets : plaque de droite, six onglets, en-tête de fiche avec deux cachets. Coordonnées de page (1 px CSS = 3 px image). -->
+<div class="k-relief-plaque plc reg-onglets-plaque"></div>
+<div class="k-vis plc reg-onglets-vis-tl"></div>
+<div class="k-vis plc reg-onglets-vis-tr"></div>
+
+<div class="k-onglet-rangee plc reg-onglets-rangee">
+  <div class="k-onglet k-onglet-actif reg-onglets-tab-basic"><span class="k-onglet-libelle">基本<span class="k-onglet-latin"> BASIC</span></span></div>
+  <div class="k-onglet reg-onglets-tab-emp"><span class="k-onglet-libelle">雇用<span class="k-onglet-latin"> EMPLOYMENT</span></span></div>
+  <div class="k-onglet reg-onglets-tab-qual"><span class="k-onglet-libelle">資格<span class="k-onglet-latin"> QUALIFICATIONS</span></span></div>
+  <div class="k-onglet reg-onglets-tab-hist"><span class="k-onglet-libelle">履歴<span class="k-onglet-latin"> HISTORY</span></span></div>
+  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-family"><span class="k-onglet-libelle"><span class="k-onglet-latin">FAMILY</span></span></div>
+  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-attach"><span class="k-onglet-libelle"><span class="k-onglet-latin">ATTACH</span></span></div>
+</div>
+
+<div class="k-verre-cadre plc reg-onglets-entete"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-onglets-titre">E-0042-17  TANAKA HIROSHI</span>
+
+<div class="plc k-alerte-cachet k-alerte-cachet-vert reg-onglets-cachet-ok">承認 APPROVED</div>
+<div class="plc k-alerte-cachet reg-onglets-cachet-alerte">保留 PENDING</div>
+
+<!-- Cadres : quatre groupes en creux (rainures du kit) -->
+<div class="plc k-rainure reg-formulaire-r-id-gauche"></div>
+<div class="plc k-rainure-filet-v-droit reg-formulaire-r-id-droite"></div>
+<div class="plc k-rainure-h reg-formulaire-r-id-haut-coin"></div>
+<div class="plc k-rainure-h reg-formulaire-r-id-haut"></div>
+<div class="plc k-rainure-h-fine reg-formulaire-r-id-bas"></div>
+<div class="plc k-rainure reg-formulaire-r-po-gauche"></div>
+<div class="plc k-rainure-filet-v-droit reg-formulaire-r-po-droite"></div>
+<div class="plc k-rainure-h reg-formulaire-r-po-haut-coin"></div>
+<div class="plc k-rainure-h reg-formulaire-r-po-haut"></div>
+<div class="plc k-rainure-h-fine reg-formulaire-r-po-bas-gauche"></div>
+<div class="plc k-rainure-h-fine reg-formulaire-r-po-bas-droite"></div>
+<div class="plc k-rainure reg-formulaire-r-ct-gauche"></div>
+<div class="plc k-rainure-filet-v-droit reg-formulaire-r-ct-droite"></div>
+<div class="plc k-rainure-h reg-formulaire-r-ct-haut-coin"></div>
+<div class="plc k-rainure-h reg-formulaire-r-ct-haut"></div>
+<div class="plc k-rainure-h-fine reg-formulaire-r-ct-bas"></div>
+<div class="plc k-rainure reg-formulaire-r-fl-gauche"></div>
+<div class="plc k-rainure-filet-v-droit reg-formulaire-r-fl-droite"></div>
+<div class="plc k-rainure-h reg-formulaire-r-fl-haut-coin"></div>
+<div class="plc k-rainure-h reg-formulaire-r-fl-haut"></div>
+<div class="plc k-rainure-h-fine reg-formulaire-r-fl-bas"></div>
+<!-- Champs de saisie (verre) -->
+<div class="plc k-verre-cadre reg-formulaire-g-nom"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-emp"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-birth"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-sex"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-blood"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-dept"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-pos"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-grade"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-phone"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-ext"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-addr"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-mgr"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-badge"><div class="k-verre"></div></div>
+<!-- Boutons à flèche des listes déroulantes -->
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-sex"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-blood"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-dept"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-pos"></div>
+<div class="plc k-formulaire-bouton-fleche-haut reg-formulaire-b-grade"></div>
+<!-- Cases à cocher FLAGS : deux colonnes, trois lignes ; coches sur les quatre cases cochées -->
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a0"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a1"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a2"></div>
+<div class="plc k-formulaire-case reg-formulaire-c-b0"></div>
+<div class="plc k-formulaire-case reg-formulaire-c-b1"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-b2"></div>
+<!-- Liste ouverte GRADE : liste (classe du kit), barre sélectionnée -->
+<div class="plc k-formulaire-liste reg-formulaire-liste"></div>
+<div class="plc k-phosphore-selection reg-formulaire-barre"><span class="txt reg-formulaire-valeur reg-formulaire-barre-texte">G-4</span></div>
+<!-- Titres des groupes, sur la coque -->
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-id-titre">IDENTITY</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-po-titre">POST</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-ct-titre">CONTACT</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-fl-titre">FLAGS</span>
+<!-- Étiquettes sur la coque (--kit-sans) -->
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-id-nom-jp">氏名</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-nom">NAME</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-emp">EMP NO</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-birth">BIRTH</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-sex">SEX</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-blood">BLOOD</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-dept-jp">部署</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-dept">DEPT</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-pos-jp">役職</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-pos">POSITION</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-grade">GRADE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-hired">HIRED</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-status-jp">状態</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-status">STATUS</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-contract">CONTRACT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-phone">PHONE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-ext">EXT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-addr">ADDRESS</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-mgr">MANAGER</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-commute">COMMUTE ALLOWANCE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-dorm">DORMITORY</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-union">UNION MEMBER</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-night">NIGHT SHIFT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-health">HEALTH CHECK DONE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-security">SECURITY BADGE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-badge">BADGE EXPIRY</span>
+<!-- Valeurs sur le verre (PixelMplus12, 12 px) -->
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-nom">TANAKA HIROSHI</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-emp">E-0042-17</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-birth">S45.04.12</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-sex">M</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-blood">A</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-dept">GENERAL AFFAIRS</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-pos">SECTION CHIEF</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-phone">03-5550-0142</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-ext">2217</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-addr">SUGINAMI-KU TOKYO 166-0004</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-mgr">E-0007-03 MORI K.</span>
+<span class="txt k-alerte-texte reg-formulaire-badge reg-formulaire-v-badge">H07.11.30</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-g-grade-txt">G-4</span>
+<span class="plc k-phosphore-trait reg-formulaire-curseur"></span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g2">G-2</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g3">G-3</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g5">G-5</span>
+
+<!-- Zone historique : plaque HISTORY, tableau en verre, barre de defilement. -->
+<div class="k-relief-plaque plc reg-historique-plaque"></div>
+<div class="k-vis plc reg-historique-vis-1"></div>
+<div class="k-vis plc reg-historique-vis-2"></div>
+<div class="titre reg-historique-titre">履歴 HISTORY</div>
+<!-- En-tete -->
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-date"><span class="k-bouton-libelle"><span class="k-bouton-latin">DATE</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-code"><span class="k-bouton-libelle"><span class="k-bouton-latin">CODE</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-event"><span class="k-bouton-libelle"><span class="k-bouton-latin">EVENT</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-by"><span class="k-bouton-libelle"><span class="k-bouton-latin">BY</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-status"><span class="k-bouton-libelle"><span class="k-bouton-latin">STATUS</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-fin"></div>
+<!-- Tableau en verre -->
+<div class="k-verre-cadre plc reg-historique-cadre"><div class="k-verre"></div></div>
+<div class="k-phosphore-selection plc reg-historique-sel"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-0"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-1"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-2"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-3"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-4"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-5"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-6"></div>
+<div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-7"></div>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-date">H07.10.28</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-code">CHG-0388</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-event">BADGE RENEWAL REQUEST</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-by">SATO-K</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-status">保留 PENDING</span>
+<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-date">H07.10.02</span>
+<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-code">CHG-0371</span>
+<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-event">DEPT TRANSFER TO GA</span>
+<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-by">MORI-K</span>
+<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-date">H07.07.15</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-code">GHG-0342</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-event">GRADE G-3 TO G-4</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-by">MORI-K</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-date">H07.04.01</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-code">CHG-0310</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-event">ANNUAL REVIEW 94</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-by">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-date">H06.12.20</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-code">CHG-0287</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-event">ADDRESS CHANGE</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-by">SATO-K</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-date">H06.09.05</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-code">CHG-0259</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-event">HEALTH CHECK RECORDED</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-by">CLINIC</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-date">H06.04.01</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-code">CHG-0211</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-event">ANNUAL REVIEW 93</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-by">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-status">承認 APPROVED</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-date">H05.11.11</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-code">CHG-0178</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-event">TRAINING JOB-SAFETY</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-by">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-status">承認 APPROVED</span>
+<!-- Barre de defilement -->
+<div class="k-defilement-fleche k-defilement-fleche-clair plc reg-historique-bt reg-historique-bt-haut"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere plc reg-historique-rail"></div>
+<div class="k-defilement-curseur plc reg-historique-curseur"></div>
+<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-historique-bt reg-historique-bt-bas"><span class="k-defilement-triangle-bas"></span></div>
+
+<!-- Zone actions : rangée du bas (champ LAST EDIT en verre, boutons SAVE, CANCEL, PRINT). -->
+<div class="k-verre-cadre plc reg-actions-champ"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-actions-texte">LAST EDIT H07.10.28 23:31 SATO-K</span>
+
+<div class="k-bouton plc reg-actions-save"><span class="k-bouton-libelle"><span class="k-bouton-jp">保存</span><span class="k-bouton-latin"> SAVE</span></span></div>
+<div class="k-bouton plc reg-actions-cancel"><span class="k-bouton-libelle"><span class="k-bouton-jp">取消</span><span class="k-bouton-latin"> CANCEL</span></span></div>
+<div class="k-bouton plc reg-actions-print"><span class="k-bouton-libelle"><span class="k-bouton-jp">印刷</span><span class="k-bouton-latin"> PRINT</span></span></div>
+
+</body>
+</html>

@@ -1,0 +1,969 @@
+/* Classes de base des zones : reprises de projects/ds-heisei/kit/assemblage.html (bloc <style>).
+   Placement et texte seuls, aucune couleur en dur : la couleur vient de var(--k-bouton-libelle). */
+
+/* Repère : 1 px CSS = 3 px d'image (3840 x 2160). Page = écran 1280 x 720 CSS. */
+body {
+  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --kit-mono: "PixelMplus12", ui-monospace, monospace;
+  margin: 0;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  position: relative;
+  font-kerning: none;
+  font-synthesis: none;
+  color: var(--k-bouton-libelle);
+}
+
+/* Placement seul : position absolue sur les éléments des matières. */
+.plc { position: absolute; box-sizing: border-box; }
+
+/* Texte posé sur le verre (matière phosphore ou alerte) : taille et interligne de la démo phosphore. */
+.txt {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  /* Tour 4 (point 2) : chasse native 6 px CSS (mesure DOM, PixelMplus12 12 px, letter-spacing 0) ; pas cible
+     7,67 px CSS = 23 px image ; letter-spacing = 1,67 px (mesure d'encre : ND-001, GW-TOKYO, 02ms). */
+  letter-spacing: 1.67px;
+  white-space: pre;
+  /* Tour 3 : texte mesuré 3 px d'image (1 px CSS) trop bas au centre de la ligne. Placement seul. */
+  margin-top: -1px;
+}
+/* Tour 4 (point 2) : colonne heure centrée, centre d'encre mesuré 4 px d'image (1,33 px CSS) à droite de la cible
+   (02ms : 671 à 755 cible, 667 à 751 rendu) : décalage de placement, la lettre finale porte un letter-spacing. */
+.txt-centre { text-align: center; width: 40px; padding-left: 1.33px; }
+
+/* Titre de panneau sur la coque (police de la coque, --kit-sans). */
+.titre {
+  position: absolute;
+  font-family: var(--kit-sans);
+  font-size: 16px;
+  line-height: 16px;
+  white-space: pre;
+}
+
+/* Zone entete : bandeau du haut et barre du bas. Tous les sélecteurs commencent par .reg-entete.
+   Unité : px CSS de la page (1 px CSS = 3 px image). Valeurs mesurées sur la cible (voir le rapport). */
+
+/* Rainures horizontales : classes du kit (k-rainure-h-fine, k-rainure-h, k-rainure-lisere-bas) posées à plat, boîte de la largeur de la zone. */
+.reg-entete-h-haut {
+  left: 0;
+  top: 34px;
+  width: 1280px;
+  height: 2.67px;
+}
+.reg-entete-h-bas-haut {
+  left: 0;
+  top: 682px;
+  width: 1280px;
+}
+.reg-entete-h-bas-bas {
+  left: 0;
+  top: 715.67px;
+  width: 1280px;
+  height: 0.67px;
+}
+
+/* Rainures verticales du bandeau du haut. */
+.reg-entete-v-1 { left: 261.33px; top: 0; width: 2.33px; height: 34px; }
+.reg-entete-v-2 { left: 320.67px; top: 0; width: 1.33px; height: 34px; }
+.reg-entete-v-3 { left: 376.33px; top: 0; width: 2.33px; height: 34px; }
+
+/* Plaque PERSONNEL REGISTRY : la cible n'a ni relief ni creux, seulement deux rainures (gauche, droite) et une arête claire basse.
+   Arête basse : k-rainure-lisere-bas, posée à plat. */
+.reg-entete-plaque-g { left: 14.67px; top: 0; width: 2.33px; height: 31.33px; }
+.reg-entete-plaque-d { left: 244.67px; top: 0; width: 2.33px; height: 31.33px; }
+.reg-entete-plaque-b {
+  left: 14.67px;
+  top: 30.33px;
+  width: 231.33px;
+  height: 1.33px;
+}
+
+/* Textes sur la coque (sans-serif, couleur de base). Taille : capitale mesurée 10,3 px CSS. */
+.reg-entete-titre { font-size: 14.7px; }
+.reg-entete-titre-personnel { left: 30px; top: 8px; letter-spacing: 2.21px; }
+.reg-entete-titre-jp { left: 276.67px; top: 9px; }
+.reg-entete-titre-v21 { left: 331.33px; top: 9px; letter-spacing: 2.55px; }
+
+/* Cadres de verre du bandeau du haut (cadre : 2 px gauche, 1,33 px droite, 1,33 px haut, 2 px bas). */
+.reg-entete-cadre-operateur { left: 1029px; top: 5.67px; width: 144px; height: 25px; }
+.reg-entete-cadre-usuario { left: 1184px; top: 5.67px; width: 80px; height: 25px; }
+
+/* Cadres de verre de la barre du bas. */
+.reg-entete-cadre-rec { left: 15.67px; top: 689.33px; width: 187.33px; height: 24px; }
+.reg-entete-cadre-lock { left: 212.67px; top: 689.33px; width: 158px; height: 24px; }
+.reg-entete-cadre-mode { left: 380.33px; top: 689.33px; width: 885.67px; height: 24px; }
+
+/* Textes sur le verre (matière phosphore, police bitmap du kit). */
+.reg-entete-txt-operateur { left: 1040px; top: 12.67px; }
+.reg-entete-txt-usuario { left: 1195px; top: 12.67px; }
+.reg-entete-txt-rec { left: 27.33px; top: 695px; }
+.reg-entete-txt-lock { left: 224.33px; top: 695px; }
+.reg-entete-txt-mode { left: 391.67px; top: 695px; }
+
+/* Zone recherche : colonne de gauche (plaque, rainure, grand verre, champs, liste, ascenseur, champ d'état).
+   Placements en px CSS de page (px image / 3), mesurés sur l image cible (voir le rapport, tableau des mesures).
+   Pas de couleur ici : les couleurs viennent des classes du kit. */
+
+/* Plaque du panneau de gauche : bords mesurés x 17 à 896, y 127 à 2045 (px image). */
+.reg-recherche-plaque { left: 5.667px; top: 42.333px; width: 293px; height: 639.333px; }
+
+/* Rainure entre le panneau de gauche et celui de droite : x 896 à 924, couvre la hauteur de la plaque. */
+.reg-recherche-rainure { left: 298.667px; top: 42.333px; width: 9.333px; height: 639.333px; }
+
+/* Vis (k-vis, boîte de 8,38 px CSS fixée par le kit) : position = centre mesuré moins 4,19 px, au tiers de px. */
+.reg-recherche-vis-tl {
+  left: 12px;
+  top: 49.33px;
+}
+.reg-recherche-vis-tr {
+  left: 283px;
+  top: 49.33px;
+}
+.reg-recherche-vis-br {
+  left: 289.33px;
+  top: 672.33px;
+}
+
+/* Titre 検索 SEARCH : encre x 89 à 356, y 157 à 195 (px image). */
+.reg-recherche-titre { left: 29.333px; top: 51px; }
+.reg-recherche-titre-latin { margin-left: 5.333px; }
+
+/* Grand verre en creux : cadre x 53 à 871, y 225 à 2026 (px image). */
+.reg-recherche-verre { left: 17.667px; top: 75px; width: 273px; height: 600.333px; }
+
+/* Champ de saisie TANAKA : cadre pâle x 79 à 680, y 267 à 365 (px image). */
+.reg-recherche-champ-texte { left: 26.333px; top: 89px; width: 200.333px; height: 32.667px; }
+/* Texte TANAKA : encre x 129 à 279, y 299 à 332 ; pas de lettre mesuré 26,2 px image (8,73 px CSS, soit 2,73 px d'interlettrage). */
+.reg-recherche-saisie { left: 42.333px; top: 99.667px; letter-spacing: 2.733px; }
+/* Curseur bloc : x 296 à 319, y 288 à 343 (px image). */
+.reg-recherche-curseur { left: 98.667px; top: 96px; width: 8px; height: 18.667px; }
+
+/* Bouton GO : x 702 à 853, y 267 à 366 (px image). */
+.reg-recherche-go { left: 234px; top: 89px; width: 50.667px; height: 33px; }
+
+/* Liste déroulante DEPT : libellé x 106, y 435 ; champ x 272 à 776, y 404 à 490 ; bouton à flèche x 777 à 855. */
+.reg-recherche-etiq-dept { left: 27.333px; top: 144.667px; letter-spacing: 1.78px; }
+.reg-recherche-champ-dept { left: 90.667px; top: 134.667px; width: 168.333px; height: 29px; }
+.reg-recherche-valeur-dept { left: 102.667px; top: 145.333px; letter-spacing: 1.833px; }
+.reg-recherche-fleche-dept {
+  left: 259px;
+  top: 134.667px;
+}
+
+/* Liste déroulante STATUS : libellé x 108, y 534 ; champ y 504 à 590 ; bouton à flèche x 777 à 856. */
+.reg-recherche-etiq-statut { left: 27.667px; top: 177.667px; letter-spacing: 1.53px; }
+.reg-recherche-champ-statut { left: 90.667px; top: 168px; width: 168.333px; height: 29px; }
+.reg-recherche-valeur-statut { left: 102px; top: 178px; letter-spacing: 1.6px; }
+.reg-recherche-fleche-statut {
+  left: 259px;
+  top: 168px;
+}
+
+/* Case INCLUDE RETIRED, décochée : x 82 à 140, y 626 à 684 (px image). Libellé : encre x 169 à 490, y 641 à 670. */
+.reg-recherche-case {
+  left: 27.333px;
+  top: 208.667px;
+}
+.reg-recherche-case-libelle { left: 55px; top: 213.667px; letter-spacing: 1.262px; }
+
+/* Barre de la ligne sélectionnée : x 67 à 787, y 750 à 823 (px image). */
+.reg-recherche-barre { left: 22.333px; top: 250px; width: 240px; height: 24.333px; }
+
+/* Liste de 12 résultats : rangées en position absolue, haut de chaque rangée = haut de l'encre (px image / 3).
+   Rangée 1 : 771 (la rangée 1 est décalée de 75 px image par rapport à la 2, pas de 80,4 px ensuite).
+   Rangées 2 à 12 : 846, 928, 1009, 1089, 1170, 1251, 1330, 1410, 1489, 1569, 1650. */
+.reg-recherche-liste { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.reg-recherche-ligne { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.reg-recherche-liste > :nth-child(1) { top: 257px; }
+.reg-recherche-liste > :nth-child(2) { top: 282px; }
+.reg-recherche-liste > :nth-child(3) { top: 309.333px; }
+.reg-recherche-liste > :nth-child(4) { top: 336.333px; }
+.reg-recherche-liste > :nth-child(5) { top: 363px; }
+.reg-recherche-liste > :nth-child(6) { top: 390px; }
+.reg-recherche-liste > :nth-child(7) { top: 417px; }
+.reg-recherche-liste > :nth-child(8) { top: 443.333px; }
+.reg-recherche-liste > :nth-child(9) { top: 470px; }
+.reg-recherche-liste > :nth-child(10) { top: 496.333px; }
+.reg-recherche-liste > :nth-child(11) { top: 523px; }
+.reg-recherche-liste > :nth-child(12) { top: 550px; }
+
+/* Marque carrée : x 96 à 128, 31 px de haut (px image). */
+.reg-recherche-marque { left: 32px; top: 0; width: 10.667px; height: 10.333px; }
+/* Code : encre à x 170, pas de lettre 22,5 px image (7,5 px CSS, interlettrage 1,5 px). */
+.reg-recherche-code { left: 56.333px; top: 0; letter-spacing: 1.5px; }
+/* Nom : encre à x 360, pas 22 px image (7,33 px CSS, interlettrage 1,33 px). */
+.reg-recherche-nom { left: 119.667px; top: 0; letter-spacing: 1.333px; }
+/* Code de service : encre à x 683, pas 23 px image (7,67 px CSS, interlettrage 1,67 px). */
+.reg-recherche-svc { left: 227.333px; top: 0; letter-spacing: 1.667px; }
+/* Texte des rangées : 0,33 px CSS plus haut que la position de l'encre mesurée (calibrage tour 2). */
+.reg-recherche-ligne > .txt { top: -0.333px; }
+/* Marque de la ligne sélectionnée : contour sombre (classe k-marque-contour), 11 px CSS, remontée de 0,33 px. */
+.reg-recherche-marque-sel {
+  left: 32px;
+  top: -0.33px;
+  width: 11px;
+  height: 11px;
+}
+
+/* Ascenseur, colonne x 806 à 856 (px image) : bouton haut y 738 à 803, rail 803 à 1752, curseur 1540 à 1746, bouton bas 1752 à 1811. */
+.reg-recherche-sb-haut { left: 268.667px; top: 246px; width: 16.667px; height: 21.667px; }
+.reg-recherche-sb-rail { left: 268.667px; top: 267.667px; width: 16.667px; height: 316.333px; }
+.reg-recherche-sb-curseur { left: 268.667px; top: 513.333px; width: 16.667px; height: 68.667px; }
+.reg-recherche-sb-bas { left: 268.667px; top: 584px; width: 16.667px; height: 19.667px; }
+
+/* Champ d'état : cadre x 79 à 856, y 1844 à 1944 (px image). Texte 12 HITS / 0318 : encre x 110 à 418, y 1880 à 1909. */
+.reg-recherche-etat { left: 26.333px; top: 614.667px; width: 259px; height: 33.333px; }
+.reg-recherche-etat-texte { left: 36.333px; top: 625.667px; letter-spacing: 1.6px; }
+
+/* Zone onglets : placement en coordonnées de page (1 px CSS = 3 px image). Chaque valeur : mesure image / 3.
+   Plaque : gauche 920, haut 127, droite 3822, bas 2044 (px image, bords de la boîte, lumière du biseau).
+   Onglets : haut 128 (actif) et 136 (autres), bas 240 (bord haut de l'en-tête), bornes horizontales : séparateurs
+   1374, 1794, 2318, 2686, 3054, 3422.
+   En-tête : verre 957 à 3787 en x, 240 à 356 en y. Titre : encre à 1012, capitales de 284 à 318.
+   Cachets : 2906 à 3317 et 3347 à 3758 en x, 267 à 345 en y. Libellés des onglets : ligne de base à 199. */
+
+.reg-onglets-plaque {
+  left: 306.67px;
+  top: 42.33px;
+  width: 967.33px;
+  height: 639px;
+}
+
+/* Vis (k-vis) : position = centre mesuré moins 4,19 px, au tiers de px. */
+.reg-onglets-vis-tl {
+  left: 315px;
+  top: 49.33px;
+  z-index: 1;
+}
+.reg-onglets-vis-tr {
+  left: 1257.67px;
+  top: 49.67px;
+}
+
+/* Rangée d'onglets (k-onglet-rangee du kit) : position de la rangée, largeur de chaque onglet (px image / 3, mesure de la cible).
+   Hauteur, marge, biseau et texte viennent du kit. */
+.reg-onglets-rangee { left: 307px; top: 43.67px; }
+.reg-onglets-tab-basic { width: 151.33px; }
+.reg-onglets-tab-emp { width: 141px; }
+.reg-onglets-tab-qual { width: 175px; }
+.reg-onglets-tab-hist { width: 122.67px; }
+.reg-onglets-tab-family { width: 122.33px; }
+.reg-onglets-tab-attach { width: 122.33px; }
+
+/* En-tête de fiche : verre en creux. */
+.reg-onglets-entete {
+  left: 319px;
+  top: 80px;
+  width: 943.33px;
+  height: 38.67px;
+}
+
+/* Titre de fiche sur le verre : pas de 3,1 px (encre de 1012 à 1679 px image pour 25 caractères). */
+.reg-onglets-titre {
+  left: 337.33px;
+  top: 94.33px;
+  letter-spacing: 3.1px;
+}
+
+/* Cachets : position seule. APPROVED prend k-alerte-cachet et k-alerte-cachet-vert, PENDING k-alerte-cachet ; taille, filet,
+   police et interlettrage viennent des classes. */
+.reg-onglets-cachet-ok { left: 968.67px; top: 89px; }
+.reg-onglets-cachet-alerte { left: 1115.67px; top: 89px; }
+
+/* Zone formulaire : quatre groupes, champs, cases, listes et liste ouverte GRADE.
+   Tous les sélecteurs commencent par .reg-formulaire. Unité : px CSS de la page (1 px CSS = 3 px image). */
+
+.reg-formulaire-r-id-gauche {
+  left: 320px;
+  top: 133.67px;
+  width: 3.33px;
+  height: 113px;
+}
+
+.reg-formulaire-r-id-droite {
+  left: 774.33px;
+  top: 133.67px;
+  width: 3.33px;
+  height: 113px;
+}
+
+.reg-formulaire-r-id-haut-coin {
+  left: 320px;
+  top: 133.67px;
+  width: 8.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-id-haut {
+  left: 407px;
+  top: 133.67px;
+  width: 366.67px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-id-bas {
+  left: 320px;
+  top: 245.33px;
+  width: 456.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-po-gauche {
+  left: 320px;
+  top: 257.33px;
+  width: 3.33px;
+  height: 150.33px;
+}
+
+.reg-formulaire-r-po-droite {
+  left: 774.33px;
+  top: 257.33px;
+  width: 3.33px;
+  height: 150.33px;
+}
+
+.reg-formulaire-r-po-haut-coin {
+  left: 320px;
+  top: 257.33px;
+  width: 8.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-po-haut {
+  left: 376.67px;
+  top: 257.33px;
+  width: 396.67px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-po-bas-gauche {
+  left: 320px;
+  top: 406.33px;
+  width: 153.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-po-bas-droite {
+  left: 763.325px;
+  top: 406.335px;
+  width: 11px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-ct-gauche {
+  left: 788px;
+  top: 133.67px;
+  width: 3.33px;
+  height: 116.67px;
+}
+
+.reg-formulaire-r-ct-droite {
+  left: 1259.67px;
+  top: 133.67px;
+  width: 3.33px;
+  height: 116.67px;
+}
+
+.reg-formulaire-r-ct-haut-coin {
+  left: 788px;
+  top: 133.67px;
+  width: 8.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-ct-haut {
+  left: 867.67px;
+  top: 133.67px;
+  width: 390.67px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-ct-bas {
+  left: 788px;
+  top: 248.67px;
+  width: 473.67px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-fl-gauche {
+  left: 788px;
+  top: 261.67px;
+  width: 3.33px;
+  height: 146.33px;
+}
+
+.reg-formulaire-r-fl-droite {
+  left: 1259.67px;
+  top: 261.67px;
+  width: 3.33px;
+  height: 146.33px;
+}
+
+.reg-formulaire-r-fl-haut-coin {
+  left: 788px;
+  top: 261.67px;
+  width: 7.33px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-fl-haut {
+  left: 850.665px;
+  top: 261.675px;
+  width: 403px;
+  height: 3.33px;
+}
+
+.reg-formulaire-r-fl-bas {
+  left: 788px;
+  top: 406px;
+  width: 473.67px;
+  height: 3.33px;
+}
+
+.reg-formulaire-titre {
+  position: absolute;
+  font-size: 15px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.reg-formulaire-etiq {
+  position: absolute;
+  font-size: 14.5px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.reg-formulaire-jp {
+  position: absolute;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.reg-formulaire-valeur {
+  letter-spacing: 1.5px;
+}
+
+.reg-formulaire-badge {
+  font-size: 14px;
+  letter-spacing: 1.67px;
+}
+
+.reg-formulaire-id-titre {
+  left: 337px;
+  top: 125.67px;
+}
+
+.reg-formulaire-po-titre {
+  left: 336.67px;
+  top: 248.67px;
+}
+
+.reg-formulaire-ct-titre {
+  left: 804.33px;
+  top: 125.67px;
+}
+
+.reg-formulaire-fl-titre {
+  left: 804.34px;
+  top: 253px;
+}
+
+.reg-formulaire-id-nom-jp {
+  left: 337.33px;
+  top: 147.44px;
+}
+
+.reg-formulaire-id-nom {
+  left: 371.67px;
+  top: 146.77px;
+}
+
+.reg-formulaire-id-emp {
+  left: 337px;
+  top: 170.76px;
+}
+
+.reg-formulaire-id-birth {
+  left: 336.67px;
+  top: 193.77px;
+}
+
+.reg-formulaire-id-sex {
+  left: 337px;
+  top: 217.77px;
+}
+
+.reg-formulaire-id-blood {
+  left: 601.67px;
+  top: 217.77px;
+}
+
+.reg-formulaire-po-dept-jp {
+  left: 337px;
+  top: 270.43px;
+}
+
+.reg-formulaire-po-dept {
+  left: 371.33px;
+  top: 269.77px;
+}
+
+.reg-formulaire-po-pos-jp {
+  left: 337px;
+  top: 295.43px;
+}
+
+.reg-formulaire-po-pos {
+  left: 371.33px;
+  top: 295.76px;
+}
+
+.reg-formulaire-po-grade {
+  left: 337px;
+  top: 319.76px;
+}
+
+.reg-formulaire-po-hired {
+  left: 337px;
+  top: 343.76px;
+}
+
+.reg-formulaire-po-status-jp {
+  left: 337px;
+  top: 366.11px;
+}
+
+.reg-formulaire-po-status {
+  left: 371.66px;
+  top: 365.76px;
+}
+
+.reg-formulaire-po-contract {
+  left: 337px;
+  top: 386.77px;
+}
+
+.reg-formulaire-ct-phone {
+  left: 803.67px;
+  top: 147.77px;
+}
+
+.reg-formulaire-ct-ext {
+  left: 803.67px;
+  top: 171.77px;
+}
+
+.reg-formulaire-ct-addr {
+  left: 804px;
+  top: 196.76px;
+}
+
+.reg-formulaire-ct-mgr {
+  left: 803.33px;
+  top: 220.77px;
+}
+
+.reg-formulaire-fl-commute {
+  left: 835.33px;
+  top: 279.76px;
+}
+
+.reg-formulaire-fl-dorm {
+  left: 1057.33px;
+  top: 279.76px;
+}
+
+.reg-formulaire-fl-union {
+  left: 835.33px;
+  top: 306.77px;
+}
+
+.reg-formulaire-fl-night {
+  left: 1057.33px;
+  top: 306.77px;
+}
+
+.reg-formulaire-fl-health {
+  left: 835.33px;
+  top: 333.77px;
+}
+
+.reg-formulaire-fl-security {
+  left: 1057.66px;
+  top: 333.77px;
+}
+
+.reg-formulaire-fl-badge {
+  left: 805px;
+  top: 363.77px;
+}
+
+.reg-formulaire-v-nom {
+  left: 484.67px;
+  top: 150px;
+}
+
+.reg-formulaire-v-emp {
+  left: 484.67px;
+  top: 174.33px;
+}
+
+.reg-formulaire-v-birth {
+  left: 484.66px;
+  top: 198.33px;
+}
+
+.reg-formulaire-v-sex {
+  left: 484.67px;
+  top: 222px;
+}
+
+.reg-formulaire-v-blood {
+  left: 681.33px;
+  top: 222px;
+}
+
+.reg-formulaire-v-dept {
+  left: 484.67px;
+  top: 273.33px;
+}
+
+.reg-formulaire-v-pos {
+  left: 484.67px;
+  top: 297.67px;
+}
+
+.reg-formulaire-v-phone {
+  left: 922.67px;
+  top: 150.67px;
+}
+
+.reg-formulaire-v-ext {
+  left: 922.67px;
+  top: 174px;
+}
+
+.reg-formulaire-v-addr {
+  left: 922.33px;
+  top: 199.67px;
+}
+
+.reg-formulaire-v-mgr {
+  left: 922.67px;
+  top: 224.33px;
+}
+
+.reg-formulaire-v-badge {
+  left: 928.67px;
+  top: 371.34px;
+}
+
+.reg-formulaire-g-nom {
+  left: 473.67px;
+  top: 143.33px;
+  width: 290.67px;
+  height: 23.33px;
+}
+
+.reg-formulaire-g-emp {
+  left: 473.67px;
+  top: 167.67px;
+  width: 290.67px;
+  height: 23px;
+}
+
+.reg-formulaire-g-birth {
+  left: 473.67px;
+  top: 191.33px;
+  width: 290.67px;
+  height: 22.33px;
+}
+
+.reg-formulaire-g-sex {
+  left: 473.67px;
+  top: 214.67px;
+  width: 74.33px;
+  height: 24.67px;
+}
+
+.reg-formulaire-g-blood {
+  left: 670.67px;
+  top: 214.67px;
+  width: 70px;
+  height: 24.67px;
+}
+
+.reg-formulaire-g-dept {
+  left: 473.67px;
+  top: 265.67px;
+  width: 267px;
+  height: 24px;
+}
+
+.reg-formulaire-g-pos {
+  left: 473.67px;
+  top: 291px;
+  width: 267px;
+  height: 23.33px;
+}
+
+.reg-formulaire-g-grade {
+  left: 473.67px;
+  top: 316px;
+  width: 267px;
+  height: 22.67px;
+}
+
+.reg-formulaire-g-phone {
+  left: 911.33px;
+  top: 143.33px;
+  width: 338px;
+  height: 23.33px;
+}
+
+.reg-formulaire-g-ext {
+  left: 911.33px;
+  top: 167.67px;
+  width: 338px;
+  height: 23.33px;
+}
+
+.reg-formulaire-g-addr {
+  left: 911.33px;
+  top: 192.67px;
+  width: 338px;
+  height: 23.33px;
+}
+
+.reg-formulaire-g-mgr {
+  left: 911.33px;
+  top: 217.33px;
+  width: 338px;
+  height: 23.67px;
+}
+
+.reg-formulaire-g-badge {
+  left: 917px;
+  top: 360.67px;
+  width: 332.33px;
+  height: 29px;
+}
+
+.reg-formulaire-g-grade-txt {
+  left: 485px;
+  top: 323px;
+}
+
+.reg-formulaire-curseur {
+  left: 505.33px;
+  top: 332.67px;
+  width: 1px;
+  height: 2.33px;
+}
+
+.reg-formulaire-b-sex {
+  left: 547.67px;
+  top: 215px;
+  width: 23.67px;
+  height: 23.67px;
+}
+
+.reg-formulaire-b-blood {
+  left: 740.67px;
+  top: 215px;
+  width: 22.67px;
+  height: 23.67px;
+}
+
+.reg-formulaire-b-dept {
+  left: 740.67px;
+  top: 265.67px;
+  width: 22.67px;
+  height: 24px;
+}
+
+.reg-formulaire-b-pos {
+  left: 740.67px;
+  top: 291px;
+  width: 22.67px;
+  height: 23.33px;
+}
+
+.reg-formulaire-b-grade {
+  left: 740px;
+  top: 315.67px;
+  width: 21.67px;
+  height: 22.33px;
+}
+
+.reg-formulaire-c-a0 {
+  left: 808px;
+  top: 277.33px;
+}
+
+.reg-formulaire-c-a1 {
+  left: 808px;
+  top: 304.67px;
+}
+
+.reg-formulaire-c-a2 {
+  left: 808px;
+  top: 332.33px;
+}
+
+.reg-formulaire-c-b0 {
+  left: 1029.67px;
+  top: 277.33px;
+}
+
+.reg-formulaire-c-b1 {
+  left: 1029.67px;
+  top: 304.67px;
+}
+
+.reg-formulaire-c-b2 {
+  left: 1029.67px;
+  top: 332.33px;
+}
+
+.reg-formulaire-liste {
+  z-index: 2;
+  left: 474px;
+  top: 338.33px;
+  width: 289.67px;
+  height: 77.67px;
+}
+
+.reg-formulaire-l-g2 {
+  z-index: 2;
+  left: 485.33px;
+  top: 343px;
+}
+
+.reg-formulaire-l-g3 {
+  z-index: 2;
+  left: 485.33px;
+  top: 360.33px;
+}
+
+.reg-formulaire-l-g5 {
+  z-index: 2;
+  left: 485.33px;
+  top: 397.34px;
+}
+
+.reg-formulaire-barre {
+  z-index: 2;
+  left: 478.33px;
+  top: 374.33px;
+  width: 279.33px;
+  height: 19px;
+}
+
+.reg-formulaire-barre-texte {
+  left: 6.67px;
+  top: 4.33px;
+}
+
+/* Zone historique : plaque HISTORY, tableau en verre, barre de defilement.
+   Toutes les valeurs de placement sont des mesures PIL sur l image cible, en px CSS (image / 3).
+   Classes prefixees reg-historique-. Couleurs : aucune, seulement des classes et variables du kit. */
+
+.reg-historique-plaque { left: 313.67px; top: 416.67px; width: 951.67px; height: 221px; }
+.reg-historique-vis-1 {
+  left: 318.33px;
+  top: 423.33px;
+}
+.reg-historique-vis-2 {
+  left: 1250.33px;
+  top: 423.67px;
+}
+.reg-historique-titre { left: 335.33px; top: 422.67px; }
+/* En-tete : cellules beige biseautees, hauteur 25,67 px, tops 441 px. Padding gauche = decalage du libelle mesure. */
+.reg-historique-hd { top: 441px; height: 25.67px; justify-content: flex-start; box-sizing: border-box; }
+.reg-historique-hd-date { left: 321.33px; width: 135.33px; padding-left: 16.67px; }
+.reg-historique-hd-code { left: 458px; width: 137px; padding-left: 13.67px; }
+.reg-historique-hd-event { left: 596.33px; width: 297px; padding-left: 14.67px; }
+.reg-historique-hd-by { left: 894.67px; width: 147.33px; padding-left: 14px; }
+.reg-historique-hd-status { left: 1043.33px; width: 189.67px; padding-left: 14.33px; }
+.reg-historique-hd-fin { left: 1234px; width: 21.67px; }
+/* Tableau : cadre en creux, verre, lignes a 20,19 px. */
+.reg-historique-cadre { left: 319.67px; top: 466.67px; width: 936.33px; height: 163.67px; }
+.reg-historique-sel { left: 322.67px; top: 490.67px; width: 908.67px; height: 17px; }
+.reg-historique-r0 { top: 473.33px; }
+.reg-historique-sep-0 { top: 487.67px; }
+.reg-historique-r1 { top: 493.52px; }
+.reg-historique-sep-1 { top: 507.86px; }
+.reg-historique-r2 { top: 513.71px; }
+.reg-historique-sep-2 { top: 528.05px; }
+.reg-historique-r3 { top: 533.9px; }
+.reg-historique-sep-3 { top: 548.24px; }
+.reg-historique-r4 { top: 554.09px; }
+.reg-historique-sep-4 { top: 568.43px; }
+.reg-historique-r5 { top: 574.28px; }
+.reg-historique-sep-5 { top: 588.62px; }
+.reg-historique-r6 { top: 594.47px; }
+.reg-historique-sep-6 { top: 608.81px; }
+.reg-historique-r7 { top: 614.66px; }
+.reg-historique-sep-7 { top: 629px; }
+.reg-historique-sep { left: 322.67px; width: 911.33px; height: 0.67px; }
+.reg-historique-c-date { left: 338px; }
+.reg-historique-c-code { left: 471.33px; }
+.reg-historique-c-event { left: 609.67px; }
+.reg-historique-c-by { left: 907.67px; }
+.reg-historique-c-status { left: 1056.67px; }
+/* Barre de defilement : bouton haut, rail, curseur, bouton bas ; colonne 1235 px, largeur 20 px. */
+.reg-historique-bt { left: 1235px; width: 20px; height: 20px; }
+.reg-historique-bt-haut { top: 467.67px; }
+.reg-historique-bt-bas { top: 610.33px; }
+.reg-historique-rail {
+  left: 1235px;
+  top: 487.67px;
+  width: 20px;
+  height: 122.67px;
+}
+.reg-historique-curseur { left: 1235px; top: 587.33px; width: 20px; height: 20.33px; }
+.reg-historique-hd .k-bouton-libelle { top: 0px; } /* tour 2 : libelle de cellule 1,67 px plus haut dans le rendu que dans l image */
+
+/* Zone actions : placements en CSS px de page (image / 3), mesurés sur l'image cible. */
+
+/* Champ en verre LAST EDIT : bords extérieurs de la monture mesurés x 959 à 2368, y 1931 à 2023 (px image). */
+.reg-actions-champ {
+  left: 318.67px;
+  top: 643.67px;
+  width: 472.33px;
+  height: 33.33px;
+}
+
+/* Texte du champ : encre des lettres x 1002 à 1725, centre d'encre y 1978 (capitales 1963 à 1993, px image). */
+.reg-actions-texte {
+  left: 334px;
+  top: 655px;
+}
+
+/* Boutons levés : bords de la boîte relevés sur le bord clair du biseau (haut) et sur le bord bas, px image. */
+.reg-actions-save {
+  left: 892px;
+  top: 642px;
+  width: 117px;
+  height: 34px;
+}
+
+.reg-actions-cancel {
+  left: 1015.33px;
+  top: 642px;
+  width: 117.33px;
+  height: 34px;
+}
+
+.reg-actions-print {
+  left: 1138.33px;
+  top: 642px;
+  width: 122.33px;
+  height: 34px;
+}

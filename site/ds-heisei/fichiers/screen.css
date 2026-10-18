@@ -1,0 +1,327 @@
+/* Socle des zones de l'écran fichiers : polices, placement de base, textes. Aucune couleur. */
+
+@font-face { font-family: "PixelMplus12"; src: url("https://cdn.jsdelivr.net/gh/itouhiro/PixelMplus@master/PixelMplus12-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+
+/* Repère : 1 px CSS = 3 px d'image (3840 x 2160). Page = écran 1280 x 720 CSS. */
+body {
+  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --kit-mono: "PixelMplus12", ui-monospace, monospace;
+  margin: 0;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  position: relative;
+  font-kerning: none;
+  font-synthesis: none;
+}
+
+/* Placement seul : position absolue sur les éléments des matières. */
+.plc { position: absolute; box-sizing: border-box; }
+
+/* Texte posé sur le verre (matière phosphore ou alerte) : taille et interligne de la démo phosphore. */
+.fi-txt {
+  position: absolute;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 1.67px;
+  white-space: pre;
+  margin-top: -1px;
+}
+
+/* Titre de panneau sur la coque (police de la coque, --kit-sans). */
+.fi-titre {
+  position: absolute;
+  font-family: var(--kit-sans);
+  font-size: 16px;
+  line-height: 16px;
+  white-space: pre;
+}
+
+/* zone volumes */
+/* Zone volumes de l écran fichiers. Placement et tailles seuls (px CSS = px image / 3) ; aucune couleur : les couleurs viennent des classes du kit. */
+
+/* Plaque, rainure, vis. */
+.fi-volumes-plaque { left: 5.667px; top: 43.667px; width: 288.333px; height: 620.667px; }
+.fi-volumes-rainure { left: 294px; top: 43.667px; width: 5.333px; height: 620.667px; }
+/* Vis : taille et croix viennent du kit (.k-vis, 8,38 px) ; seule la position est ici (centre de disque mesuré sur l image). */
+.fi-volumes-vis-tl { left: 11.334px; top: 50.333px; }
+.fi-volumes-vis-tr { left: 278.334px; top: 51px; }
+.fi-volumes-vis-bl { left: 10.334px; top: 652.334px; }
+.fi-volumes-vis-br { left: 282px; top: 652.334px; }
+
+/* Titre : capitale de 12,67 px CSS (Barlow, capitale 0,7 em) : 18 px. */
+.fi-volumes-titre { left: 31.333px; top: 59.067px; font-size: 18px; line-height: 18px; }
+
+/* Cadres en creux. */
+.fi-volumes-arbre { left: 16.667px; top: 81px; width: 268.667px; height: 497.333px; }
+.fi-volumes-cap { left: 16.667px; top: 582.667px; width: 268.667px; height: 71px; }
+
+/* Traits de l arbre : classes du kit (k-arbre-trait-v, k-arbre-trait-h). Phase de la matière par background-position, mesurée sur la cible (mesures.md). */
+.fi-volumes-trait-racine-1 { left: 37.333px; top: 98.333px; height: 5.333px; background-position: 0 2.5px; }
+.fi-volumes-trait-racine-2 { left: 37.333px; top: 119.667px; height: 14.667px; background-position: 0 1.167px; }
+.fi-volumes-trait-racine-3 { left: 37.333px; top: 150.333px; height: 234.667px; background-position: 0 0.5px; }
+.fi-volumes-trait-niv1-1 { left: 65px; top: 150.333px; height: 15px; background-position: 0 0.5px; }
+.fi-volumes-trait-niv1-2 { left: 65px; top: 181.667px; height: 139.667px; background-position: 0 4.167px; }
+.fi-volumes-trait-niv1-3 { left: 65px; top: 337.333px; height: 15.333px; background-position: 0 3.5px; }
+.fi-volumes-trait-niv2 { left: 90px; top: 181.667px; height: 116px; background-position: 0 4.167px; }
+.fi-volumes-h-a { left: 46.333px; top: 110.5px; width: 11.667px; background-position: 1.667px 0; }
+.fi-volumes-h-b { left: 46.333px; top: 141.5px; width: 11.667px; background-position: 1.667px 0; }
+.fi-volumes-h-d { left: 73.667px; top: 172.5px; width: 11.333px; background-position: 1.667px 0; }
+.fi-volumes-h-u { left: 73.667px; top: 328.5px; width: 11.333px; background-position: 1.667px 0; }
+.fi-volumes-h-k { left: 73.667px; top: 359.833px; width: 11.333px; background-position: 1.667px 0; }
+.fi-volumes-h-c { left: 46.333px; top: 391.5px; width: 11.667px; background-position: 1.667px 0; }
+.fi-volumes-h-r { left: 90.333px; top: 203.833px; width: 21px; background-position: 1.667px 0; }
+.fi-volumes-h-l { left: 90.333px; top: 235.167px; width: 21px; background-position: 1.667px 0; }
+.fi-volumes-h-m { left: 90.333px; top: 266.167px; width: 21px; background-position: 1.667px 0; }
+.fi-volumes-h-t { left: 90.333px; top: 297.167px; width: 21px; background-position: 1.667px 0; }
+
+/* Niveaux : colonne de la boîte, du dossier, du texte. */
+.fi-volumes-niv0 { --col-boite: 30.667px; --col-dossier: 58px; --col-texte: 87.667px; }
+.fi-volumes-niv1 { --col-boite: 57.667px; --col-dossier: 85px; --col-texte: 115.667px; }
+.fi-volumes-niv2 { --col-boite: 0px; --col-dossier: 111.333px; --col-texte: 142.667px; }
+
+/* Boîtes plus et moins : taille, contour et bras viennent de la classe du kit (k-arbre-boite). */
+.fi-volumes-boite { left: var(--col-boite); }
+
+/* Dossiers : taille et languette viennent de la classe du kit (k-arbre-dossier). Tops : corps mesuré à 314 px image. */
+.fi-volumes-dossier { left: var(--col-dossier); }
+.fi-volumes-dos-a { top: 104.5px; }
+.fi-volumes-dos-b { top: 135.5px; }
+.fi-volumes-dos-d { top: 166.5px; }
+.fi-volumes-dos-r { top: 197.5px; }
+/* Tour 2 : le dossier REPORT et son trait de connexion passent au-dessus de la barre de sélection (ordre d'empilement, ils sont avant elle dans le HTML). */
+.fi-volumes-dos-r, .fi-volumes-h-r { z-index: 1; }
+.fi-volumes-dos-l { top: 229.167px; }
+.fi-volumes-dos-m { top: 260.167px; }
+.fi-volumes-dos-t { top: 291.167px; }
+.fi-volumes-dos-u { top: 322.5px; }
+.fi-volumes-dos-k { top: 353.834px; }
+.fi-volumes-dos-c { top: 385.5px; }
+
+/* Boîtes : position verticale par ligne. */
+.fi-volumes-boite-a { top: 103.667px; }
+.fi-volumes-boite-b { top: 134.667px; }
+.fi-volumes-boite-d { top: 165.667px; }
+.fi-volumes-boite-u { top: 321.667px; }
+.fi-volumes-boite-k { top: 353px; }
+.fi-volumes-boite-c { top: 384.667px; }
+
+/* Textes de l arbre : colonne par niveau, hauteur par ligne (centre de capitale). */
+.fi-volumes-txt { letter-spacing: 3.36px; }
+.fi-volumes-txt.fi-volumes-niv0 { left: var(--col-texte); }
+.fi-volumes-txt.fi-volumes-niv1 { left: var(--col-texte); }
+.fi-volumes-txt.fi-volumes-niv2 { left: var(--col-texte); }
+.fi-volumes-ligne-a { top: 106.4px; }
+.fi-volumes-ligne-b { top: 137.4px; }
+.fi-volumes-ligne-d { top: 168.4px; }
+.fi-volumes-ligne-r { top: 199.733px; }
+.fi-volumes-ligne-l { top: 231.067px; }
+.fi-volumes-ligne-m { top: 262.067px; }
+.fi-volumes-ligne-t { top: 293.067px; }
+.fi-volumes-ligne-u { top: 324.4px; }
+.fi-volumes-ligne-k { top: 355.733px; }
+.fi-volumes-ligne-c { top: 387.4px; }
+
+/* Ligne sélectionnée REPORT : barre 175,333 x 31,667 px CSS ; texte à l intérieur. */
+.fi-volumes-sel { left: 101.333px; top: 189.333px; width: 175.333px; height: 31.667px; }
+.fi-volumes-sel-txt { left: 41px; top: 10.4px; }
+
+/* Cellules : 15, pas 16,267 px CSS, 14,333 x 18,667 px CSS. */
+.fi-volumes-cellule { top: 595.333px; width: 14.333px; height: 18.667px; }
+.fi-volumes-cel-0 { left: 30.667px; }
+.fi-volumes-cel-1 { left: 46.934px; }
+.fi-volumes-cel-2 { left: 63.201px; }
+.fi-volumes-cel-3 { left: 79.468px; }
+.fi-volumes-cel-4 { left: 95.735px; }
+.fi-volumes-cel-5 { left: 112.002px; }
+.fi-volumes-cel-6 { left: 128.269px; }
+.fi-volumes-cel-7 { left: 144.536px; }
+.fi-volumes-cel-8 { left: 160.803px; }
+.fi-volumes-cel-9 { left: 177.07px; }
+.fi-volumes-cel-10 { left: 193.337px; }
+.fi-volumes-cel-11 { left: 209.604px; }
+.fi-volumes-cel-12 { left: 225.871px; }
+.fi-volumes-cel-13 { left: 242.138px; }
+.fi-volumes-cel-14 { left: 258.405px; }
+
+/* Texte de capacité, sous la barre, centre de capitale 632,333 px CSS. */
+.fi-volumes-capacite { left: 30.667px; top: 627.233px; letter-spacing: 3.01px; }
+
+/* zone table */
+/* Zone table : placement et tailles en px CSS (1 px CSS = 3 px image). Mesures dans le scratchpad de la zone, mesures.md. Aucune couleur ici : les couleurs viennent des classes du kit. */
+
+/* Plaque et vis. */
+.fi-table-plaque { left: 298px; top: 43.67px; width: 976px; height: 622.67px; }
+.fi-table-vis-tl { left: 305px; top: 50.334px; }
+.fi-table-vis-tr { left: 1258.33px; top: 50.334px; }
+.fi-table-vis-bl { left: 302.334px; top: 652.334px; }
+.fi-table-vis-br { left: 1261px; top: 652.334px; }
+
+/* En-têtes : boutons à la hauteur 29.33 px, libellés posés à la mesure (JP, latin) relativement au bouton. */
+.fi-table-col { top: 53px; height: 29.33px; }
+.fi-table-col-nom { left: 319.67px; width: 420px; }
+.fi-table-col-type { left: 740.67px; width: 106px; }
+.fi-table-col-taille { left: 847.67px; width: 154.33px; }
+.fi-table-col-date { left: 1003px; width: 140.67px; }
+.fi-table-col-attr { left: 1144.67px; width: 106px; }
+
+.fi-table-jp, .fi-table-latin { position: absolute; }
+.fi-table-jp { top: 7.53px; }
+.fi-table-latin { top: 7.88px; }
+.fi-table-col-nom > .fi-table-jp { left: 20.67px; }
+.fi-table-col-nom > .fi-table-latin { left: 60px; }
+.fi-table-col-type > .fi-table-jp { left: 16.33px; }
+.fi-table-col-type > .fi-table-latin { left: 54.33px; }
+.fi-table-col-taille > .fi-table-jp { left: 43.67px; }
+.fi-table-col-taille > .fi-table-latin { left: 97px; }
+.fi-table-col-date > .fi-table-jp { left: 39px; }
+.fi-table-col-date > .fi-table-latin { left: 76.67px; }
+.fi-table-col-attr > .fi-table-jp { left: 17.33px; }
+.fi-table-col-attr > .fi-table-latin { left: 55.67px; }
+
+/* Triangle de tri : forme et couleur du kit (.k-defilement-triangle-haut), seule la position ici. */
+.fi-table-tri { left: 101.67px; top: 11px; }
+
+/* Verre en creux : cadre extérieur mesuré, le verre du kit occupe l'intérieur du cadre. */
+.fi-table-cadre { left: 308.33px; top: 84px; width: 956.67px; height: 570.33px; }
+
+/* Lignes : conteneur de 29.15 px de haut, 17 lignes (--i de 0 à 16). Enfants relatifs au conteneur. */
+.fi-table-ligne {
+  left: 315.67px;
+  top: calc(90.925px + 29.15px * var(--i));
+  width: 923.67px;
+  height: 29.15px;
+}
+
+.fi-table-icone {
+  left: 18px;
+  top: 6.41px;
+  width: 13.33px;
+  height: 16.33px;
+  clip-path: polygon(0 0, 8.33px 0, 8.33px 4px, 9.33px 4px, 9.33px 0, 9.67px 0, 13.33px 3.67px, 13.33px 16.33px, 0 16.33px);
+}
+
+.fi-table-nom { left: 49.33px; top: 9.575px; }
+.fi-table-type { left: 460.33px; top: 9.575px; }
+.fi-table-taille { right: 262px; top: 9.575px; width: 120px; text-align: right; }
+.fi-table-date { left: 722px; top: 9.575px; }
+.fi-table-attr { left: 870px; top: 9.575px; }
+
+/* Séparateur : hauteur du kit (.k-phosphore-separateur, 1 px). Décalage --sep posé sur chaque ligne, sur la crête de l image. */
+.fi-table-sep {
+  left: 4px;
+  top: var(--sep, 28.333px);
+  width: 915.67px;
+}
+
+/* Barre de défilement, bord droit du verre. */
+.fi-table-rail { left: 1245.33px; top: 88px; width: 17.67px; height: 563.33px; }
+.fi-table-haut { left: 1245.33px; top: 88px; width: 17.67px; height: 25.33px; }
+.fi-table-curseur { left: 1245.33px; top: 113.67px; width: 17.67px; height: 25.67px; }
+.fi-table-glissiere { left: 1245.33px; top: 140px; width: 18.33px; height: 480.67px; }
+.fi-table-bas { left: 1245.33px; top: 625.33px; width: 17.67px; height: 25.67px; }
+
+
+/* zone toolbar */
+/* Zone toolbar : placement et tailles seuls (px CSS, mesures dans le scratchpad de la zone). Aucune couleur. */
+
+/* Joint sous la barre : rainure horizontale pleine largeur, classe du kit (hauteur de la classe). */
+.fi-toolbar-rainure-bas { left: 0; top: 35.3px; width: 1280px; }
+
+/* Plaque de titre. */
+.fi-toolbar-plaque { left: 16px; top: 1px; width: 174.67px; height: 33.33px; }
+.fi-toolbar-rainure-gauche { left: 15px; top: 1px; height: 33.33px; }
+.fi-toolbar-filet { left: 21.67px; top: 30.67px; width: 158.33px; }
+.fi-toolbar-tick { left: 179.33px; top: 28.67px; }
+.fi-toolbar-tick-gauche { left: 21.5px; top: 28.67px; }
+.fi-toolbar-titre { left: 29px; top: 8.67px; font-size: 18px; line-height: 18px; }
+/* Round 2 : japonais à 1 em (16 px CSS, pas d'avance de 49 px image mesurée sur la cible), latin FILER espacé de 1 px CSS
+   (la largeur de FILER est 12 px image sous la cible). */
+.fi-toolbar-titre-jp { font-size: 16px; }
+.fi-toolbar-titre > span:last-child { letter-spacing: 1px; margin-left: 4.33px; }
+
+/* Boutons : même hauteur, largeurs mesurées. */
+.fi-toolbar-bouton { top: 1px; height: 33.33px; }
+.fi-toolbar-bouton .k-bouton-latin { margin-left: 4.5px; }
+.fi-toolbar-up { left: 192.33px; width: 83px; }
+.fi-toolbar-new { left: 277.67px; width: 82.67px; }
+.fi-toolbar-copy { left: 362.33px; width: 84px; }
+.fi-toolbar-move { left: 446.67px; width: 83.33px; }
+.fi-toolbar-delete { left: 533.67px; width: 85.33px; }
+
+/* Libellés, round 2 : le libellé du kit est en top -2 px. Le centre d'encre du rendu était 1,83 px CSS trop haut (boutons levés)
+   et le libellé COPY (enfoncé, top 1 px du kit) 2,17 px CSS trop bas. Écarts horizontaux du centre d'encre, cible moins rendu,
+   en px CSS : UP +2,33 ; NEW +0,83 ; COPY −0,83 ; MOVE +1 ; DELETE +2. */
+.fi-toolbar-bouton .k-bouton-libelle { top: 0; }
+.fi-toolbar-up .k-bouton-libelle { left: 2.33px; }
+.fi-toolbar-new .k-bouton-libelle { left: 0.83px; }
+.fi-toolbar-copy .k-bouton-libelle { top: -1px; left: -0.83px; }
+.fi-toolbar-move .k-bouton-libelle { left: 1px; }
+.fi-toolbar-delete .k-bouton-libelle { left: 2px; }
+
+/* Champ de chemin (verre creux) et horloge. */
+.fi-toolbar-chemin { left: 639.33px; top: 3.33px; width: 444.33px; height: 31px; }
+.fi-toolbar-chemin-texte { left: 653.33px; top: 14.17px; letter-spacing: 2.14px; }
+/* Tour assemblage : bord gauche du verre à 3293 px image cible (rendu 3276), bord droit +1 CSS (mesures dans assemblage/mesures.md). */
+.fi-toolbar-horloge { left: 1095.67px; top: 5.33px; width: 169.67px; height: 29px; }
+.fi-toolbar-horloge-texte { left: 1109.17px; top: 14px; letter-spacing: 1.95px; }
+
+/* Séparation à droite de l'horloge. */
+.fi-toolbar-rainure-droite { left: 1267.33px; top: 0; height: 37px; }
+
+/* zone status */
+/* Zone status : placement seul (px CSS = px image / 3, valeurs de zones/status/mesures.md). Aucune couleur. */
+
+/* Rainures du cadre : verticales, creux à gauche, lèvre à droite. */
+.fi-status-rainure-gauche { left: 4.67px; top: 664px; width: 2px; height: 51.33px; }
+.fi-status-rainure-droite { left: 1273px; top: 664px; width: 2px; height: 51.33px; }
+
+/* Rainures horizontales : classes du kit (.k-rainure-h, .k-rainure-h-fine), pleine largeur. */
+.fi-status-seam-haut { left: 6.33px; top: 664px; width: 1267.67px; }
+.fi-status-seam-bas { left: 6.67px; top: 714px; width: 1266px; }
+
+/* Champs en verre : boîte extérieure du cadre (verre et cadre inclus). */
+.fi-status-champ { top: 673.33px; height: 33.33px; }
+.fi-status-champ-gauche { left: 16.67px; width: 299px; }
+.fi-status-champ-milieu { left: 327.33px; width: 659px; }
+.fi-status-champ-droite { left: 997.33px; width: 265.67px; }
+
+/* Textes : ligne de capitales centrée sur 689,67 CSS. */
+.fi-status-txt { top: 684.67px; }
+.fi-status-txt-gauche { left: 36px; }
+.fi-status-txt-milieu { left: 346px; }
+.fi-status-txt-droite { left: 1015.67px; }
+
+/* zone dialog */
+/* Zone dialog de l'écran fichiers : boîte de copie, titre, verre de progression, boutons, vis. Placement et tailles seulement, aucune couleur. */
+
+/* Boîte de dialogue : face, biseau et ombre viennent du kit (.k-dialogue-boite, .k-dialogue-ombre) ; position entière (démo du kit). */
+.fi-dialog-boite { left: 489px; top: 238px; width: 414px; height: 239px; }
+/* Titre : plaque du kit (.k-dialogue-titre) ; position entière (démo du kit). */
+.fi-dialog-titre { left: 495px; top: 246px; width: 402px; height: 32px; }
+
+.fi-dialog-verre { left: 503.67px; top: 278.33px; width: 386.33px; height: 145.67px; }
+
+.fi-dialog-txt { font-family: var(--kit-mono); }
+.fi-dialog-src { left: 519px; top: 301.4px; letter-spacing: 2.43px; }
+.fi-dialog-dst { left: 519px; top: 322.4px; letter-spacing: 2.2px; }
+.fi-dialog-pct { left: 843.33px; top: 358.33px; letter-spacing: 2.67px; }
+.fi-dialog-file { left: 519px; top: 392.57px; letter-spacing: 2.69px; }
+
+.fi-dialog-barre-haut { left: 519px; top: 349.33px; width: 302.33px; height: 1px; }
+.fi-dialog-barre-bas { left: 519px; top: 377.33px; width: 302.33px; height: 0.67px; }
+.fi-dialog-barre-gauche { left: 519px; top: 349.33px; width: 1px; height: 28.67px; }
+.fi-dialog-barre-droite { left: 821.33px; top: 349.33px; width: 1px; height: 28.67px; }
+
+.fi-dialog-cellules { position: absolute; left: 522.67px; top: 353.33px; display: flex; gap: 1.17px; }
+.fi-dialog-cellules > div { width: 11.33px; height: 21.33px; }
+
+.fi-dialog-pause { left: 644.33px; top: 430.67px; width: 127.67px; height: 35.33px; }
+.fi-dialog-cancel { left: 776px; top: 430.67px; width: 112.67px; height: 35.33px; }
+
+/* Vis du dialogue : posées sur la plaque du titre (z-index du titre du kit : 1), donc au-dessus. */
+.fi-dialog-vis { z-index: 2; }
+.fi-dialog-vis-tl { left: 499px; top: 249px; }
+.fi-dialog-vis-tr { left: 883px; top: 249px; }
+.fi-dialog-vis-bl { left: 496.334px; top: 461.334px; }
+.fi-dialog-vis-br { left: 886.334px; top: 462px; }

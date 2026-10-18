@@ -1,0 +1,151 @@
+/*
+ * Matière dialogue : boîte de dialogue modale (boîte de copie) posée sur le verre du tableau. Trois classes :
+ * - .k-coque.k-dialogue-boite : face et biseau de la boîte, avec ses deux bords extérieurs (liseré gauche, filet bas) ;
+ * - .k-dialogue-ombre : ombre portée dure, sans flou, sur un pseudo-élément ::before. Une même boîte porte
+ *   .k-dialogue-boite et .k-dialogue-ombre (démo kit/dialogue.html) : le biseau est sur la boîte, l'ombre sur son pseudo-élément ;
+ * - .k-coque.k-dialogue-titre : plaque de titre avec son propre biseau, sans .k-relief-plaque. Il passe au-dessus du cadre de verre
+ *   (z-index 1) pour que son arête basse claire reste visible ; le latin de son texte prend .k-dialogue-titre-latin (interlettrage).
+ * Pose : la boîte doit être positionnée (position absolute par la classe de placement de l'écran) ; ses enfants (titre, verre, textes,
+ * boutons) sont posés dans son repère. Placement en px CSS entiers : Chrome cale une boîte positionnée sur le px entier. Les tiers de px
+ * de l'image se portent donc par les ombres (intérieures ou extérieures), pas par un transform.
+ * Variables : --k-dialogue-face (face de la boîte et du titre, #b0a58c), --k-dialogue-titre-texte (#090500),
+ * --k-dialogue-ombre-couleur (ombre portée).
+ *
+ * Géométrie (px image 3840 x 2160, 1 px CSS = 3 px image). Bords de l'image : boîte haut 715 (238,33 CSS), gauche 1468 (489,33),
+ * droite 2709 (903,00), bas 1432 (477,33) ; titre haut 737 (245,67), gauche 1484 (494,67), droite 2692 (897,33), bas 835 (278,33).
+ * Boîte posée : 489 / 238, 414 x 239 (bords à 1467, 714, 2709, 1431 px image : le liseré haut est la première ligne de la boîte).
+ * Titre posé : 495 / 246, 402 x 32 (bords à 1485, 738, 2691, 834 px image).
+ * Relevé : médiane RGB par zone, écart type RGB, sur l'image de référence de l'écran fichiers (PIL, numpy) ; bornes x1 et y1 exclues.
+ *
+ * Boîte, biseau : une ligne ou une colonne d'image par valeur (ligne du bord haut, colonne du bord gauche, etc.) :
+ * valeur hex | zone x0,y0,x1,y1 en px image | médiane RGB | écart type RGB | ce que la zone mesure
+ * #0d1a16 | 1800,714,2100,715 | med 13,26,22 | sd 1.82,1.67,2.00 | liseré sombre au-dessus de la boîte, ligne 714 (première ligne de la boîte)
+ * #94968c | 1800,715,2100,716 | med 148,150,140 | sd 7.35,7.36,5.99 | bord haut, ligne 715 (ligne mêlée : le bord passe au milieu de la ligne)
+ * #e2dbc8 | 1800,716,2100,717 | med 226,219,200 | sd 2.68,2.48,1.96 | arête claire haute, ligne 716
+ * #d2c8b1 | 1800,717,2100,718 | med 210,200,177 | sd 2.55,2.28,3.42 | arête claire haute, ligne 717
+ * #bdb59c | 1800,718,2100,719 | med 189,181,156 | sd 2.95,2.90,3.19 | chanfrein haut, ligne 718
+ * #a9a289 | 1800,719,2100,720 | med 169,162,137 | sd 1.46,1.24,1.71 | ligne 719, passage vers la face
+ * #263630 | 1467,780,1468,1000 | med 38,54,48 | sd 7.3,7.4,6.8 | bord gauche mêlé, colonne 1467
+ * #e5e2d0 | 1468,780,1469,1000 | med 229,226,208 | sd 4.3,4.2,4.7 | arête claire gauche, colonne 1468
+ * #e4d9c2 | 1469,780,1470,1000 | med 228,217,194 | sd 4.4,4.3,4.8 | arête claire gauche, colonne 1469
+ * #e7ddc9 | 1470,780,1471,1000 | med 231,221,201 | sd 6.0,5.8,6.5 | arête claire gauche, colonne 1470
+ * #a09b87 | 2704,780,2705,1000 | med 160,155,135 | sd 9.9,8.6,7.8 | creux droit, colonne 2704 (transition)
+ * #585a4c | 2705,780,2708,1000 | med 88,90,76 | sd 11.6 à 12.7 | creux droit, colonnes 2705 à 2707 (la couleur varie de 60 à 105 le long du bord : écart)
+ * #424a43 | 2708,780,2709,1000 | med 66,75,67 | sd 5.4,5.1,4.4 | creux droit, colonne 2708 (dernière colonne de la boîte)
+ * #72735f | 1600,1427,2600,1431 | med 114,115,95 | sd 5.49,5.28,5.40 | creux bas, lignes 1427 à 1430
+ * #9d9883 | 1600,1426,2600,1427 | med 157,152,131 | sd 3.99,3.65,3.61 | creux bas, ligne 1426
+ * #b3ab91 | 1600,1425,2600,1426 | med 179,171,145 | sd 2.30,2.23,2.38 | arête basse, ligne 1425
+ * #575e51 | 1600,1431,2600,1432 | med 87,94,81 | sd 7.42,6.89,6.58 | filet bas, ligne 1431 (dernière ligne de la boîte, bord extérieur)
+ * #0a2323 | 1466,800,1467,1000 | med 10,35,35 | sd 5.11,5.83,5.54 | liseré gauche, colonne 1466 (bord extérieur, couleur opaque mesurée)
+ * Face de la boîte, lignes 720 à 734 (zone 1520,720,2650,735) : med 176,165,140 | sd 1.30,1.33,1.47 ; face retenue #b0a58c
+ * (variable --k-dialogue-face), à 0 niveau de la médiane sur R, G et B. La face du titre est à 1 niveau de la même valeur.
+ *
+ * Titre, biseau :
+ * valeur hex | zone x0,y0,x1,y1 en px image | médiane RGB | écart type RGB | ce que la zone mesure
+ * #928a74 | 2500,736,2600,737 | med 146,138,116 | sd 5.17,4.94,5.09 | bord haut extérieur, ligne 736 (second rang)
+ * #8c846f | 2500,737,2600,738 | med 140,132,111 | sd 3.99,3.39,3.74 | bord haut extérieur, ligne 737 (premier rang)
+ * #bfb7a2 | 2500,738,2600,739 | med 191,183,162 | sd 3.75,4.12,3.74 | intérieur haut, ligne 738
+ * #d7ceb8 | 2500,739,2600,740 | med 215,206,184 | sd 2.79,2.64,2.31 | intérieur haut, ligne 739
+ * #e3d8c2 | 2500,740,2600,741 | med 227,216,194 | sd 2.54,2.80,2.82 | intérieur haut, ligne 740, sommet du biseau
+ * #cdc2ac | 2500,741,2600,742 | med 205,194,172 | sd 2.88,2.40,2.40 | intérieur haut, ligne 741, bas du biseau
+ * #e9dec8 | 1484,770,1485,800 | med 233,222,200 | sd 3.96,3.22,3.01 | bord gauche extérieur, colonne 1484 (mesurée 1484 et 1485 ensemble : 230,219,198)
+ * #afa790 | 1483,770,1484,800 | med 175,167,144 | sd 4.85,5.62,5.82 | bord gauche extérieur, colonne 1483
+ * #847c65 | 1482,770,1483,800 | med 132,124,102 | sd 4.63,5.64,5.82 | bord gauche extérieur, colonne 1482
+ * #e4d9c4 | 1485,770,1486,800 | med 228,217,196 | sd 4.0,3.2,3.0 | arête gauche intérieure, colonne 1485
+ * #beb29e | 1486,770,1487,800 | med 190,178,158 | sd 2.24,2.57,1.76 | intérieur gauche, colonne 1486
+ * #aa9e88 | 1487,770,1488,800 | med 170,158,136 | sd 2.2,2.5,3.4 | intérieur gauche, colonne 1487, passage vers la face
+ * #b0a992 | 1700,834,2600,835 | med 176,169,146 | sd 3.88,3.48,3.38 | bord bas, ligne 834 (dernière ligne du titre)
+ * #b0a58c | 2000,745,2640,830 | med 175,164,139 | sd 1.37,1.69,1.87 | face du titre, sans texte (variable --k-dialogue-face)
+ * Texte du titre : 3801 px sombres, médiane #090500 (9,5,0), bbox x 1562..1915, y 768..810 (variable --k-dialogue-titre-texte).
+ * Le bord droit du titre n'a pas de biseau visible : la face de la boîte prolonge la face du titre (colonne 2692 à 2693, 173,163,139 et 171,160,136).
+ *
+ * Ombre portée (boîte décalée, mesures de l'écran fichiers) :
+ * #0f2827 | 1440,900,1460,1000 | med 15,40,39 | sd 4.76,5.71,5.08 | verre à gauche de la boîte, non ombré (référence)
+ * #0a1818 | 2712,780,2728,1040 | med 10,24,24 | sd 1.85,2.04,2.00 | ombre à droite, sur le verre (rangées sans texte)
+ * #0b1a19 | 1520,1436,1600,1452 | med 11,26,25 | sd 1.41,1.56,1.55 | ombre en bas, sur le verre
+ * #0b1919 | 1800,1436,1900,1452 | med 11,25,25 | sd 1.07,1.28,1.41 | ombre en bas, sur le verre
+ * #375c4f | 1440,1060,1460,1120 | med 55,92,79 | sd 1.54,1.52,1.52 | rangée sélectionnée, verre à gauche (référence)
+ * #1a302b | 2712,1060,2728,1120 | med 26,48,43 | sd 1.19,1.54,1.21 | même rangée, sous l'ombre à droite
+ * #102b27 | 1800,709,2100,714 | med 16,43,39 | sd 2.61,1.93,2.10 | verre juste au-dessus du liseré (référence)
+ * Ombre, bords à 50 % de transition (px image) : gauche 1495,5 ; droite 2732,0 ; haut 745,5 ; bas 1456,6.
+ * Ombre = boîte décalée de 8,5 px CSS en x et 9,5 px CSS en y, et rétrécie de 0,917 px CSS par côté (écart négatif) ;
+ * les bords tombent à 0,25 px image près (gauche 1495,3 ; droite 2731,8 ; haut 745,3 ; bas 1456,8).
+ * Couleur de l'ombre : translucide, pas opaque. La rangée sélectionnée reste visible sous l'ombre (55,92,79 devient 26,48,43) ; le verre nu
+ * (15,40,39) devient 10,24,24. Ajustement de la couleur sur 347 lignes du bord droit (régression linéaire par canal) : pente de 0,37 à 0,45,
+ * soit une opacité de 0,56 ; couleur retenue rgba(6, 11, 12, 0.56) ; résidu écart type 1,2 à 2,0 niveaux.
+ * Ombre sur la coque : non relevée. L'image ne montre aucune surface beige derrière la boîte : le fond est le verre sur les quatre côtés.
+ * Ce qui n'est pas dans cette matière : le verre du cadre et son creux (verre-cadre), les textes, les barres, les boutons, les vis.
+ * Non reproduit : le chanfrein des angles de la boîte et du titre (un clip-path couperait l'ombre) ; les vis.
+ */
+
+/* Ombre portée. Le pseudo-élément a la taille de la boîte, sans fond : seule son ombre sort de la boîte. */
+.k-dialogue-ombre {
+  isolation: isolate;
+}
+
+.k-dialogue-ombre::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* Premier élément : arête basse du biseau de la boîte (0 0.333px #575e51), répétée ici
+     parce que cette ombre, peinte au-dessus de la boîte, couvrirait sa ligne d'image 1431. */
+  box-shadow:
+    0 0.333px 0 0 #575e51,
+    8.5px 9.5px 0 -0.917px var(--k-dialogue-ombre-couleur, rgba(6, 11, 12, 0.56));
+}
+
+/* Boîte : face (teinte de .k-coque), biseau et deux bords extérieurs. Les bandes sont des ombres cumulées : la plus fine est listée en premier. */
+.k-coque.k-dialogue-boite {
+  --k-coque-teinte: var(--k-dialogue-face, #b0a58c);
+  box-shadow:
+    -0.333px 0 0 0 #0a2323,
+    0 0.333px 0 0 #575e51,
+    inset 0 0.333px 0 0 #0d1a16,
+    inset 0 0.667px 0 0 #94968c,
+    inset 0 1px 0 0 #e2dbc8,
+    inset 0 1.333px 0 0 #d2c8b1,
+    inset 0 1.667px 0 0 #bdb59c,
+    inset 0 2px 0 0 #a9a289,
+    inset 0.333px 0 0 0 #263630,
+    inset 0.667px 0 0 0 #e5e2d0,
+    inset 1px 0 0 0 #e4d9c2,
+    inset 1.333px 0 0 0 #e7ddc9,
+    inset -0.333px 0 0 0 #424a43,
+    inset -1.333px 0 0 0 #585a4c,
+    inset -1.667px 0 0 0 #a09b87,
+    inset 0 -1.333px 0 0 #72735f,
+    inset 0 -1.667px 0 0 #9d9883,
+    inset 0 -2px 0 0 #b3ab91;
+}
+
+/* Plaque de titre : biseau extérieur (haut, gauche, bas) et intérieur (haut, gauche), texte en haut à gauche. */
+.k-coque.k-dialogue-titre {
+  --k-coque-teinte: var(--k-dialogue-face, #b0a58c);
+  box-sizing: border-box;
+  /* Au-dessus du cadre de verre : son arête basse claire (image 834) passe devant le bord haut du verre. */
+  z-index: 1;
+  padding: 8.5px 0 0 25.33px;
+  font: 16px/16px var(--kit-sans, system-ui, sans-serif);
+  color: var(--k-dialogue-titre-texte, #090500);
+  white-space: nowrap;
+  box-shadow:
+    0 -0.333px 0 0 #8c846f,
+    0 -0.667px 0 0 #928a74,
+    0 0.333px 0 0 #b0a992,
+    -0.333px 0 0 0 #e9dec8,
+    -0.667px 0 0 0 #afa790,
+    -1px 0 0 0 #847c65,
+    inset 0 0.333px 0 0 #bfb7a2,
+    inset 0 0.667px 0 0 #d7ceb8,
+    inset 0 1px 0 0 #e3d8c2,
+    inset 0 1.333px 0 0 #cdc2ac,
+    inset 0.333px 0 0 0 #e4d9c4,
+    inset 0.667px 0 0 0 #beb29e,
+    inset 1px 0 0 0 #aa9e88;
+}
+
+/* Latin du titre : interlettrage mesuré sur COPYING (image : 1735..1917). Le japonais reste sans interlettrage. */
+.k-dialogue-titre-latin {
+  letter-spacing: 1.4px;
+}

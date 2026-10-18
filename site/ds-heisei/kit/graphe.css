@@ -1,0 +1,89 @@
+/*
+ * Matière graphe : les traits fins de la maîtresse (grille de la topologie, repère de l'axe de bande,
+ * filets des jauges et des compteurs), en couleur pleine et tirets à arrêts nets, sans voile transparent.
+ * La longueur est celle de la boîte de l'appelant ; l'épaisseur se pose par height (horizontal) ou width
+ * (vertical) de 0.67px, soit 2 px image.
+ *
+ * Relevé des couleurs : PIL sur l'image maîtresse (3840 x 2160 px). Règle du kit (phosphore.css) pour les
+ * traits : cœur clair, 5 % les plus clairs des pixels du trait. Une ligne par tracé ; écart type entre tracés.
+ *
+ *   grille (topologie)    #35544f  maitresse  verticale x 1163, y 215-330  5 % clairs 53 84 79
+ *                                              maitresse  verticale x 1338, y 215-330  5 % clairs 71 100 96
+ *                                              maitresse  verticale x 1515, y 215-330  5 % clairs 54 85 80
+ *                                              maitresse  horizontale y 372, x 1000-1900  5 % clairs 47 76 72
+ *                                              maitresse  horizontale y 629, x 1000-1900  5 % clairs 43 72 68
+ *                                              relevé d'ensemble : med 53 84 79  std 10.2 5.4 4.2 (cinq tracés)
+ *   repère (axe de bande) #314d4a  maitresse  y 1207, x 1000-1062  5 % clairs 51 77 74
+ *                                              maitresse  y 1285, x 1000-1062  5 % clairs 49 80 75
+ *                                              maitresse  y 1363, x 1000-1062  5 % clairs 47 75 71
+ *                                              relevé d'ensemble : med 49 77 74  std 1.6 2.1 1.7 (trois tracés)
+ *   filet (jauge)         #72978a  maitresse  y 350, x 3080-3750 (5 % clairs 117 155 140)
+ *                                              maitresse  y 468 (103 136 125)
+ *                                              maitresse  y 587 (111 147 137)
+ *                                              maitresse  y 705 (147 190 164)
+ *                                              maitresse  y 823 (128 164 152)
+ *                                              maitresse  y 943 (85 130 114)
+ *                                              relevé d'ensemble : med 114 151 138  std 21.0 21.7 18.0 (six tracés)
+ *   filet-compteur        #2a4a44  maitresse  y 1163, x 3080-3750 (5 % clairs 43 74 69)
+ *                                              maitresse  y 1224 (43 75 70)
+ *                                              maitresse  y 1284 (36 67 62)
+ *                                              maitresse  y 1340 (41 72 67)
+ *                                              relevé d'ensemble : med 42 74 68  std 3.2 3.4 3.4 (quatre tracés)
+ *
+ *   grille de bande IN (horizontale) #2b4842  maitresse  y 1129 (pixel le plus clair par colonne : 43 72 66 ; largeur équivalente 2.9 px)
+ *                                              maitresse  y 1207 (42 68 65 ; largeur équivalente 2.2 px)
+ *                                              maitresse  y 1285 (45 76 70 ; largeur équivalente 2.1 px, 10 % des colonnes écartées par la courbe)
+ *                                              maitresse  y 1362 : non isolable (sous le remplissage de l'aire IN, aucune colonne propre)
+ *                                              relevé d'ensemble : médiane des trois tracés 43 72 66  écart type 1.2 3.3 2.2 (trois tracés)
+ *
+ * Tirets (mesurés sur l'image maîtresse, ajustement carré et longueur des tirets allumés) :
+ *   - grille : période 12 px image (4 px CSS) ; tirets allumés 2 px CSS, éteints 2 px CSS (rapport 0.5).
+ *     Les périodes des tracés vont de 10 à 14 px image : la valeur retenue est au milieu de la plage.
+ *   - repère : période 15.3 px image (5.1 px CSS, médiane de trois ajustements 15.3 / 16.2 / 14.1) ;
+ *     tirets allumés 3.4 px CSS (8, 14.5 et 10 px image mesurés), éteints 1.7 px CSS. Commence au bord
+ *     gauche de la boîte (phase mesurée 0 à 0.1 px CSS).
+ *   - filets : pleins, aucun tiret.
+ *
+ * Aire sous la courbe IN (point 2, ajouté) : image de l'écran maîtresse, lignes horizontales (médianes sur x 1100-1850,
+ * y 1372-1437, sous la courbe et au-dessus du zéro de la bande). Fond médian 45 77 68 (#2d4d44, écart type 1 à 2) ;
+ * trait de hachure médian 47 80 71 (#2f5047) ; contraste 3 niveaux, à peine visible. Ajustement carré sur les
+ * lignes (moindres carrés) : période 12.3 px image (4.1 px CSS, à 0.3 px près), trait 40 % de la période
+ * (4.9 px image, 1.64 px CSS), première marche de trait à 8.85 px image sous le haut de la boîte (corrigée au tour 2 : 10.85 px image, soit 3.62 px CSS).
+ *   aire OUT : seules 12 lignes sous la courbe sont propres (y 1426 à 1436) : fond 46 78 69, même fond que IN ;
+ *   la période OUT n'est pas mesurable sur cette zone, la classe IN sert aux deux.
+ *
+ * Écarts : les tirets du repère sont irréguliers dans l'image, réguliers ici. Les filets des jauges varient
+ * de 85 à 147 en R entre tracés (écart supérieur à 3 niveaux ; la médiane est retenue). La grille de bande
+ * IN et OUT est pleine dans l'image : elle n'est pas dans cette matière (question au rapport).
+ */
+
+.k-graphe-grille-h {
+    background-image: repeating-linear-gradient(90deg, var(--k-graphe-grille, #35544f) 0 2px, transparent 2px 4px);
+}
+
+.k-graphe-grille-v {
+    background-image: repeating-linear-gradient(180deg, var(--k-graphe-grille, #35544f) 0 2px, transparent 2px 4px);
+}
+
+.k-graphe-repere {
+    background-image: repeating-linear-gradient(90deg, var(--k-graphe-repere, #314d4a) 0 3.4px, transparent 3.4px 5.1px);
+}
+
+.k-graphe-filet {
+    background-color: var(--k-graphe-filet, #72978a);
+}
+
+.k-graphe-filet-compteur {
+    background-color: var(--k-graphe-filet-compteur, #2a4a44);
+}
+
+.k-graphe-grille-bande-h {
+    background-color: var(--k-graphe-grille-bande, #2b4842);
+}
+
+/* Aire sous la courbe (point 2) : fond plein et hachure horizontale à arrêts nets, sans voile.
+   Phase : première marche de trait à 3.62 px CSS sous le haut de la boîte (mesure, corrigée de 0.67 px au tour 2), trait de 1.64 px. */
+.k-graphe-aire {
+    background-color: var(--k-graphe-aire-fond, #2d4d44);
+    background-image: repeating-linear-gradient(180deg, var(--k-graphe-aire-trait, #2f5047) 0 1.16px, transparent 1.16px 3.62px, var(--k-graphe-aire-trait, #2f5047) 3.62px 4.1px);
+}

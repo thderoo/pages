@@ -1,0 +1,56 @@
+/* Matière vis (ds-heisei) : tête de vis ronde, croix sombre, lumière en haut à gauche.
+   Une seule boîte porte le disque et la croix : la croix est un fond vectoriel posé sur la même boîte que le disque,
+   donc elle reste centrée sur le disque quelle que soit la position en px CSS, entière ou fractionnaire
+   (les barres en pseudo-éléments dérivaient de 2 px image selon la position, voir le rapport harmonisation.vis).
+   Position : à l'appelant (left / top). Taille : 8,38 px CSS (25,1 px image).
+
+   Relevé : PIL et numpy sur l'image de référence de l'écran maîtresse (3840 x 2160 px, 1 px CSS = 3 px image),
+   15 vis retenues (détection par tools/vis_compare.py : 16 vis réelles de l'image, moins BW3 non retenue, plus une vis
+   de coin hors du plan de l'écran ; le faux positif de texte est exclu). Mesure par disque (zone : centres x 39..3808,
+   y 156..1592 px image, rayon 12 px autour de chaque centre). Écart type : entre les 15 disques.
+
+   Diamètre : 22,7 px image mesuré par la méthode du relevé ; la même méthode lit 21,7 px sur une boîte de 8 px CSS
+   (24 px image) : la taille retenue est 8 x 22,7 / 21,7 = 8,38 px CSS = 25,1 px image. Les trois autres écrans n'ont
+   pas été validés par ce relevé (voir le rapport) : taille unique.
+
+   Face (zone r <= 0,5 R hors croix) : hex #928f78, médiane RGB (146,143,120), écart type de la luminance 15,6.
+   Anneau clair (haut-gauche, 0,72 R à 0,95 R) : hex #b0aa94, médiane RGB (176,170,148), écart type 19,3.
+   Lèvre sombre (bas-droite, 0,72 R à 0,95 R) : hex #6b6753, médiane RGB (107,103,83), écart type 6,4.
+   Croix (10 % les plus sombres du masque, r <= 0,7 R) : hex #14150c, médiane RGB (20,21,12).
+   Lisière de la plaque autour (r 14 à 18 px image) : hex #b1a992, médiane RGB (177,169,146), écart type 2.
+
+   Reprise des vis, tour 3 (décision 12 de projects/ds-heisei/CLAUDE.md ; rapports .swarm/ds-heisei/reports/vis2.mesure.md,
+   vis2.rendu2.md et vis2.rendu3.md).
+   La croix n'a pas de variable : elle est dessinée dans le fond SVG ci-dessous, en deux couches de traits pleins, sans
+   dégradé ni opacité, bouts droits. Le halo (gris foncé #4a4a3c, largeur 1,05, demi-étendue 2,15 px CSS) est dessous ;
+   le noyau (noir #14150c, largeur 0,75, demi-étendue 1,55 px CSS) est par-dessus. Centre commun des deux couches :
+   CX = 4,04, CY = 3,90 (px CSS, boîte de 8,38), soit (-0,15 ; -0,29) par rapport au centre de la boîte.
+   Mesure du rendu après le tour 3 (17 vis, centres DOM de la boîte) : N50 58 (cible 53, plage 45 à 61) ; N90 119
+   (cible 104, plage 88 à 120) ; rayon noir 8,9 px image (cible 9,0, plage 7,7 à 10,3) ; encre 16907 (cible 16800,
+   plage 14300 à 19300) ; décalage de la croix (dx ; dy) = (-0,97 ; -1,84) px image (cible (-1,0 ; -1,6), plages
+   [-1,5 ; -0,5] et [-2,1 ; -1,1]) ; face L 155,2 (cible 155, plage 153 à 157). Toutes dans leur plage.
+   Cibles de l'image, médianes (vis2.mesure) : N50 53, N90 104, rayon noir 9,0, encre 16800 ; décalage de la croix
+   (-1,0 ; -1,6) px image par rapport au centre de la boîte DOM.
+   Reflet, lèvre et ombre : reflet inset 0,67 px clair (#efe6cf), lèvre inset -0,50 px sombre (#5a5645), ombre portée
+   0,83 ; 1,00 px (#706d5b), face #a09d85. Cibles de l'image, L médian : reflet haut-gauche 224 à r = 12, 198 à r = 11,
+   180 à r = 10 ; lèvre bas-droite 99,5 à r = 9, 112 à r = 10, 161 à r = 11, 170 à r = 12 (vis2.mesure, tableau g).
+   Les écarts restants, vus sur la planche, sont au rapport vis2.rendu3.
+
+   Variables (repli entre parenthèses) : --k-vis-face (#a09d85), --k-vis-anneau (#efe6cf, reflet clair en haut à gauche),
+   --k-vis-levre (#5a5645, lèvre sombre en bas à droite), --k-vis-ombre (#706d5b, ombre portée sur la plaque).
+   Rien sur :root ; aucune transparence. */
+
+.k-vis {
+  box-sizing: border-box;
+  width: 8.38px;
+  height: 8.38px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8.38 8.38'%3E%3Cpath d='M1.89 1.75L6.19 6.05M6.19 1.75L1.89 6.05' stroke='%234a4a3c' stroke-width='1.05' stroke-linecap='butt' fill='none'/%3E%3Cpath d='M2.49 2.35L5.59 5.45M5.59 2.35L2.49 5.45' stroke='%2314150c' stroke-width='0.75' stroke-linecap='butt' fill='none'/%3E%3C/svg%3E")
+    center / 100% 100% no-repeat,
+    var(--k-vis-face, #a09d85);
+  box-shadow:
+    inset 0.67px 0.67px 0 0 var(--k-vis-anneau, #efe6cf),
+    inset -0.50px -0.50px 0 0 var(--k-vis-levre, #5a5645),
+    0.83px 1.00px 0 0 var(--k-vis-ombre, #706d5b);
+}

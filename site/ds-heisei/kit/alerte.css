@@ -1,0 +1,94 @@
+/*
+ * Matiere alerte : orange sodium, mat, sans halo. Une seule couleur d'alerte.
+ * Couleurs unies, bordures, police --kit-mono. Pas d'ombre portee sur le texte, pas de flou.
+ *
+ * Releve (valeur hex, image, zone x0,y0,x1,y1 en px de l'image 3840 x 2160, RGB = mediane des pixels
+ * orange les plus satures de la zone, 20 % du haut ; verifie par python a +/- 2 par canal) :
+ *   --k-alerte-texte #d9872d (217,135,45) : image maitresse, texte ND-011 de NODE LIST, zone 150,968,290,1002.
+ *     Autres zones de texte, pour information (ecart entre images) : maitresse HUB-5F 214,131,46 (358,968,494,1002),
+ *     maitresse bandeau ALERT 220,133,46 (3180,1450,3750,1500), fichiers REPORT.EXE 204,117,37 (1085,1256,1360,1306),
+ *     registre PENDING 218,121,40 (3406,293,3701,323), registre EXPIRY 220,126,40 (2780,1100,3020,1160).
+ *   --k-alerte-puce #e38933 (227,137,51) : image maitresse, puce de ND-011, zone 92,980,112,1002 (ecart type 1.8, 1.7, 0.8).
+ *     Second releve : image messagerie, pastille DISK, zone 770,1225,810,1270 : 226,132,44 (ecart type 3.7, 3.3, 3.5).
+ *   --k-alerte-segment #e0852f (224,133,47) : image maitresse, segment allume TEMP-5F, zone 3266,986,3278,1024 (ecart type 2.3, 2.4, 1.0).
+ *   --k-alerte-contour #dc8531 (220,133,49) : image maitresse, boite du noeud ND-011, quatre bandes de bord mises en commun :
+ *     gauche 1822,800,1836,880 ; haut 1840,778,2010,790 ; droite 2020,800,2034,880 ; bas 1840,884,2010,898.
+ *     Epaisseur du bord : 4,42 ; 4,05 ; 4,82 ; 4,65 px image (mediane 4,5 px image = 1,5 px CSS). Badge PENDING (registre) : 1,26 a 1,66 px CSS.
+ *   Verre (fond de la demo, pas une valeur de la matiere) : #102928 (16,41,40), image maitresse, zone 3300,1040,3700,1066 (ecart type 1.2, 1.8, 1.5).
+ *
+ * Cachets du registre (en-tete de fiche, image registre), cadre et texte en orange ou en vert : meme forme.
+ *   Mesure : cœur du filet = mediane des pixels du filet a plus de 50 % de contraste, par cote, puis mediane des 4 cotes.
+ *   Texte = 5 % des pixels les plus satures (ecart chroma max-min) de la zone de l'encre, R > 100.
+ *   --k-alerte-cachet (cadre orange, PENDING) : cadre 3346,8 ; 266,8 ; 3759,7 ; 344,6 px image (413 x 78 px = 137,7 x 25,9 px CSS).
+ *     Filet : #da8136 (218,129,54), cotes gauche (232,140,64), droite (217,124,53), haut (212,125,51), bas (229,133,60) ;
+ *     ecart type par cote 3,6 a 29 selon le cote et le canal. Ecart entre cotes > 3 niveaux : rapporte, valeur = mediane.
+ *     Texte : #e67d25 (230,125,37), zone 3406,293,3701,323, ecart type 6,5 ; 6,7 ; 7,2. Filet 4,4 a 4,8 px image (1,5 px CSS).
+ *     Interlettrage : pas latin 26,0 px image = 8,67 px CSS, donc 2,67 px (police 6 px d'avance). Verre dedans = dehors : pas de fond.
+ *   Cachet APPROVED (vert, meme forme) : cadre 2906,5 ; 267,2 ; 3316,6 ; 344,7 px image (410 x 77,5 px = 136,7 x 25,8 px CSS).
+ *     Filet : #92d0b4 (146,208,180), cotes gauche (159,217,189), droite (142,206,180), haut (143,208,177), bas (150,212,181).
+ *     Texte : #8cd4b4 (140,212,180), zone 2955,293,3268,324, ecart type 9,9 ; 9,5 ; 10,4. Pas latin 25,07 px = 8,36 px CSS, interlettrage 2,36 px.
+ *     Methode HSV (saturation, V >= 150) a titre de controle : texte vert (129,199,168), texte orange (224,120,34) : ecart de 5 a 11 niveaux.
+ *   Kanji (承認, 保留) : pas de 42 px image = 14 px CSS, soit 12 px de police + 2 px : ecart de 0,4 px avec le latin, rapporte.
+ *
+ * Geometrie : 1 px CSS = 3 px image. Police de la demo : PixelMplus12 (--kit-mono), bitmap 12 px, capitale 9 px CSS.
+ * La ligne ND-011 de l'image a une capitale de 10,3 px CSS : la police bitmap ne peut pas la reproduire a 12 px.
+ * Taille et approche (letter-spacing 2 px ligne, 0,5 px boite, mesures sur l'encre) sont des reglages de la demo, pas de cette matiere.
+ */
+
+.k-alerte-texte {
+  color: var(--k-alerte-texte, #d9872d);
+  font-family: var(--kit-mono, ui-monospace, "DejaVu Sans Mono", monospace);
+  font-synthesis: none;
+  font-kerning: none;
+  white-space: pre;
+}
+
+.k-alerte-puce {
+  background: var(--k-alerte-puce, #e38933);
+}
+
+/* Segment allume seulement. Le segment eteint d'une jauge en alerte est la matiere phosphore (autre matiere). */
+.k-alerte-segment {
+  background: var(--k-alerte-segment, #e0852f);
+}
+
+/* Contour de boite (noeud en alerte, badge). Trait plein inscrit dans la boite, sans flou : une bordure CSS
+   s'arrondit au pixel CSS entier (1,5 px donne 1 px a l'ecran), l'ombre interne sans flou garde 1,5 px. Pas de remplissage : la face reste celle du fond. */
+.k-alerte-contour {
+  box-shadow: inset 0 0 0 var(--k-alerte-contour-epaisseur, 1.5px) var(--k-alerte-contour, #dc8531);
+}
+
+/* Cachet d'etat (en-tete de fiche du registre) : cadre fin, texte centre, sans fond (le verre reste).
+   Une forme pour les deux cachets. Le filet est une ombre interne sans flou, comme .k-alerte-contour :
+   une bordure s'arrondit au pixel de rendu. Couleurs, largeur et interlettrage se posent par variable.
+   Hauteur 26 px CSS (mesures 25,8 et 25,9). Le padding gauche egal a l'interlettrage centre l'encre dans le cadre. */
+.k-alerte-cachet {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--k-alerte-cachet-largeur, 137.67px);
+  height: 26px;
+  padding-left: var(--k-alerte-cachet-interlettrage, 2.67px);
+  box-shadow: inset 0 0 0 var(--k-alerte-cachet-epaisseur, 1.5px) var(--k-alerte-cachet-filet, #da8136);
+  color: var(--k-alerte-cachet-texte, #e67d25);
+  font-family: var(--kit-mono, ui-monospace, "DejaVu Sans Mono", monospace);
+  font-kerning: none;
+  font-synthesis: none;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: var(--k-alerte-cachet-interlettrage, 2.67px);
+  white-space: pre;
+}
+
+/* Variante verte du cachet d'etat (APPROVED du registre), meme forme, posee sur le meme element que .k-alerte-cachet.
+   Valeurs mesurees sur l'image de l'écran registre (en-tete de fiche, cadre 2906,267 ; 3316,344 px image) : cadre 410 px image
+   = 136,67 px CSS, filet #92d0b4 (cotes 142 a 159 en R : ecart de 17 niveaux, valeur = mediane, rapporte),
+   texte #8cd4b4 (5 % les plus satures, 140 213 180, ecart type 9 a 10), interlettrage 2,36 px (pas latin 25,07 px image).
+   Le filet n'est pas double. Le cachet orange (.k-alerte-cachet seul) ne change pas. */
+.k-alerte-cachet-vert {
+  --k-alerte-cachet-largeur: 136.67px;
+  --k-alerte-cachet-filet: #92d0b4;
+  --k-alerte-cachet-texte: #8cd4b4;
+  --k-alerte-cachet-interlettrage: 2.36px;
+}

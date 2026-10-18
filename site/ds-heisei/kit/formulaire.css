@@ -1,0 +1,205 @@
+/* Matière formulaire (ds-heisei) : cases à cocher, bouton à flèche de liste déroulante, liste ouverte.
+   Relevé des couleurs : PIL, médiane RGB par zone, sur registre (cases, boutons, liste),
+   3840 x 2160 px, 1 px CSS = 3 px image. Format : valeur hex, image, zone (x0,y0)-(x1,y1) en px image, bornes x1 et y1
+   exclues, médiane (R,G,B), écart type (R,G,B). Les positions données sont celles du coin haut-gauche de la pièce dans l'image.
+
+   CASE VIDE (.k-formulaire-case), pièce DORMITORY de registre, origine (3089,833), 59 x 59 px image = 19,67 px CSS.
+     cadre haut     #98d1b1 (3097,834)-(3141,837) med (151,209,177) sd (10,8,11)
+     cadre gauche   #a5d8c1 (3090,841)-(3093,885) med (165,216,193) sd (7,7,6)
+     cadre droite   #9ed4b8 (3143,841)-(3148,885) med (158,212,184) sd (6,4,6)
+     cadre bas      #9fd5b6 (3097,886)-(3141,891) med (159,213,182) sd (8,4,7)
+     verre          #0f2b2a (3097,841)-(3139,883) med (15,43,42) sd (2,3,2)
+     trait gauche   #001a15 (3094,843)-(3095,883) med (0,26,21) sd (0,3,4), trait haut #001b10 mesuré en colonne
+     trait droit    #0c2c25 (3141,843)-(3143,883) med (12,44,37) sd (4,4,4) (mêlé au verre sur 1 px)
+     La même case (cadre, verre, trait) se retrouve dans INCLUDE RETIRED de la recherche, origine (81,626) : cadre
+     #8cbba9 / #9dd7be / #90cfb2 / #9fdec1 sur 81-84, trait #001c14 en 86, verre #0f2727 à #112e2c. Même géométrie.
+     Cadre : 5 px image (1,67 px CSS) tout autour, verre inset de 5 px, trait 1 px image (0,33 px CSS) sur le bord du verre.
+     Écart : cadre haut et gauche plus sombres que bas et droite (écart R jusqu'à 11 niveaux) ; traité comme nuance
+     de biseau, une seule couleur de cadre (médiane des 8 zones : (158,212,181), écart max 7 niveaux par canal).
+
+   CASE COCHÉE (.k-formulaire-case-cochee), pièce COMMUTE ALLOWANCE de formulaire, origine (2424,833), même cadre.
+     cadre haut #9cd3b4, gauche #97d6b6, droite #a1d2b2, bas #a2d5b5 (mêmes zones que la case vide).
+     coche : couleur #8accae, médiane de 1452 px du polygone (sd 6,5,5). Forme : polygone sur la case, coordonnées en px CSS
+     mesurées sur le masque vert menthe (G > 120 et B > R + 10). Épaisseur du trait de coche environ 1,67 px CSS.
+     Les barres qui débordent de la case du registre sont dans le masque, pas dans la coche du kit : la coche tient
+     dans le verre.
+
+   BOUTON À FLÈCHE (.k-formulaire-bouton-fleche), DEPT et STATUS de recherche, 80 x 88 px image = 26,67 x 29,33 px CSS.
+     bord haut clair    #dad4be  DEPT (800,404)-(831,408) med #dbd5be ; STATUS med #d7d1bc ; mesures 4 px
+     bord gauche clair  #ddd9c4  DEPT (777,420)-(781,470) med #ddd9c4 ; STATUS med #ddd8c5
+     bord bas sombre    #616956  DEPT (800,487)-(831,492) med #616956 ; STATUS med #656a58
+     bord droit sombre  #636755  DEPT (852,420)-(857,470) med #626654 ; STATUS med #636859
+     face               #ada58e  DEPT (820,410)-(851,431) med #aaa28c ; STATUS med #ada590 ; GRADE med #ada58e
+     triangle encre     #080604  cœur des 4 flèches (805,440)-(828,456) med #0a0907 ; DEPT #090704 ; STATUS #050503 ;
+                        GRADE #080603. Triangle pointe en bas : 29 x 17 px image = 9,67 x 5,67 px CSS, centré à 1 px près.
+     Écart : le triangle de la flèche de liste mesure 17 px, celui de la barre de défilement 19 ou 20 px : pas de même pièce.
+
+   BOUTON À FLÈCHE HAUT (.k-formulaire-bouton-fleche-haut), GRADE du formulaire, 65 x 67 px image = 21,67 x 22,33 px CSS.
+     Le côté droit n'a pas de biseau sombre (le cadre du champ le touche). Bord haut #d5d0bd (947,950) ; gauche
+     #dedac2 (2220,2223) ; bas sombre #4f5c4b (2230,1010)-(2271,1015) med (79,92,75) sd (50,50,50) (mêlé au cadre du
+     champ sur 1 px, écart à DEPT de 18 niveaux sur le bas : variante).
+     Triangle pointe en haut : 26 x 17 px image = 8,67 x 5,67 px CSS, décalé de +2,5 px image en x et -2 px image en y
+     par rapport au centre du bouton (mesure des rangées 970 à 986 et des colonnes 2242 à 2267).
+
+   LISTE OUVERTE (.k-formulaire-liste), GRADE du formulaire, boîte 869 x 233 px image = 289,67 x 77,67 px CSS, coin (1419,1011).
+     fond glace        #0e2928 (1440,1030)-(2270,1225) med (14,41,40) sd (42,48,41) (texte exclu par le choix de la zone)
+     contour haut      #05231c, ligne 1011
+     bord haut clair   #a9b7a4 (1012,1014) med (169,183,164) ; bord gauche clair #bdbaa8 (1420,1423) med (189,186,168)
+     gauche sombre     #7b7963, col 1419
+     droit clair       #cbc8b5 (2286,2287), #323f34 (2285), #071e1b (2284)
+     bas clair         #b3b09b (1240,1243), #081811 (1239)
+     ombre droite      mesurée sur les lignes 1030 à 1225 : 2288 #7f8272 ; 2289 #414735 ; 2290-2292 #545647 à #585648 ;
+                       2293-2295 #5a5749 à #5d5a4d ; 2296-2298 #5f5e50 à #676655 ; 2299-2301 #6a6955 à #9f9a86.
+                       Ombre dure par bandes de 1 CSS px, 4,67 px CSS de large, hauteur = boîte + 6 px.
+     ombre bas         mesurée sur les colonnes 1450 à 2250 : 1244 #44493c ; 1245-1246 #282f24 ; 1247-1249 #424439 ;
+                       1250-1252 #55564c à #707064 ; 1253-1255 #6d6e61 ; 1256-1258 #6f6c5d à #7a7463 ;
+                       1259-1261 #97917e à #a19b88. Bande de 6 px CSS, largeur = boîte.
+     Pas d'ombre au-dessus ni à gauche (contrôlé sur les coins).
+
+   Positions et tailles : à ce DPR (3), les boîtes absolues sont calées sur la px CSS entière ; un coin à 1029,67 px CSS
+   tombe à 3090 au lieu de 3089 px image. Écart de 1 px image sur certains bords, non rattrapable dans la classe.
+   Une bordure inférieure à 1 px CSS est rendue à 1 px CSS (3 px image) : le trait de la case passe par des ombres intérieures.
+
+   Ce qui n'est pas dans cette matière : le texte de l'étiquette (dans l'écran), la plaque de relief (kit/relief.css, `.k-relief-plaque`
+   et `.k-relief-plaque-etiquette`, autre propriétaire), la marque et la vis. L'ancienne étiquette de champ
+   `.k-formulaire-etiquette` a été supprimée (sans usage dans les écrans) : son remplaçant est `.k-relief-plaque-etiquette`.
+   Aucune image, aucun fichier, aucune opacité. */
+
+/* ---------- Case à cocher ---------- */
+
+/* Case vide : cadre clair de 1,67 px CSS (médiane), verre de 16,33 px CSS, trait fin 0,33 px CSS sur le bord du verre.
+   Taille à poser : 19,67 x 19,67 px CSS (59 px image). Placer en position absolute ou relative selon l'écran. */
+.k-formulaire-case {
+  position: relative;
+  box-sizing: border-box;
+  width: 19.67px;
+  height: 19.67px;
+  background: var(--k-formulaire-case-cadre, #9ed5b5);
+}
+.k-formulaire-case::before {
+  content: "";
+  position: absolute;
+  left: 1.67px;
+  top: 1.67px;
+  width: 16.33px;
+  height: 16.33px;
+  box-sizing: border-box;
+  background: var(--k-formulaire-case-verre, #0f2b2a);
+  /* Trait de 1 px image sur le bord du verre : une bordure inférieure à 1 px CSS est rendue à 1 px CSS (3 px image),
+     d'où l'ombre intérieure de 0,333 px (1 px image exacte à 3x). */
+  box-shadow:
+    inset 0.333px 0 0 0 var(--k-formulaire-case-trait, #001b15),
+    inset 0 0.333px 0 0 var(--k-formulaire-case-trait, #001b15),
+    inset -0.333px 0 0 0 var(--k-formulaire-case-trait-bas, #0b2c24),
+    inset 0 -0.333px 0 0 var(--k-formulaire-case-trait, #001b15);
+}
+
+/* Coche : à poser avec .k-formulaire-case sur la même case (le ::after est la coche). */
+.k-formulaire-case-cochee::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 19.67px;
+  height: 19.67px;
+  background: var(--k-formulaire-case-coche, #8accae);
+  clip-path: polygon(4.33px 9.33px, 5px 9px, 5.67px 9.33px, 7.83px 11.17px, 13.33px 5px, 14.67px 5.33px, 15px 6.67px, 13.67px 8px, 12px 10px, 11px 11px, 9.67px 12.67px, 8.33px 14.67px, 7.33px 14.67px, 6.33px 13.33px, 5px 12px, 3.67px 10.33px);
+}
+
+/* ---------- Bouton à flèche de liste déroulante ---------- */
+
+/* Bouton à biseau fin (1,33 px CSS en clair, 1,67 px en sombre), face beige, triangle pointe en bas.
+   Taille par défaut : 26,67 x 29,33 px CSS (DEPT et STATUS du registre, 80 x 88 px image). Un écran qui pose une autre
+   taille la surcharge sur son élément. */
+/* Biseau en bordures (4 px image en haut et à gauche, 5 px en bas et à droite) : les angles sont des onglets à 45°,
+   comme dans l'image. 1,34 et 1,67 px CSS donnent 4 et 5 px image sans arrondi vers le bas. */
+.k-formulaire-bouton-fleche {
+  position: relative;
+  box-sizing: border-box;
+  width: 26.67px;
+  height: 29.33px;
+  background: var(--k-formulaire-bouton-fleche-face, #ada58e);
+  border-style: solid;
+  border-width: 1.34px 1.67px 1.67px 1.34px;
+  border-color: var(--k-formulaire-bouton-fleche-haut-clair, #dad4be) var(--k-formulaire-bouton-fleche-droite-sombre, #636755)
+    var(--k-formulaire-bouton-fleche-bas-sombre, #616956) var(--k-formulaire-bouton-fleche-gauche-clair, #ddd9c4);
+}
+/* Le triangle se centre dans la zone intérieure aux bordures : décalage de 0,165 px CSS pour rester au centre du bouton. */
+.k-formulaire-bouton-fleche::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + 0.165px);
+  top: calc(50% + 0.165px);
+  width: 9.67px;
+  height: 5.67px;
+  transform: translate(-50%, -50%);
+  background: var(--k-formulaire-bouton-fleche-encre, #080604);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* Variante GRADE du formulaire : pas de biseau sombre à droite (le cadre du champ le touche), bas plus sombre,
+   triangle pointe en haut, 8,67 px CSS de large, décalé de +0,83 px en x et -0,67 px en y (mesure).
+   Taille par défaut : 21,67 x 22,33 px CSS (GRADE du registre, 65 x 67 px image). */
+.k-formulaire-bouton-fleche-haut {
+  position: relative;
+  box-sizing: border-box;
+  width: 21.67px;
+  height: 22.33px;
+  background: var(--k-formulaire-bouton-fleche-face, #ada58e);
+  border-style: solid;
+  border-width: 1.34px 0 1.34px 1.34px;
+  border-color: #d5d0bd transparent #4f5c4b #dedac2;
+}
+.k-formulaire-bouton-fleche-haut::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + 0.16px);
+  top: calc(50% - 0.67px);
+  width: 8.67px;
+  height: 5.67px;
+  transform: translate(-50%, -50%);
+  background: var(--k-formulaire-bouton-fleche-encre, #080604);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+/* ---------- Liste déroulante ouverte ---------- */
+
+/* Liste ouverte : fond de verre, bord clair à l'intérieur en haut et à gauche, contour sombre 1 px, bord clair à droite
+   et en bas (intérieur), puis ombre dure hors boîte à droite (4,67 px CSS) et en bas (6 px CSS), par bandes à arrêts nets.
+   Pas de flou, pas d'opacité. Position à poser par l'écran (position absolute, coin en haut à gauche).
+   Taille à poser : 289,67 x 77,67 px CSS. */
+.k-formulaire-liste {
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--k-formulaire-liste-fond, #0e2928);
+  box-shadow:
+    inset 0 0.333px 0 0 #05231c,
+    inset 0 1.333px 0 0 #a9b7a4,
+    inset 0.333px 0 0 0 #7b7963,
+    inset 1.667px 0 0 0 #bdbaa8,
+    inset -0.667px 0 0 0 #cbc8b5,
+    inset -1px 0 0 0 #323f34,
+    inset -1.333px 0 0 0 #071e1b,
+    inset 0 -1.333px 0 0 #b3b09b,
+    inset 0 -1.667px 0 0 #081811;
+}
+.k-formulaire-liste::before {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 0;
+  width: 4.67px;
+  height: calc(100% + 6px);
+  background: linear-gradient(90deg,
+    #535645 0 1px, #575748 1px 2px, #5d5b4d 2px 3px, #666653 3px 4px, #77725f 4px 4.33px, #9f9a86 4.33px 4.67px);
+}
+.k-formulaire-liste::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(180deg,
+    #252d22 0 1px, #42443a 1px 2px, #585a4f 2px 3px, #72705f 3px 4px, #706d5e 4px 5px, #95907c 5px 6px);
+}

@@ -1,0 +1,149 @@
+/* Matière relief de la coque (ds-heisei). Lumière unique en haut à gauche.
+   Relevé des couleurs : PIL, médiane RGB par zone, sur maitresse (3840 x 2160 px, 1 px CSS = 3 px image).
+   Format : valeur hex, (R,G,B), image, zone (x0,y0)-(x1,y1) en px image, bornes x1 et y1 exclues.
+
+   Plaque (passe d'harmonisation, 2026-10-18) : médiane RGB par bande, PIL, 1 CSS = 3 px image. Sources : image messagerie,
+     image fichiers, image registre (plaques de panneau) et image maitresse (variantes). Format : hex (R,G,B), épaisseur en px image,
+     luminance moyenne, écart type de la luminance entre plaques (σ). Plaques retenues : messagerie (dossiers, liste, lecture,
+     réponse), fichiers (volumes, table), registre (recherche, historique). Les plaques du panneau de maîtresse (noeuds,
+     x866, x3003, bas, état) relèvent de la variante -creux ; leur bord bas et leur bord droit ont chacun une variante (voir plus bas) ;
+     les étiquettes de réponse de -etiquette ; MESSAGES de -inverse.
+   Plaque, bord haut : biseau intérieur 1 px image #c2b9a2 (194,185,162), lum 185, σ 32 ; clair intérieur 3 px image #e4d9c4
+     (228,217,196), lum 218, σ 6 à 26 ; creux extérieur 1 px image #a79e86 (167,158,134), lum 158, σ 16.
+   Plaque, bord gauche : clair intérieur 2 px image #dfd7c3 (223,215,195) puis #cec7b3 (206,199,179) ; creux extérieur 3 px image
+     #83826c (lum 133, σ 23) puis transition #aca993 (167) ; pas d'ombre sur les 4 écrans hors variantes.
+   Plaque, bord bas : creux extérieur 6 px image #747360 (116,116,96), lum 115, σ 10 à 21 ; transition 1 px #8d8872 (141,136,114) ;
+     pas de biseau intérieur.
+   Plaque, bord droit : ombre extérieure 5 px image #6d6d59 (109,109,89), lum 108, σ 4 à 14 ; pas de biseau intérieur.
+     Les plaques dont le bord droit est plat (x860, x1928, x3003, MESSAGES, FOLDERS) n'ont pas d'ombre de ce côté : écart,
+     reporté dans le rapport, non corrigé.
+   Variantes (chacune partagée par au moins 2 plaques, sinon écart) :
+     -creux (haut et gauche 13 px image, maîtresse noeuds, x866, x3003, bas, état) : haut creux 13 px #a69e87 (lum 158, σ 0 à 4),
+       clair intérieur 3 px #e9e3cd / #f1ead6 ; gauche ombre 4 px #98937e (lum 145) puis creux 9 px #aaa28c (lum 162).
+       La classe ne porte que haut et gauche : la plaque doit aussi recevoir .k-relief-plaque (c'est elle qui pose les autres côtés).
+     -creux-bas (bas 13 px image, dossiers, liste, réponse, x3003) : ombre 4 px #757662 (lum 115), transition 1 px
+       #8c8872 (lum 135), creux 8 px #a9a188 (lum 160).
+     -gorge-bas (bas de la plaque des noeuds de la maîtresse) : intérieur, pas extérieur. Bande sombre de 6 px image sous le bord
+       intérieur, 2 tons : 1 px #5d5b47 (93), 1 px #62634f (98), 1 px #656754 (101), 1 px #7b7b68 (123), 2 px #7e7d69 (126) ;
+       transition extérieure 1 px #a19e89 (161). Mesure : lignes 1539 à 1545 de maitresse, colonnes 200 à 600.
+     -gorge-bas-doux (bas de la plaque de l'état de la maîtresse) : même place, bande plus longue (7 px image) et sans palier :
+       #666350 (102), #686754 (104), #686a58 (104), #6f705f (111), #71725f (113), #72705c (114), #797560 (121) ; transition
+       extérieure 1 px #a8a38f (168). Mesure : lignes 1538 à 1545, colonnes 3100 à 3700. Écart mesuré avec -gorge-bas : jusqu'à
+       13 niveaux sur les lignes 1540 à 1542 : une variante à part.
+     -gorge-haut (haut du panneau REPLY de la messagerie) : intérieur, pas extérieur. Lumière 3 px image #e2d8c2 (226,216,194) puis
+       #e6ddc6 (230,221,198) ; transition 1 px #c8bda7 (200,189,167) ; trait sombre 1 px #a89e88 (168,158,136), puis la face.
+       Mesure : lignes 1253 à 1258 de messagerie, colonnes 2100 à 3400. Ordre inverse du biseau de la base (clair avant le sombre).
+     -ombre-droite (bord droit de la plaque de l'état) : ombre extérieure 5 px image #71715b (113,113,91) puis transition 1 px
+       #827f69 (130,127,105). Mesure : colonnes 3821 à 3826 de maitresse, lignes 600 à 1000. Base : 109, écart 4 niveaux.
+     -inverse (bas inversé, MESSAGES et lecture) : clair extérieur 3 px #dad0ba / #cac0aa (lum 208 puis 192), transition 1 px
+       #bcb29b (lum 178) ; intérieur : transition #b6ae96 (lum 174) puis trait sombre 1 px #aba28a (lum 162). Haut, gauche et droit
+       de MESSAGES ne sont pas inversés : ils suivent la base.
+     -etiquette (étiquettes de réponse to, sub, body, quatre côtés) : haut 5 px #6c7158 (lum 105 à 121) puis 1 px #a09c88 ;
+       gauche 5 px #757762 (lum 117) puis 1 px #97927e ; bas 5 px #6a6d58 (lum 106) puis 1 px #bab3a0 ; droit 3 px #505644
+       (lum 82), trait intérieur #5f6351 et #6f715c.
+     -coin (FOLDERS, coin bas-droite) : chanfrein à 45 deg de 14 px image (4,67 px CSS) de coupe, trait sombre #585844 (88,88,68),
+       3,5 px image d'épaisseur, mesuré sur la diagonale (lum 87). Le coin haut-gauche de FOLDERS est le chanfrein de la base.
+   Coins : chanfrein haut-gauche, diagonale claire #ded7c3 (lum 200 à 215, pixels de la diagonale), coupe 2,67 px CSS par côté ;
+     chanfrein bas-droite, diagonale #72715c (114,113,92) mesurée sur la diagonale, coupe 2,67 px CSS par côté.
+   Rainure NODE | TOPOLOGY : ombre #716f5c 2 px CSS (834,600)-(840,1000) ; fond #aea78f (841,600)-(863,1000) 7,33 px CSS (lum 166) ;
+   Ce qui n'est pas dans cette matière : la face de la plaque et le fond (matière coque, posés par l'appelant), l'écran sombre
+   du panneau (matière verre), le texte, la barre de menu, les vis (kit/vis.css), les rainures et filets (kit/rainure.css). */
+
+/* Plaque en saillie sur la coque. Pas de fond : la face est la coque posée par l'appelant.
+   Chaque côté a une variable --k-relief-plaque-<côté> ; sa valeur de repli est la base mesurée (voir l'en-tête).
+   Une variante redéfinit les variables des côtés qu'elle change, sans toucher aux autres. Ordre des ombres : la première est dessus. */
+.k-relief-plaque {
+  position: relative;
+  box-shadow:
+    var(--k-relief-plaque-haut, inset 0 0.333px 0 0 #c2b9a2, inset 0 1.333px 0 0 #e4d9c4, 0 -0.333px 0 0 #a79e86),
+    var(--k-relief-plaque-gauche, inset 0.667px 0 0 0 #dfd7c3, inset 1px 0 0 0 #cec7b3, -1px 0 0 0 #83826c),
+    var(--k-relief-plaque-bas, 0 2px 0 0 #747360, 0 2.333px 0 0 #8d8872),
+    var(--k-relief-plaque-droite, 1.667px 0 0 0 #6d6d59);
+}
+/* Chanfreins des deux coins : triangle de la couleur du creux (coupe), ligne claire ou sombre sur la diagonale. */
+.k-relief-plaque::before,
+.k-relief-plaque::after {
+  content: "";
+  position: absolute;
+  width: 2.667px;
+  height: 2.667px;
+  pointer-events: none;
+}
+.k-relief-plaque::before {
+  left: 0;
+  top: 0;
+  background: linear-gradient(135deg, #a49d87 0 45%, #ded7c3 45% 55%, transparent 55%);
+}
+.k-relief-plaque::after {
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0 45%, #72715c 45% 55%, #716f5c 55%);
+}
+
+/* Variantes de plaque. Chacune ne redéfinit que les côtés qu'elle change (voir l'en-tête pour les relevés). */
+/* Creux de la maîtresse : haut et gauche 13 px image. Plaques noeuds, x866, x3003, bas, état. Porte aussi .k-relief-plaque. */
+.k-relief-plaque-creux {
+  --k-relief-plaque-haut: inset 0 0.333px 0 0 #e9e3cd, inset 0 1px 0 0 #f1ead6, 0 -4.333px 0 0 #a69e87;
+  --k-relief-plaque-gauche: inset 0.333px 0 0 0 #c4bea8, inset 1px 0 0 0 #dbd6c0, -1.333px 0 0 0 #98937e, -4.333px 0 0 0 #aaa28c;
+}
+/* Creux bas de 13 px image : ombre 4 px, transition 1 px, creux 8 px plus clair. Plaques dossiers, liste, réponse, x3003. */
+.k-relief-plaque-creux-bas {
+  --k-relief-plaque-bas: 0 1.333px 0 0 #757662, 0 1.667px 0 0 #8c8872, 0 4.333px 0 0 #a9a188;
+}
+/* Bas de la plaque des noeuds de la maîtresse : bande sombre à l'intérieur, 6 px image (2 px CSS), 2 tons. Porte aussi .k-relief-plaque-creux. */
+.k-relief-plaque-gorge-bas {
+  --k-relief-plaque-bas:
+    inset 0 -0.333px 0 0 #5d5b47,
+    inset 0 -0.667px 0 0 #62634f,
+    inset 0 -1px 0 0 #656754,
+    inset 0 -1.333px 0 0 #7b7b68,
+    inset 0 -2px 0 0 #7e7d69,
+    0 0.333px 0 0 #a19e89;
+}
+/* Bas de la plaque de l'état de la maîtresse : même place, bande de 7 px image sans palier. Porte aussi .k-relief-plaque-creux. */
+.k-relief-plaque-gorge-bas-doux {
+  --k-relief-plaque-bas:
+    inset 0 -0.333px 0 0 #666350,
+    inset 0 -0.667px 0 0 #686754,
+    inset 0 -1px 0 0 #686a58,
+    inset 0 -1.333px 0 0 #6f705f,
+    inset 0 -1.667px 0 0 #71725f,
+    inset 0 -2px 0 0 #72705c,
+    inset 0 -2.333px 0 0 #797560,
+    0 0.333px 0 0 #a8a38f;
+}
+/* Droite de la plaque de l'état de la maîtresse : ombre extérieure 5 px image, plus claire que la base, transition 1 px. */
+.k-relief-plaque-ombre-droite {
+  --k-relief-plaque-droite: 1.667px 0 0 0 #71715b, 2px 0 0 0 #827f69;
+}
+/* Haut du panneau REPLY de la messagerie : gorge à l'intérieur, lumière 3 px image puis trait sombre 1 px. Ordre inverse du biseau de la base. */
+.k-relief-plaque-gorge-haut {
+  --k-relief-plaque-haut:
+    inset 0 0.667px 0 0 #e2d8c2,
+    inset 0 1px 0 0 #e6ddc6,
+    inset 0 1.333px 0 0 #c8bda7,
+    inset 0 1.667px 0 0 #a89e88;
+}
+/* Bord bas inversé : clair à l'extérieur, trait sombre à l'intérieur. Plaques MESSAGES et lecture. Seul le bas est inversé. */
+.k-relief-plaque-inverse {
+  --k-relief-plaque-bas: 0 0.333px 0 0 #dad0ba, 0 1px 0 0 #cac0aa, 0 1.333px 0 0 #bcb29b,
+    inset 0 -0.333px 0 0 #b6ae96, inset 0 -0.667px 0 0 #aba28a;
+}
+/* Étiquette enfoncée : sombre sur les quatre côtés. Étiquettes to, sub, body de la réponse. */
+.k-relief-plaque-etiquette {
+  --k-relief-plaque-haut: inset 0 0.333px 0 0 #93917d, inset 0 0.667px 0 0 #bfb6a0, inset 0 1px 0 0 #ded5be,
+    0 -1.667px 0 0 #6c7158, 0 -2px 0 0 #a09c88;
+  --k-relief-plaque-gauche: inset 0.333px 0 0 0 #7a7b69, inset 0.667px 0 0 0 #76755f, inset 1px 0 0 0 #d7d0bc,
+    -1.667px 0 0 0 #757762, -2px 0 0 0 #97927e;
+  --k-relief-plaque-bas: 0 2px 0 0 #6a6d58, 0 2.333px 0 0 #bab3a0;
+  --k-relief-plaque-droite: inset -0.333px 0 0 0 #5f6351, inset -0.667px 0 0 0 #6f715c, 1px 0 0 0 #505644;
+}
+/* Coin bas-droite coupé à 45 deg (14 px image) avec un trait sombre sur la coupe. Plaque FOLDERS. */
+.k-relief-plaque-coin {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4.667px), calc(100% - 4.667px) 100%, 0 100%);
+}
+.k-relief-plaque-coin::after {
+  width: 4.667px;
+  height: 4.667px;
+  background: linear-gradient(135deg, transparent 0 41%, #585844 41% 59%, transparent 59%);
+}
