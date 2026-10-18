@@ -5,25 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maîtresse, build integration</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&family=Zen+Kaku+Gothic+New&display=swap">
-<link rel="stylesheet" href="../kit/coque.css">
-<link rel="stylesheet" href="../kit/relief.css">
-<link rel="stylesheet" href="../kit/verre.css">
-<link rel="stylesheet" href="../kit/phosphore.css">
-<link rel="stylesheet" href="../kit/alerte.css">
-<link rel="stylesheet" href="../kit/bouton.css">
-<link rel="stylesheet" href="../kit/rainure.css">
-<link rel="stylesheet" href="../kit/graphe.css">
-<link rel="stylesheet" href="../kit/defilement.css">
-<link rel="stylesheet" href="../kit/marque.css">
-<link rel="stylesheet" href="../kit/vis.css">
+<link rel="stylesheet" href="../system/heisei.css">
 <link rel="stylesheet" href="screen.css">
-<style>
-  /* Polices du kit (kit.polices.md) : fichiers hors du dépôt, URL relatives absentes d'ici ;
-     la capture les sert par route, sans repli silencieux. */
-  @font-face { font-family: "PixelMplus12"; src: url("https://cdn.jsdelivr.net/gh/itouhiro/PixelMplus@master/PixelMplus12-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
-</style>
+<link rel="stylesheet" href="../system/heisei-anim.css">
 </head>
-<body class="k-coque">
+<body class="k-coque h-ecran">
 <!-- zone : haut -->
 <!-- Barre de menu : plaque pleine largeur, titre en creux, rainures, menus, horloge et SYS OK. -->
 <div class="k-relief-plaque plc m-haut-barre"></div>
@@ -39,18 +25,21 @@
 <div class="k-rainure-filet-v plc m-haut-rainure m-haut-rainure-10"></div>
 <div class="k-rainure-filet-v-droit plc m-haut-rainure m-haut-rainure-11"></div>
 
-<div class="m-haut-texte m-haut-titre">監視 MONITOR</div>
+<div lang="ja" class="m-haut-texte m-haut-titre">監視 MONITOR</div>
 <div class="m-haut-texte m-haut-nom m-haut-netwatch">NETWATCH V4.2</div>
-<div class="m-haut-texte m-haut-menu m-haut-file">FILE</div>
-<div class="m-haut-texte m-haut-menu m-haut-view">VIEW</div>
-<div class="m-haut-texte m-haut-menu m-haut-node">NODE</div>
-<div class="m-haut-texte m-haut-menu m-haut-log">LOG</div>
-<div class="m-haut-texte m-haut-menu m-haut-help">HELP</div>
+<!-- Menus : barre de menu (roving tabindex, FILE tabulable au départ). -->
+<div class="m-ancre" role="menubar" aria-label="メニュー MENU">
+<div class="m-haut-texte m-haut-menu m-haut-file" role="menuitem" tabindex="0">FILE</div>
+<div class="m-haut-texte m-haut-menu m-haut-view" role="menuitem" tabindex="-1">VIEW</div>
+<div class="m-haut-texte m-haut-menu m-haut-node" role="menuitem" tabindex="-1">NODE</div>
+<div class="m-haut-texte m-haut-menu m-haut-log" role="menuitem" tabindex="-1">LOG</div>
+<div class="m-haut-texte m-haut-menu m-haut-help" role="menuitem" tabindex="-1">HELP</div>
+</div>
 
-<div class="k-verre-creux plc m-haut-horloge-cadre"></div>
-<div class="m-haut-texte m-haut-horloge-texte">H07.11.03 23:47:12</div>
+<div data-anim="glass" class="k-verre-creux plc m-haut-horloge-cadre"></div>
+<div data-anim="clock" class="m-haut-texte m-haut-horloge-texte" role="timer" aria-label="時計 CLOCK">H07.11.03 23:47:12</div>
 
-<div class="k-verre-cadre plc m-haut-sysok-cadre"><div class="k-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc m-haut-sysok-cadre"><div class="k-verre"></div></div>
 <div class="m-haut-horloge k-phosphore-texte m-haut-sysok-texte">SYS OK</div>
 <!-- zone : noeuds -->
 <!-- Panneau NODE LIST : plaque en creux, rainure à droite, 4 vis, titre, cadre de verre, 14 lignes, sélection, 3 boutons. -->
@@ -61,112 +50,114 @@
 <div class="k-vis plc m-noeuds-vis-bl"></div>
 <div class="k-vis plc m-noeuds-vis-br"></div>
 
-<div class="titre plc m-noeuds-titre-jp">ノード</div>
+<div lang="ja" class="titre plc m-noeuds-titre-jp">ノード</div>
 <div class="titre plc m-noeuds-titre-latin">NODE LIST</div>
 
-<div class="k-verre-cadre plc m-noeuds-cadre"><div class="k-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc m-noeuds-cadre"><div class="k-verre"></div></div>
 
-<!-- Ligne sélectionnée ND-004 : aplat, marque de contour (classe du kit), textes en noir. -->
-<div class="k-phosphore-selection plc m-noeuds-sel">
-  <div class="k-marque-contour-sel plc m-noeuds-sel-marque"></div>
-  <span class="txt m-noeuds-sel-code">ND-004</span>
-  <span class="txt m-noeuds-sel-nom">SW-CORE-B</span>
-  <span class="txt txt-centre m-noeuds-sel-lat">01ms</span>
+<!-- Liste NODE LIST (listbox) : 14 options. Chaque ligne est ancrée à son haut (mNN) ; sa boîte est en --l* (--ly relatif à l'ancre). ND-004 est la ligne sélectionnée : sa barre est dans la feuille (h-ligne[aria-selected]). -->
+<div class="m-ancre" role="listbox" aria-label="ノード一覧 NODE LIST">
+<div data-anim="ligne" data-id="ND-001" class="h-ligne m-noeuds-ligne m-noeuds-l01" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-001</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">GW-TOKYO</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">02ms</span>
 </div>
-
-<!-- Lignes 1 à 14 hors sélection : chaque ligne est un point d'ancrage vertical (classe m-noeuds-lNN). -->
-<div class="m-noeuds-ligne m-noeuds-l01">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-001</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">GW-TOKYO</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">02ms</span>
+<div data-anim="ligne" data-id="ND-002" class="h-ligne m-noeuds-ligne m-noeuds-l02" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-002</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">GW-OSAKA</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">11ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l02">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-002</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">GW-OSAKA</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">11ms</span>
+<div data-anim="ligne" data-id="ND-003" class="h-ligne m-noeuds-ligne m-noeuds-l03" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-003</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">SW-CORE-A</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">01ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l03">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-003</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">SW-CORE-A</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">01ms</span>
+<div data-anim="ligne" data-id="ND-004" class="h-ligne" role="option" aria-selected="true" tabindex="0" style="--lx: 21.33px; --ly: 155px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-marque-contour-sel plc m-noeuds-sel-marque"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-sel-code">ND-004</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-sel-nom">SW-CORE-B</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-sel-lat">01ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l05">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-005</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">SRV-MAIL</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">03ms</span>
+<div data-anim="ligne" data-id="ND-005" class="h-ligne m-noeuds-ligne m-noeuds-l05" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-005</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">SRV-MAIL</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">03ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l06">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-006</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">SRV-FILE</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">04ms</span>
+<div data-anim="ligne" data-id="ND-006" class="h-ligne m-noeuds-ligne m-noeuds-l06" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-006</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">SRV-FILE</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">04ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l07">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-007</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">SRV-DB</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">05ms</span>
+<div data-anim="ligne" data-id="ND-007" class="h-ligne m-noeuds-ligne m-noeuds-l07" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-007</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">SRV-DB</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">05ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l08">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-008</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">RT-NAGOYA</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">17ms</span>
+<div data-anim="ligne" data-id="ND-008" class="h-ligne m-noeuds-ligne m-noeuds-l08" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-008</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">RT-NAGOYA</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">17ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l09">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-009</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">RT-SENDAI</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">24ms</span>
+<div data-anim="ligne" data-id="ND-009" class="h-ligne m-noeuds-ligne m-noeuds-l09" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-009</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">RT-SENDAI</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">24ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l10">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-010</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">HUB-3F</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">02ms</span>
+<div data-anim="ligne" data-id="ND-010" class="h-ligne m-noeuds-ligne m-noeuds-l10" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-010</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">HUB-3F</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">02ms</span>
 </div>
 <!-- ND-011 en alerte : puce, nom, adresse et temps en orange sodium. -->
-<div class="m-noeuds-ligne m-noeuds-l11">
-  <div class="k-alerte-puce plc m-noeuds-pastille"></div>
-  <span class="txt k-alerte-texte m-noeuds-code">ND-011</span>
-  <span class="txt k-alerte-texte m-noeuds-nom">HUB-5F</span>
-  <span class="txt k-alerte-texte txt-centre m-noeuds-lat">98ms</span>
+<div data-anim="ligne" data-id="ND-011" class="h-ligne m-noeuds-ligne m-noeuds-l11" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-alerte-puce plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-alerte-texte m-noeuds-code">ND-011</span>
+  <span data-anim="n-nom" class="txt k-alerte-texte m-noeuds-nom">HUB-5F</span>
+  <span data-anim="n-lat" class="txt k-alerte-texte txt-centre m-noeuds-lat">98ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l12">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-012</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">PRN-02</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">06ms</span>
+<div data-anim="ligne" data-id="ND-012" class="h-ligne m-noeuds-ligne m-noeuds-l12" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-012</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">PRN-02</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">06ms</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l13">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-013</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">UPS-01</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">--</span>
+<div data-anim="ligne" data-id="ND-013" class="h-ligne m-noeuds-ligne m-noeuds-l13" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-013</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">UPS-01</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">--</span>
 </div>
-<div class="m-noeuds-ligne m-noeuds-l14">
-  <div class="k-phosphore-segment plc m-noeuds-pastille"></div>
-  <span class="txt k-phosphore-texte m-noeuds-code">ND-014</span>
-  <span class="txt k-phosphore-texte m-noeuds-nom">BKP-TAPE</span>
-  <span class="txt k-phosphore-texte txt-centre m-noeuds-lat">09ms</span>
+<div data-anim="ligne" data-id="ND-014" class="h-ligne m-noeuds-ligne m-noeuds-l14" role="option" aria-selected="false" tabindex="-1" style="--lx: 21.33px; --ly: -6.67px; --lw: 243.5px; --lh: 23.33px">
+  <div data-anim="n-puce" class="k-phosphore-segment plc m-noeuds-pastille"></div>
+  <span data-anim="n-code" class="txt k-phosphore-texte m-noeuds-code">ND-014</span>
+  <span data-anim="n-nom" class="txt k-phosphore-texte m-noeuds-nom">BKP-TAPE</span>
+  <span data-anim="n-lat" class="txt k-phosphore-texte txt-centre m-noeuds-lat">09ms</span>
 </div>
-
+</div>
 <!-- Rangée de boutons levés (libellés réels de la maîtresse). -->
-<div class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-link"><span class="k-bouton-libelle"><span class="k-bouton-jp">接続</span><span class="k-bouton-latin"> LINK</span></span></div>
-<div class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-retry"><span class="k-bouton-libelle"><span class="k-bouton-jp">再試行</span><span class="k-bouton-latin"> RETRY</span></span></div>
-<div class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-config"><span class="k-bouton-libelle"><span class="k-bouton-jp"><span class="k-bouton-accel">設</span>定</span><span class="k-bouton-latin"> <span class="k-bouton-accel">CONFIG</span></span></span></div>
+<div class="m-ancre" role="toolbar" aria-label="操作 ACTIONS">
+<div role="button" tabindex="0" class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-link"><span class="k-bouton-libelle"><span lang="ja" class="k-bouton-jp">接続</span><span class="k-bouton-latin"> LINK</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-retry"><span class="k-bouton-libelle"><span lang="ja" class="k-bouton-jp">再試行</span><span class="k-bouton-latin"> RETRY</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton k-bouton-clair plc m-noeuds-bouton m-noeuds-config"><span class="k-bouton-libelle"><span lang="ja" class="k-bouton-jp"><span lang="ja" class="k-bouton-accel">設</span>定</span><span class="k-bouton-latin"> <span class="k-bouton-accel">CONFIG</span></span></span></div>
+</div>
 <!-- zone : topologie -->
 <!-- Panneau TOPOLOGY : plaque, vis, titre, cadre de verre. -->
+<div class="m-ancre" role="img" aria-label="網図 TOPOLOGY : ノード 14 台。ND-011 HUB-5F が警告（98ms）、他 13 台は通常">
 <div class="k-relief-plaque k-relief-plaque-creux plc" style="left: 288.67px; top: 41px; width: 703px; height: 290.67px;"></div>
 <div class="k-vis plc" style="left: 294.33px; top: 48px;"></div>
 <div class="k-vis plc" style="left: 976px; top: 48.33px;"></div>
-<div class="m-topologie-kanji" style="left: 312.33px; top: 50.34px;">網図</div>
+<div lang="ja" class="m-topologie-kanji" style="left: 312.33px; top: 50.34px;">網図</div>
 <div class="m-topologie-titre" style="left: 351px; top: 48.67px;">TOPOLOGY</div>
-<div class="k-verre-cadre plc m-topologie-cadre" style="left: 295.67px; top: 68.67px; width: 689.33px; height: 258.67px;"><div class="k-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc m-topologie-cadre" style="left: 295.67px; top: 68.67px; width: 689.33px; height: 258.67px;"><div class="k-verre"></div></div>
 <!-- Grille : traits de grille du kit (graphe), aux graduations majeures. -->
 <div class="k-graphe-grille-v m-topologie-grille plc" style="left: 389.5px; top: 71.0px; width: 0.67px; height: 235.67px;"></div>
 <div class="k-graphe-grille-v m-topologie-grille plc" style="left: 448.67px; top: 71.0px; width: 0.67px; height: 235.67px;"></div>
@@ -318,7 +309,11 @@
 <div class="k-phosphore-trait plc" style="left: 588.33px; top: 260.67px; width: 1.67px; height: 37.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 524.0px; top: 260.67px; width: 66.0px; height: 1.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 524.0px; top: 296.33px; width: 66.0px; height: 1.67px;"></div>
-<div class="k-alerte-contour m-topologie-boite-alerte plc" style="left: 609.0px; top: 260.67px; width: 68.0px; height: 37.33px;"></div>
+<div data-anim="contour11" class="k-alerte-contour m-topologie-boite-alerte plc" style="left: 609.0px; top: 260.67px; width: 68.0px; height: 37.33px;"></div>
+<div aria-hidden="true" class="k-phosphore-trait plc" data-anim="contour11-vert" style="left: 609.0px; top: 260.67px; width: 1.5px; height: 37.33px; opacity: 0;"></div>
+<div aria-hidden="true" class="k-phosphore-trait plc" data-anim="contour11-vert" style="left: 675.5px; top: 260.67px; width: 1.5px; height: 37.33px; opacity: 0;"></div>
+<div aria-hidden="true" class="k-phosphore-trait plc" data-anim="contour11-vert" style="left: 609.0px; top: 260.67px; width: 68.0px; height: 1.5px; opacity: 0;"></div>
+<div aria-hidden="true" class="k-phosphore-trait plc" data-anim="contour11-vert" style="left: 609.0px; top: 296.5px; width: 68.0px; height: 1.5px; opacity: 0;"></div>
 <div class="k-phosphore-trait plc" style="left: 697.0px; top: 260.67px; width: 1.33px; height: 37.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 762.67px; top: 260.67px; width: 1.33px; height: 37.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 697.0px; top: 260.67px; width: 67.0px; height: 1.33px;"></div>
@@ -331,35 +326,36 @@
 <div class="k-phosphore-trait plc" style="left: 953.0px; top: 260.67px; width: 1.67px; height: 37.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 880.67px; top: 260.67px; width: 74.0px; height: 1.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 880.67px; top: 296.33px; width: 74.0px; height: 1.67px;"></div>
+<div aria-hidden="true" class="k-phosphore-selection plc" data-anim="sel-boite" style="left: 0px; top: 0px; width: 1px; height: 1px; opacity: 0;"></div>
 <!-- Textes des boîtes : identifiant puis nom, centrés dans la boîte. -->
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 527.67px; top: 90.5px; width: 77.67px;">ND-001</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 527.67px; top: 104.83px; width: 77.67px;">GW-TOKYO</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 675.67px; top: 90.5px; width: 77.0px;">ND-002</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 675.67px; top: 104.83px; width: 77.0px;">GW-OSAKA</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 523.67px; top: 171.16px; width: 87.0px;">ND-003</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 523.67px; top: 185.5px; width: 87.0px;">SW-CORE-A</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 669.0px; top: 171.16px; width: 87.33px;">ND-004</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 669.0px; top: 185.5px; width: 87.33px;">SW-CORE-B</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 375.33px; top: 171.16px; width: 74.67px;">ND-005</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 375.33px; top: 185.5px; width: 74.67px;">SRV-MAIL</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 785.33px; top: 171.16px; width: 67.67px;">ND-006</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 785.33px; top: 185.5px; width: 67.67px;">SRV-FILE</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 896.0px; top: 171.16px; width: 66.0px;">ND-007</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 896.0px; top: 185.5px; width: 66.0px;">SRV-DB</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 349.67px; top: 265.5px; width: 71.33px;">ND-008</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 349.67px; top: 280.5px; width: 71.33px;">RT-NAGOYA</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 436.67px; top: 265.5px; width: 69.67px;">ND-009</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 436.67px; top: 280.5px; width: 69.67px;">RT-SENDAI</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 524.0px; top: 265.5px; width: 66.0px;">ND-010</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 524.0px; top: 280.5px; width: 66.0px;">HUB-3F</div>
-<div class="k-alerte-texte m-topologie-noeud" style="left: 609.0px; top: 265.5px; width: 68.0px;">ND-011</div>
-<div class="k-alerte-texte m-topologie-noeud" style="left: 609.0px; top: 280.5px; width: 68.0px;">HUB-5F</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 697.0px; top: 265.5px; width: 67.0px;">ND-012</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 697.0px; top: 280.5px; width: 67.0px;">PRN-02</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 790.0px; top: 265.5px; width: 68.33px;">ND-013</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 790.0px; top: 280.5px; width: 68.33px;">UPS-01</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 880.67px; top: 265.5px; width: 74.0px;">ND-014</div>
-<div class="k-phosphore-texte m-topologie-noeud" style="left: 880.67px; top: 280.5px; width: 74.0px;">BKP-TAPE</div>
+<div data-anim="b-code" data-id="ND-001" class="k-phosphore-texte m-topologie-noeud" style="left: 527.67px; top: 90.5px; width: 77.67px;">ND-001</div>
+<div data-anim="b-nom" data-id="ND-001" class="k-phosphore-texte m-topologie-noeud" style="left: 527.67px; top: 104.83px; width: 77.67px;">GW-TOKYO</div>
+<div data-anim="b-code" data-id="ND-002" class="k-phosphore-texte m-topologie-noeud" style="left: 675.67px; top: 90.5px; width: 77.0px;">ND-002</div>
+<div data-anim="b-nom" data-id="ND-002" class="k-phosphore-texte m-topologie-noeud" style="left: 675.67px; top: 104.83px; width: 77.0px;">GW-OSAKA</div>
+<div data-anim="b-code" data-id="ND-003" class="k-phosphore-texte m-topologie-noeud" style="left: 523.67px; top: 171.16px; width: 87.0px;">ND-003</div>
+<div data-anim="b-nom" data-id="ND-003" class="k-phosphore-texte m-topologie-noeud" style="left: 523.67px; top: 185.5px; width: 87.0px;">SW-CORE-A</div>
+<div data-anim="b-code" data-id="ND-004" class="k-phosphore-texte m-topologie-noeud" style="left: 669.0px; top: 171.16px; width: 87.33px;">ND-004</div>
+<div data-anim="b-nom" data-id="ND-004" class="k-phosphore-texte m-topologie-noeud" style="left: 669.0px; top: 185.5px; width: 87.33px;">SW-CORE-B</div>
+<div data-anim="b-code" data-id="ND-005" class="k-phosphore-texte m-topologie-noeud" style="left: 375.33px; top: 171.16px; width: 74.67px;">ND-005</div>
+<div data-anim="b-nom" data-id="ND-005" class="k-phosphore-texte m-topologie-noeud" style="left: 375.33px; top: 185.5px; width: 74.67px;">SRV-MAIL</div>
+<div data-anim="b-code" data-id="ND-006" class="k-phosphore-texte m-topologie-noeud" style="left: 785.33px; top: 171.16px; width: 67.67px;">ND-006</div>
+<div data-anim="b-nom" data-id="ND-006" class="k-phosphore-texte m-topologie-noeud" style="left: 785.33px; top: 185.5px; width: 67.67px;">SRV-FILE</div>
+<div data-anim="b-code" data-id="ND-007" class="k-phosphore-texte m-topologie-noeud" style="left: 896.0px; top: 171.16px; width: 66.0px;">ND-007</div>
+<div data-anim="b-nom" data-id="ND-007" class="k-phosphore-texte m-topologie-noeud" style="left: 896.0px; top: 185.5px; width: 66.0px;">SRV-DB</div>
+<div data-anim="b-code" data-id="ND-008" class="k-phosphore-texte m-topologie-noeud" style="left: 349.67px; top: 265.5px; width: 71.33px;">ND-008</div>
+<div data-anim="b-nom" data-id="ND-008" class="k-phosphore-texte m-topologie-noeud" style="left: 349.67px; top: 280.5px; width: 71.33px;">RT-NAGOYA</div>
+<div data-anim="b-code" data-id="ND-009" class="k-phosphore-texte m-topologie-noeud" style="left: 436.67px; top: 265.5px; width: 69.67px;">ND-009</div>
+<div data-anim="b-nom" data-id="ND-009" class="k-phosphore-texte m-topologie-noeud" style="left: 436.67px; top: 280.5px; width: 69.67px;">RT-SENDAI</div>
+<div data-anim="b-code" data-id="ND-010" class="k-phosphore-texte m-topologie-noeud" style="left: 524.0px; top: 265.5px; width: 66.0px;">ND-010</div>
+<div data-anim="b-nom" data-id="ND-010" class="k-phosphore-texte m-topologie-noeud" style="left: 524.0px; top: 280.5px; width: 66.0px;">HUB-3F</div>
+<div data-anim="b-code" data-id="ND-011" class="k-alerte-texte m-topologie-noeud" style="left: 609.0px; top: 265.5px; width: 68.0px;">ND-011</div>
+<div data-anim="b-nom" data-id="ND-011" class="k-alerte-texte m-topologie-noeud" style="left: 609.0px; top: 280.5px; width: 68.0px;">HUB-5F</div>
+<div data-anim="b-code" data-id="ND-012" class="k-phosphore-texte m-topologie-noeud" style="left: 697.0px; top: 265.5px; width: 67.0px;">ND-012</div>
+<div data-anim="b-nom" data-id="ND-012" class="k-phosphore-texte m-topologie-noeud" style="left: 697.0px; top: 280.5px; width: 67.0px;">PRN-02</div>
+<div data-anim="b-code" data-id="ND-013" class="k-phosphore-texte m-topologie-noeud" style="left: 790.0px; top: 265.5px; width: 68.33px;">ND-013</div>
+<div data-anim="b-nom" data-id="ND-013" class="k-phosphore-texte m-topologie-noeud" style="left: 790.0px; top: 280.5px; width: 68.33px;">UPS-01</div>
+<div data-anim="b-code" data-id="ND-014" class="k-phosphore-texte m-topologie-noeud" style="left: 880.67px; top: 265.5px; width: 74.0px;">ND-014</div>
+<div data-anim="b-nom" data-id="ND-014" class="k-phosphore-texte m-topologie-noeud" style="left: 880.67px; top: 280.5px; width: 74.0px;">BKP-TAPE</div>
 <!-- Bus horizontal, départs vers les boîtes du bas (flèche vers le bas), liaison orange vers ND-011. -->
 <div class="k-phosphore-trait plc" style="left: 381.67px; top: 228.67px; width: 533.67px; height: 1.33px;"></div>
 <div class="k-phosphore-trait plc" style="left: 381.66px; top: 229.33px; width: 1.33px; height: 31.34px;"></div>
@@ -374,10 +370,10 @@
 <div class="k-phosphore-trait plc" style="left: 553.33px; top: 257.67px; width: 4px; height: 1px;"></div>
 <div class="k-phosphore-trait plc" style="left: 554.0px; top: 258.67px; width: 2.67px; height: 1px;"></div>
 <div class="k-phosphore-trait plc" style="left: 554.67px; top: 259.67px; width: 1.33px; height: 1px;"></div>
-<div class="k-alerte-segment plc" style="left: 640.66px; top: 229.33px; width: 1.33px; height: 31.34px;"></div>
-<div class="k-alerte-segment plc" style="left: 639.33px; top: 257.67px; width: 4px; height: 1px;"></div>
-<div class="k-alerte-segment plc" style="left: 640.0px; top: 258.67px; width: 2.67px; height: 1px;"></div>
-<div class="k-alerte-segment plc" style="left: 640.67px; top: 259.67px; width: 1.33px; height: 1px;"></div>
+<div data-anim="lien11" class="k-alerte-segment plc" style="left: 640.66px; top: 229.33px; width: 1.33px; height: 31.34px;"></div>
+<div data-anim="lien11" class="k-alerte-segment plc" style="left: 639.33px; top: 257.67px; width: 4px; height: 1px;"></div>
+<div data-anim="lien11" class="k-alerte-segment plc" style="left: 640.0px; top: 258.67px; width: 2.67px; height: 1px;"></div>
+<div data-anim="lien11" class="k-alerte-segment plc" style="left: 640.67px; top: 259.67px; width: 1.33px; height: 1px;"></div>
 <div class="k-phosphore-trait plc" style="left: 723.66px; top: 229.33px; width: 1.33px; height: 31.34px;"></div>
 <div class="k-phosphore-trait plc" style="left: 722.33px; top: 257.67px; width: 4px; height: 1px;"></div>
 <div class="k-phosphore-trait plc" style="left: 723.0px; top: 258.67px; width: 2.67px; height: 1px;"></div>
@@ -452,26 +448,41 @@
 <div class="k-phosphore-texte m-topologie-lien" style="left: 389.0px; top: 241.83px;">10M</div>
 <div class="k-phosphore-texte m-topologie-lien" style="left: 475.67px; top: 241.83px;">10M</div>
 <div class="k-phosphore-texte m-topologie-lien" style="left: 563.0px; top: 242.16px;">100M</div>
-<div class="k-alerte-texte m-topologie-lien" style="left: 643.33px; top: 241.83px;">10M</div>
+<div data-anim="lien11-lab" class="k-alerte-texte m-topologie-lien" style="left: 643.33px; top: 241.83px;">10M</div>
 <div class="k-phosphore-texte m-topologie-lien" style="left: 732.67px; top: 242.16px;">10M</div>
 <div class="k-phosphore-texte m-topologie-lien" style="left: 823.33px; top: 241.83px;">10M</div>
 <div class="k-phosphore-texte m-topologie-lien" style="left: 922.33px; top: 242.16px;">10M</div>
+</div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-001" style="left: 527.67px; top: 85.33px; width: 77.67px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-002" style="left: 675.67px; top: 85.33px; width: 77.0px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-003" style="left: 523.67px; top: 166.0px; width: 87.0px; height: 36.67px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-004" style="left: 669.0px; top: 166.0px; width: 87.33px; height: 37.0px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-005" style="left: 375.33px; top: 166.33px; width: 74.67px; height: 36.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-006" style="left: 785.33px; top: 166.33px; width: 67.67px; height: 36.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-007" style="left: 896.0px; top: 166.33px; width: 66.0px; height: 36.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-008" style="left: 349.67px; top: 260.67px; width: 71.33px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-009" style="left: 436.67px; top: 260.67px; width: 69.67px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-010" style="left: 524.0px; top: 260.67px; width: 66.0px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-011" style="left: 609.0px; top: 260.67px; width: 68.0px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-012" style="left: 697.0px; top: 260.67px; width: 67.0px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-013" style="left: 790.0px; top: 260.67px; width: 68.33px; height: 37.33px;"></div>
+<div aria-hidden="true" class="plc" data-anim="clic noeud" data-id="ND-014" style="left: 880.67px; top: 260.67px; width: 74.0px; height: 37.33px;"></div>
 <!-- zone : bande -->
 <!-- Zone bande : deux panneaux jumeaux (IN, OUT). Positions en px CSS de l'écran entier, mesurées (mesures.md). -->
 <div class="k-relief-plaque k-relief-plaque-creux plc" style="left: 286.67px; top: 338.33px; width: 348.67px; height: 179.33px;"></div>
-<div class="k-verre-cadre plc" style="left: 295.67px; top: 363.67px; width: 333.33px; height: 144.67px;"><div class="k-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc" style="left: 295.67px; top: 363.67px; width: 333.33px; height: 144.67px;"><div class="k-verre"></div></div>
 <div class="k-vis plc" style="left: 294.33px; top: 343.33px;"></div>
 <div class="k-vis plc" style="left: 622px; top: 343.67px;"></div>
 <div class="k-vis plc" style="left: 290.67px; top: 503px;"></div>
 <div class="k-relief-plaque k-relief-plaque-creux plc" style="left: 642.67px; top: 338.33px; width: 348px; height: 179.33px;"></div>
-<div class="k-verre-cadre plc" style="left: 649.67px; top: 363.67px; width: 333.33px; height: 144.67px;"><div class="k-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc" style="left: 649.67px; top: 363.67px; width: 333.33px; height: 144.67px;"><div class="k-verre"></div></div>
 <div class="k-vis plc" style="left: 649.33px; top: 344px;"></div>
 <div class="k-vis plc" style="left: 976.67px; top: 344px;"></div>
 <div class="k-rainure-creux plc" style="left: 636.67px; top: 338.33px; width: 7.33px; height: 179.33px;"></div>
-<span class="titre m-bande-titre m-bande-kanji" style="left: 311.67px; top: 343.24px;">帯域</span>
+<span lang="ja" class="titre m-bande-titre m-bande-kanji" style="left: 311.67px; top: 343.24px;">帯域</span>
 <span class="titre m-bande-titre" style="left: 349px; top: 344.07px;">BANDWIDTH IN</span>
 <span class="titre m-bande-lecture" style="right: 660.08px; top: 345.77px; letter-spacing: 1.92px;">IN 042.7 Mbps</span>
-<span class="titre m-bande-titre m-bande-kanji" style="left: 665.33px; top: 343.24px;">帯域</span>
+<span lang="ja" class="titre m-bande-titre m-bande-kanji" style="left: 665.33px; top: 343.24px;">帯域</span>
 <span class="titre m-bande-titre" style="left: 703px; top: 344.07px;">BANDWIDTH OUT</span>
 <span class="titre m-bande-lecture" style="right: 305px; top: 345.77px; letter-spacing: 1.6px;">OUT 018.3 Mbps</span>
 <div class="k-phosphore-segment-eteint plc m-bande-grille" style="left: 399px; top: 376.33px; width: 1px; height: 103.67px;"></div>
@@ -504,11 +515,11 @@
 <div class="k-graphe-repere plc m-bande-stub" style="left: 686.67px; top: 402.33px; width: 21.67px; height: 1px;"></div>
 <div class="k-graphe-repere plc m-bande-stub" style="left: 686.67px; top: 428.33px; width: 21.67px; height: 1px;"></div>
 <div class="k-graphe-repere plc m-bande-stub" style="left: 686.67px; top: 454px; width: 21.67px; height: 1px;"></div>
-<div class="k-graphe-aire k-phosphore-texte k-phosphore-segment-eteint plc m-bande-aire m-bande-aire-in"></div>
-<div class="k-graphe-aire k-phosphore-texte k-phosphore-segment-eteint plc m-bande-aire m-bande-aire-out"></div>
-<div class="k-phosphore-texte plc m-bande-trace"><svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
-<polyline class="k-phosphore-courbe m-bande-courbe-in" points="362.67,448.33 365.67,446.67 368.67,449.33 371.67,450.67 374.67,449.67 377.67,450.33 380.67,448.33 383.67,450 386.67,448.33 389.67,449 392.67,444 395.67,442.67 398.67,443.67 401.67,444.33 404.67,441.67 407.67,443 410.67,448.67 413.67,449.67 416.67,450.67 419.67,450 422.67,451.33 425.67,449.67 428.67,451.33 431.67,451.33 434.67,450.33 437.67,448.67 440.67,449 443.67,451.33 446.67,449.33 449.67,449 452.67,447.67 455.67,444.67 458.67,442.67 461.67,443.67 464.67,447 467.67,446 470.67,447.33 473.67,448.33 476.67,448 479.67,449.33 482.67,450.33 485.67,448.67 488.67,448.33 491.67,448 494.67,443 497.67,446 500.67,442.67 503.67,438 506.67,436.33 509.67,432.67 512.67,430.33 515.67,427.33 518.67,424.67 521.67,423.33 524.67,423.33 527.67,426 530.67,429.67 533.67,433 536.67,437.67 539.67,437.33 542.67,444 545.67,441.67 548.67,441 551.67,439.67 554.67,441 557.67,445.67 560.67,450 563.67,448.67 566.67,449 569.67,449 572.67,449.67 575.67,446.67 578.67,448.33 581.67,446.67 584.67,447.67 587.67,449 590.67,449.33 593.67,448.33 596.67,448.67 599.67,447.67 602.67,446.33 605.67,443 608.67,444 611.67,444 614.67,445.67"/>
-<polyline class="k-phosphore-courbe m-bande-courbe-out" points="716.33,469.33 719.33,469.33 722.33,471.33 725.33,470.67 728.33,470 731.33,468.67 734.33,467.33 737.33,466.67 740.33,468 743.33,469.33 746.33,469.33 749.33,468.33 752.33,466 755.33,464.33 758.33,465 761.33,468 764.33,469.67 767.33,469.33 770.33,468 773.33,466 776.33,464.67 779.33,464.67 782.33,467.67 785.33,467.33 788.33,469.67 791.33,469.67 794.33,470.67 797.33,472.67 800.33,472 803.33,472.67 806.33,472.67 809.33,471.33 812.33,471.33 815.33,471.33 818.33,471.67 821.33,469.67 824.33,468 827.33,467.33 830.33,469.33 833.33,469 836.33,469.33 839.33,468 842.33,467.33 845.33,466.33 848.33,465 851.33,464.33 854.33,464 857.33,462 860.33,462 863.33,458.33 866.33,457.33 869.33,457 872.33,455.33 875.33,454.33 878.33,453.67 881.33,453.67 884.33,456 887.33,458.67 890.33,460.33 893.33,462 896.33,462.67 899.33,465.33 902.33,465 905.33,465.33 908.33,466.67 911.33,466.67 914.33,468 917.33,467.33 920.33,468 923.33,467.33 926.33,466.67 929.33,466 932.33,464.33 935.33,464.33 938.33,463.67 941.33,464 944.33,462.67 947.33,463.67 950.33,466.33 953.33,466.67 956.33,467 959.33,465.33 962.33,464.33 965.33,462.67 968.33,464 971.33,464.67"/>
+<div data-anim="aire-in" class="k-graphe-aire k-phosphore-texte k-phosphore-segment-eteint plc m-bande-aire m-bande-aire-in"></div>
+<div data-anim="aire-out" class="k-graphe-aire k-phosphore-texte k-phosphore-segment-eteint plc m-bande-aire m-bande-aire-out"></div>
+<div class="k-phosphore-texte plc m-bande-trace"><svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="帯域 BANDWIDTH : 曲線 IN の最終値 042.7 Mbps、曲線 OUT の最終値 018.3 Mbps（23:00 から 23:45）">
+<polyline data-anim="courbe-in" class="k-phosphore-courbe m-bande-courbe-in" points="362.67,448.33 365.67,446.67 368.67,449.33 371.67,450.67 374.67,449.67 377.67,450.33 380.67,448.33 383.67,450 386.67,448.33 389.67,449 392.67,444 395.67,442.67 398.67,443.67 401.67,444.33 404.67,441.67 407.67,443 410.67,448.67 413.67,449.67 416.67,450.67 419.67,450 422.67,451.33 425.67,449.67 428.67,451.33 431.67,451.33 434.67,450.33 437.67,448.67 440.67,449 443.67,451.33 446.67,449.33 449.67,449 452.67,447.67 455.67,444.67 458.67,442.67 461.67,443.67 464.67,447 467.67,446 470.67,447.33 473.67,448.33 476.67,448 479.67,449.33 482.67,450.33 485.67,448.67 488.67,448.33 491.67,448 494.67,443 497.67,446 500.67,442.67 503.67,438 506.67,436.33 509.67,432.67 512.67,430.33 515.67,427.33 518.67,424.67 521.67,423.33 524.67,423.33 527.67,426 530.67,429.67 533.67,433 536.67,437.67 539.67,437.33 542.67,444 545.67,441.67 548.67,441 551.67,439.67 554.67,441 557.67,445.67 560.67,450 563.67,448.67 566.67,449 569.67,449 572.67,449.67 575.67,446.67 578.67,448.33 581.67,446.67 584.67,447.67 587.67,449 590.67,449.33 593.67,448.33 596.67,448.67 599.67,447.67 602.67,446.33 605.67,443 608.67,444 611.67,444 614.67,445.67"/>
+<polyline data-anim="courbe-out" class="k-phosphore-courbe m-bande-courbe-out" points="716.33,469.33 719.33,469.33 722.33,471.33 725.33,470.67 728.33,470 731.33,468.67 734.33,467.33 737.33,466.67 740.33,468 743.33,469.33 746.33,469.33 749.33,468.33 752.33,466 755.33,464.33 758.33,465 761.33,468 764.33,469.67 767.33,469.33 770.33,468 773.33,466 776.33,464.67 779.33,464.67 782.33,467.67 785.33,467.33 788.33,469.67 791.33,469.67 794.33,470.67 797.33,472.67 800.33,472 803.33,472.67 806.33,472.67 809.33,471.33 812.33,471.33 815.33,471.33 818.33,471.67 821.33,469.67 824.33,468 827.33,467.33 830.33,469.33 833.33,469 836.33,469.33 839.33,468 842.33,467.33 845.33,466.33 848.33,465 851.33,464.33 854.33,464 857.33,462 860.33,462 863.33,458.33 866.33,457.33 869.33,457 872.33,455.33 875.33,454.33 878.33,453.67 881.33,453.67 884.33,456 887.33,458.67 890.33,460.33 893.33,462 896.33,462.67 899.33,465.33 902.33,465 905.33,465.33 908.33,466.67 911.33,466.67 914.33,468 917.33,467.33 920.33,468 923.33,467.33 926.33,466.67 929.33,466 932.33,464.33 935.33,464.33 938.33,463.67 941.33,464 944.33,462.67 947.33,463.67 950.33,466.33 953.33,466.67 956.33,467 959.33,465.33 962.33,464.33 965.33,462.67 968.33,464 971.33,464.67"/>
 </svg></div>
 <span class="k-phosphore-texte m-bande-grad m-bande-y" style="right: 955.33px; top: 371.66px;">100</span>
 <span class="k-phosphore-texte m-bande-grad m-bande-y" style="right: 955.33px; top: 397.66px;">75</span>
@@ -537,15 +548,15 @@
 <div class="k-vis plc" style="left: 1257px; top: 48.33px;"></div>
 <div class="k-vis plc" style="left: 1003.33px; top: 502.33px;"></div>
 <div class="k-vis plc" style="left: 1265px; top: 503px;"></div>
-<div class="titre m-etat-titre" style="left: 1025.0px; top: 50.67px;">状態</div>
+<div lang="ja" class="titre m-etat-titre" style="left: 1025.0px; top: 50.67px;">状態</div>
 <div class="titre m-etat-titre" style="left: 1064.0px; top: 50.67px;">STATUS</div>
-<div class="k-verre-cadre plc" style="left: 1012.33px; top: 70.33px; width: 252.67px; height: 289.33px;">
+<div data-anim="glass" class="k-verre-cadre plc" style="left: 1012.33px; top: 70.33px; width: 252.67px; height: 289.33px;">
   <div class="k-verre"></div>
 </div>
-<div class="k-verre-cadre plc" style="left: 1012.33px; top: 363.67px; width: 252.67px; height: 107px;">
+<div data-anim="glass" class="k-verre-cadre plc" style="left: 1012.33px; top: 363.67px; width: 252.67px; height: 107px;">
   <div class="k-verre"></div>
 </div>
-<div class="k-verre-cadre plc" style="left: 1012.33px; top: 474.67px; width: 252.67px; height: 33px;">
+<div data-anim="glass" class="k-verre-cadre plc" style="left: 1012.33px; top: 474.67px; width: 252.67px; height: 33px;">
   <div class="k-verre"></div>
 </div>
 <div class="k-graphe-filet plc" style="left: 1019.67px; top: 116px; width: 238px; height: 1px;"></div>
@@ -561,194 +572,352 @@
 
 <!-- Jauges : 7 lignes, cases en .k-phosphore-segment (allumées) et .k-phosphore-segment-eteint (éteintes). -->
 <!-- CPU : barre A, 3 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 91.4px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 91.4px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1120.08px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1128.35px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1136.62px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 91.4px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 91.4px;"></div>
-<div class="k-phosphore-segment plc" style="left: 1112.67px; top: 91.4px; width: 4.33px; height: 13px;"></div>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="13" aria-valuenow="4" aria-label="CPU" aria-valuetext="31%">
+<div data-anim="jauge-cpu" class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1120.08px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1128.35px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1136.62px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 91.4px;"></div>
+<div data-anim="jauge-cpu-p" class="k-phosphore-segment plc" style="left: 1112.67px; top: 91.4px; width: 4.33px; height: 13px;"></div>
+</div>
 <span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 92.9px;">CPU</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 92.9px;">31%</span>
+<span data-anim="val-cpu" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 92.9px;">31%</span>
 <!-- MEM : barre A, 7 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1111.81px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1120.08px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1128.35px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1136.62px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 130.88px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 130.88px;"></div>
-<div class="k-phosphore-segment plc" style="left: 1145.1px; top: 130.88px; width: 3px; height: 13px;"></div>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="14" aria-valuenow="8" aria-label="MEM" aria-valuetext="58%">
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1111.81px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1120.08px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1128.35px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment plc m-etat-cellule" style="left: 1136.62px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 130.88px;"></div>
+<div data-anim="jauge-mem" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 130.88px;"></div>
+<div data-anim="jauge-mem-p" class="k-phosphore-segment plc" style="left: 1145.1px; top: 130.88px; width: 3px; height: 13px;"></div>
+</div>
 <span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 132.38px;">MEM</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 132.38px;">58%</span>
+<span data-anim="val-mem" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 132.38px;">58%</span>
 <!-- 稼働 UPTIME : barre B, 9 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1101.33px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1109.89px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1118.45px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1127.01px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1135.57px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1144.13px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1152.69px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1161.25px; top: 170.36px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1169.81px; top: 170.36px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1178.37px; top: 170.36px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.93px; top: 170.36px;"></div>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 171.86px;">稼働 UPTIME</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 171.86px;">412d 07h</span>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="11" aria-valuenow="9" aria-label="稼働 UPTIME" aria-valuetext="412d 07h">
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1101.33px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1109.89px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1118.45px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1127.01px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1135.57px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1144.13px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1152.69px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1161.25px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment plc m-etat-cellule" style="left: 1169.81px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1178.37px; top: 170.36px;"></div>
+<div data-anim="jauge-uptime" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.93px; top: 170.36px;"></div>
+</div>
+<span lang="ja" class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 171.86px;">稼働 UPTIME</span>
+<span data-anim="val-uptime" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 171.86px;">412d 07h</span>
 <!-- 遅延 LATENCY : barre C, 1 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1107px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1114.98px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1122.96px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1130.94px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1138.92px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1146.9px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1154.88px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1162.86px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1170.84px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1178.82px; top: 209.84px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.8px; top: 209.84px;"></div>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 211.34px;">遅延 LATENCY</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 211.34px;">03ms</span>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="11" aria-valuenow="1" aria-label="遅延 LATENCY" aria-valuetext="03ms">
+<div data-anim="jauge-lat" class="k-phosphore-segment plc m-etat-cellule" style="left: 1107px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1114.98px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1122.96px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1130.94px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1138.92px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1146.9px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1154.88px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1162.86px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1170.84px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1178.82px; top: 209.84px;"></div>
+<div data-anim="jauge-lat" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.8px; top: 209.84px;"></div>
+</div>
+<span lang="ja" class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 211.34px;">遅延 LATENCY</span>
+<span data-anim="val-lat" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 211.34px;">03ms</span>
 <!-- LOSS : barre A, 1 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1095.27px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1103.54px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1111.81px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1120.08px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1128.35px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1136.62px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 249.32px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 249.32px;"></div>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="13" aria-valuenow="1" aria-label="LOSS" aria-valuetext="0.02%">
+<div data-anim="jauge-loss" class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1095.27px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1103.54px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1111.81px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1120.08px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1128.35px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1136.62px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1144.89px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1153.16px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1161.43px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 249.32px;"></div>
+<div data-anim="jauge-loss" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 249.32px;"></div>
+</div>
 <span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 250.82px;">LOSS</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 250.82px;">0.02%</span>
+<span data-anim="val-loss" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 250.82px;">0.02%</span>
 <!-- LINK : barre A, 11 cases pleines -->
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1111.81px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1120.08px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1128.35px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1136.62px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1144.89px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1153.16px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1161.43px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc m-etat-cellule" style="left: 1169.7px; top: 288.8px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 288.8px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 288.8px;"></div>
-<div class="k-phosphore-segment plc" style="left: 1178.67px; top: 288.8px; width: 2.43px; height: 13px;"></div>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="14" aria-valuenow="12" aria-label="LINK" aria-valuetext="13/14">
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1087px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1095.27px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1103.54px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1111.81px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1120.08px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1128.35px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1136.62px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1144.89px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1153.16px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1161.43px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment plc m-etat-cellule" style="left: 1169.7px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 288.8px;"></div>
+<div data-anim="jauge-link" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 288.8px;"></div>
+<div data-anim="jauge-link-p" class="k-phosphore-segment plc" style="left: 1178.67px; top: 288.8px; width: 2.43px; height: 13px;"></div>
+</div>
 <span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 290.3px;">LINK</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 290.3px;">13/14</span>
+<span data-anim="val-link" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 290.3px;">13/14</span>
 <!-- TEMP-5F : barre A, 10 cases pleines -->
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1087px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1095.27px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1103.54px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1111.81px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1120.08px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1128.35px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1136.62px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1144.89px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1153.16px; top: 328.28px;"></div>
-<div class="k-alerte-segment plc m-etat-cellule" style="left: 1161.43px; top: 328.28px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 328.28px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 328.28px;"></div>
-<div class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 328.28px;"></div>
+<div class="m-ancre" role="meter" aria-valuemin="0" aria-valuemax="13" aria-valuenow="10" aria-label="TEMP-5F" aria-valuetext="78%">
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1087px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1095.27px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1103.54px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1111.81px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1120.08px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1128.35px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1136.62px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1144.89px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1153.16px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-alerte-segment plc m-etat-cellule" style="left: 1161.43px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1169.7px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1177.97px; top: 328.28px;"></div>
+<div data-anim="jauge-temp" class="k-phosphore-segment-eteint plc m-etat-cellule" style="left: 1186.24px; top: 328.28px;"></div>
+</div>
 <span class="txt k-phosphore-texte m-etat-jauge m-etat-libelle" style="left: 1021.33px; top: 329.78px;">TEMP-5F</span>
-<span class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 329.78px;">78%</span>
+<span data-anim="val-temp" class="txt k-phosphore-texte m-etat-jauge m-etat-valeur" style="left: 1175.5px; top: 329.78px;">78%</span>
 
 <!-- Compteurs : 5 lignes à nombres alignés à droite, filets entre les lignes. -->
 <span class="txt k-phosphore-texte m-etat-libelle" style="left: 1024.67px; top: 373.5px;">PKT/S</span>
-<span class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 373.5px;">12840</span>
+<span data-anim="pkt" class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 373.5px;">12840</span>
 <span class="txt k-phosphore-texte m-etat-libelle" style="left: 1024.67px; top: 393.67px;">ERR</span>
-<span class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 393.67px;">003</span>
+<span data-anim="err" class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 393.67px;">003</span>
 <span class="txt k-phosphore-texte m-etat-libelle" style="left: 1024.67px; top: 413.17px;">RETR</span>
-<span class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 413.17px;">017</span>
+<span data-anim="retr" class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 413.17px;">017</span>
 <span class="txt k-phosphore-texte m-etat-libelle" style="left: 1024.67px; top: 432.33px;">DROP</span>
-<span class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 432.33px;">000</span>
+<span data-anim="drop" class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 432.33px;">000</span>
 <span class="txt k-phosphore-texte m-etat-libelle" style="left: 1024.67px; top: 451.33px;">SESS</span>
-<span class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 451.33px;">0231</span>
+<span data-anim="sess" class="txt k-phosphore-texte m-etat-valeur" style="left: 1173.8px; top: 451.33px;">0231</span>
 
 <!-- Bandeau d'alerte : texte orange sur le verre de F3. -->
-<span class="txt k-alerte-texte m-etat-alerte" style="left: 1026.33px; top: 485.83px;">警告</span>
-<span class="txt k-alerte-texte m-etat-alerte" style="left: 1061px; top: 485.83px;">ALERT</span>
-<span class="txt k-alerte-texte m-etat-alerte" style="left: 1106.67px; top: 485.83px;">ND-011</span>
-<span class="txt k-alerte-texte m-etat-alerte" style="left: 1160.67px; top: 485.83px;">LATENCY HIGH</span>
+<div class="m-ancre" role="alert">
+<span data-anim="ban-jp" lang="ja" class="txt k-alerte-texte m-etat-alerte" style="left: 1026.33px; top: 485.83px;">警告</span>
+<span data-anim="ban-alert" class="txt k-alerte-texte m-etat-alerte" style="left: 1061px; top: 485.83px;">ALERT</span>
+<span data-anim="ban-nd" class="txt k-alerte-texte m-etat-alerte" style="left: 1106.67px; top: 485.83px;">ND-011</span>
+<span data-anim="ban-msg" class="txt k-alerte-texte m-etat-alerte" style="left: 1160.67px; top: 485.83px;">LATENCY HIGH</span>
+</div>
 <!-- zone : bas -->
 <!-- Zone bas : panneau LOG (plaque, vis, titre, cadre de verre, 9 lignes, défilement) puis barre F1 à F10 et champ d'état. -->
 <div class="k-relief-plaque k-relief-plaque-creux plc m-bas-plaque"></div>
 <div class="k-vis plc m-bas-vis-g"></div>
 <div class="k-vis plc m-bas-vis-d"></div>
-<div class="titre m-bas-titre m-bas-titre-kanji">記録</div>
+<div lang="ja" class="titre m-bas-titre m-bas-titre-kanji">記録</div>
 <div class="titre m-bas-titre m-bas-titre-latin">LOG</div>
 
-<div class="k-verre-cadre plc m-bas-cadre"><div class="k-verre m-bas-verre"></div></div>
+<div data-anim="glass" class="k-verre-cadre plc m-bas-cadre"><div class="k-verre m-bas-verre"></div></div>
 
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r1">23:47:09</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r1">ND-001</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r1">PING OK 02ms</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r2">23:47:03</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r2">ND-007</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r2">BACKUP START JOB-0412</span>
-<span class="txt k-alerte-texte m-bas-log m-bas-c-heure m-bas-r3">23:46:58</span>
-<span class="txt k-alerte-texte m-bas-log m-bas-c-nd m-bas-r3">ND-011</span>
-<span class="txt k-alerte-texte m-bas-log m-bas-c-msg m-bas-r3">LATENCY 98ms THRESHOLD 80ms</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r4">23:46:41</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r4">ND-005</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r4">QUEUE 000 MAIL OK</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r5">23:46:20</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r5">ND-004</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r5">SELECTED BY OPERATOR</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r6">23:45:52</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r6">ND-009</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r6">PING OK 24ms</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r7">23:45:30</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r7">ND-002</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r7">PING OK 11ms</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r8">23:45:11</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r8">ND-014</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r8">TAPE READY</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r9">23:44:57</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r9">SYS</span>
-<span class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r9">SNMP POLL CYCLE 0881 DONE</span>
+<div class="m-ancre h-ligne" role="log" tabindex="0" aria-label="記録 LOG" style="--lx: 16.66px; --ly: 545.66px; --lw: 1227px; --lh: 134px">
+<span data-anim="log1" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r1">23:47:09</span>
+<span data-anim="log1" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r1">ND-001</span>
+<span data-anim="log1" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r1">PING OK 02ms</span>
+<span data-anim="log2" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r2">23:47:03</span>
+<span data-anim="log2" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r2">ND-007</span>
+<span data-anim="log2" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r2">BACKUP START JOB-0412</span>
+<span data-anim="log3" class="txt k-alerte-texte m-bas-log m-bas-c-heure m-bas-r3">23:46:58</span>
+<span data-anim="log3" class="txt k-alerte-texte m-bas-log m-bas-c-nd m-bas-r3">ND-011</span>
+<span data-anim="log3" class="txt k-alerte-texte m-bas-log m-bas-c-msg m-bas-r3">LATENCY 98ms THRESHOLD 80ms</span>
+<span data-anim="log4" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r4">23:46:41</span>
+<span data-anim="log4" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r4">ND-005</span>
+<span data-anim="log4" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r4">QUEUE 000 MAIL OK</span>
+<span data-anim="log5" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r5">23:46:20</span>
+<span data-anim="log5" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r5">ND-004</span>
+<span data-anim="log5" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r5">SELECTED BY OPERATOR</span>
+<span data-anim="log6" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r6">23:45:52</span>
+<span data-anim="log6" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r6">ND-009</span>
+<span data-anim="log6" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r6">PING OK 24ms</span>
+<span data-anim="log7" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r7">23:45:30</span>
+<span data-anim="log7" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r7">ND-002</span>
+<span data-anim="log7" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r7">PING OK 11ms</span>
+<span data-anim="log8" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r8">23:45:11</span>
+<span data-anim="log8" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r8">ND-014</span>
+<span data-anim="log8" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r8">TAPE READY</span>
+<span data-anim="log9" class="txt k-phosphore-texte m-bas-log m-bas-c-heure m-bas-r9">23:44:57</span>
+<span data-anim="log9" class="txt k-phosphore-texte m-bas-log m-bas-c-nd m-bas-r9">SYS</span>
+<span data-anim="log9" class="txt k-phosphore-texte m-bas-log m-bas-c-msg m-bas-r9">SNMP POLL CYCLE 0881 DONE</span>
+</div>
 
+<div class="m-ancre" aria-hidden="true">
 <div class="k-defilement-glissiere plc m-bas-defile-glissiere"></div>
 <div class="k-defilement-fleche k-defilement-fleche-clair plc m-bas-defile-haut"><span class="k-defilement-triangle-haut"></span></div>
 <div class="k-defilement-curseur plc m-bas-defile-curseur"></div>
 <div class="k-defilement-fleche k-defilement-fleche-bas k-defilement-fleche-clair plc m-bas-defile-bas"><span class="k-defilement-triangle-bas"></span></div>
+</div>
 
-<div class="k-bouton plc m-bas-f1"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F1</span><span class="m-bas-touche-nom">HELP</span></span></div>
-<div class="k-bouton plc m-bas-f2"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F2</span><span class="m-bas-touche-nom">NODE</span></span></div>
-<div class="k-bouton plc m-bas-f3"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F3</span><span class="m-bas-touche-nom">MAP</span></span></div>
-<div class="k-bouton plc m-bas-f4"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F4</span><span class="m-bas-touche-nom">LOG</span></span></div>
-<div class="k-bouton plc m-bas-f5"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F5</span><span class="m-bas-touche-nom">POLL</span></span></div>
-<div class="k-bouton plc m-bas-f6"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F6</span><span class="m-bas-touche-nom">ACK</span></span></div>
-<div class="k-bouton plc m-bas-f7"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F7</span><span class="m-bas-touche-nom">SORT</span></span></div>
-<div class="k-bouton plc m-bas-f8"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F8</span><span class="m-bas-touche-nom">FILTER</span></span></div>
-<div class="k-bouton plc m-bas-f9"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F9</span><span class="m-bas-touche-nom">CONFIG</span></span></div>
-<div class="k-bouton plc m-bas-f10"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F10</span><span class="m-bas-touche-nom">QUIT</span></span></div>
+<div class="m-ancre" role="toolbar" aria-label="機能 FUNCTION">
+<div role="button" tabindex="0" class="k-bouton plc m-bas-f1"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F1</span><span class="m-bas-touche-nom">HELP</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f2"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F2</span><span class="m-bas-touche-nom">NODE</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f3"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F3</span><span class="m-bas-touche-nom">MAP</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f4"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F4</span><span class="m-bas-touche-nom">LOG</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f5"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F5</span><span class="m-bas-touche-nom">POLL</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f6"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F6</span><span class="m-bas-touche-nom">ACK</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f7"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F7</span><span class="m-bas-touche-nom">SORT</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f8"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F8</span><span class="m-bas-touche-nom">FILTER</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f9"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F9</span><span class="m-bas-touche-nom">CONFIG</span></span></div>
+<div role="button" tabindex="-1" class="k-bouton plc m-bas-f10"><span class="k-bouton-libelle m-bas-libelle"><span class="m-bas-touche-num">F10</span><span class="m-bas-touche-nom">QUIT</span></span></div>
+</div>
 
-<div class="k-verre-creux plc m-bas-etat"></div>
+<div data-anim="glass" class="k-verre-creux plc m-bas-etat"></div>
 <span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-poll">POLL</span>
 <span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-5s">5s</span>
 <span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-nd">ND</span>
 <span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-14">14</span>
 <span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-err">ERR</span>
-<span class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-1">1</span>
+<span data-anim="etat-err" class="k-bouton-libelle m-bas-libelle m-bas-etat-mot m-bas-etat-1">1</span>
 
+<script>
+/* heisei-clavier */
+(function () {
+  'use strict';
+  var GROUPES = { toolbar: 'button', menubar: 'menuitem', listbox: 'option', tablist: 'tab', tree: 'treeitem', grid: 'row' };
+  var HORIZ = { toolbar: 1, menubar: 1, tablist: 1 };
+  var GRP = '[role=toolbar],[role=menubar],[role=listbox],[role=tablist],[role=tree],[role=grid]';
+  var ACT = '[role=option],[role=row],[role=treeitem],[role=tab],[role=menuitem],[role=button],[role=checkbox],[role=combobox]';
+  var FOC = 'a[href],button,input,select,textarea,[tabindex],[contenteditable]';
+
+  // Groupe dont el est un élément direct (plus proche ancêtre de groupe, du bon rôle), sinon null.
+  function groupeDe(el) {
+    if (!el || !el.getAttribute) return null;
+    var p = el.parentElement && el.parentElement.closest(GRP);
+    return p && GROUPES[p.getAttribute('role')] === el.getAttribute('role') ? p : null;
+  }
+  function membres(g) {
+    return [].filter.call(g.querySelectorAll('[role=' + GROUPES[g.getAttribute('role')] + ']'), function (e) { return groupeDe(e) === g; });
+  }
+  function actifs(g) {
+    return membres(g).filter(function (e) { return e.getAttribute('aria-disabled') !== 'true'; });
+  }
+  function roving(g, cible) {
+    membres(g).forEach(function (e) { e.setAttribute('tabindex', e === cible ? '0' : '-1'); });
+  }
+  function bascule(el, attr) {
+    var v = el.getAttribute(attr) !== 'true';
+    el.setAttribute(attr, String(v));
+    return v;
+  }
+  // Donne le focus à un élément ; dans un groupe, il devient le seul tabulable, et un onglet devient sélectionné.
+  function aller(el) {
+    if (!el) return;
+    var g = groupeDe(el);
+    if (g && g.getAttribute('role') === 'tablist') { choisir(el); return; }
+    if (g) roving(g, el);
+    el.focus();
+  }
+  function choisir(el) {
+    var g = groupeDe(el);
+    if (g) {
+      membres(g).forEach(function (e) {
+        var v = e === el;
+        e.setAttribute('aria-selected', String(v));
+        if (e.getAttribute('role') === 'tab') e.classList.toggle('k-onglet-actif', v);
+      });
+      roving(g, el);
+    }
+    el.focus();
+  }
+  // Effet d'une activation (Entrée, Espace, clic) ou d'une touche ↓ sur une combobox.
+  function activer(el, t) {
+    var r = el.getAttribute('role');
+    if (el.getAttribute('aria-disabled') === 'true') return;
+    if (r === 'combobox') { bascule(el, 'aria-expanded'); return; }
+    if (r === 'checkbox') { if (t !== 'Enter') el.classList.toggle('k-formulaire-case-cochee', bascule(el, 'aria-checked')); return; }
+    if (r === 'button' && el.hasAttribute('aria-pressed')) { el.classList.toggle('k-bouton-enfonce', bascule(el, 'aria-pressed')); return; }
+    if (r === 'option' || r === 'row' || r === 'treeitem' || r === 'tab') { choisir(el); return; }
+    if (t !== 'click') el.click();
+  }
+  // Pas de bouclage : on reste sur l'élément actif extrême.
+  function pas(g, el, d) {
+    var a = actifs(g), c = a[a.indexOf(el) + d];
+    if (c) aller(c);
+  }
+  // Arbre : → entre dans l'élément suivant de niveau +1 ; ← remonte au précédent de niveau -1.
+  function arbre(g, el, k) {
+    var a = actifs(g), i = a.indexOf(el), lv = Number(el.getAttribute('aria-level')), c = null, j;
+    if (k === 'ArrowRight') {
+      if (a[i + 1] && Number(a[i + 1].getAttribute('aria-level')) === lv + 1) c = a[i + 1];
+    } else {
+      for (j = i - 1; j >= 0 && !c; j--) {
+        if (Number(a[j].getAttribute('aria-level')) === lv - 1) c = a[j];
+      }
+    }
+    if (c) aller(c);
+  }
+  // Boîte de dialogue : Tab et Maj+Tab bouclent entre ses éléments focalisables.
+  function dialogue(ev, el) {
+    var f = [].filter.call(el.closest('[role=dialog]').querySelectorAll(FOC), function (e) {
+      return e.getAttribute('aria-disabled') !== 'true' && e.getAttribute('tabindex') !== '-1';
+    });
+    var i = f.indexOf(el);
+    if (!f.length) return;
+    if (ev.shiftKey && i <= 0) { ev.preventDefault(); f[f.length - 1].focus(); }
+    else if (!ev.shiftKey && i === f.length - 1) { ev.preventDefault(); f[0].focus(); }
+  }
+  function clavier(ev) {
+    var el = ev.target, k = ev.key, g, gr, a, prev, next;
+    if (!el || !el.getAttribute) return;
+    if (k === 'Tab' && el.closest('[role=dialog]')) { dialogue(ev, el); return; }
+    g = groupeDe(el);
+    if (g) {
+      gr = g.getAttribute('role');
+      a = actifs(g);
+      prev = HORIZ[gr] ? 'ArrowLeft' : 'ArrowUp';
+      next = HORIZ[gr] ? 'ArrowRight' : 'ArrowDown';
+      if (k === 'Home' || k === 'End') aller(k === 'Home' ? a[0] : a[a.length - 1]);
+      else if (k === prev) pas(g, el, -1);
+      else if (k === next) pas(g, el, 1);
+      else if (gr === 'tree' && (k === 'ArrowLeft' || k === 'ArrowRight')) arbre(g, el, k);
+      else if (k === 'Enter' || k === ' ') activer(el, k);
+      else return;
+      ev.preventDefault();
+      return;
+    }
+    if (!el.matches(ACT)) return;
+    if (k === 'Enter' || k === ' ' || (k === 'ArrowDown' && el.getAttribute('role') === 'combobox')) {
+      ev.preventDefault();
+      activer(el, k);
+    }
+  }
+  function cliquer(ev) {
+    var el = ev.target.closest && ev.target.closest(ACT);
+    if (el) activer(el, 'click');
+  }
+  function init() {
+    [].forEach.call(document.querySelectorAll(GRP), function (g) {
+      var sel = membres(g).find(function (e) { return e.getAttribute('aria-selected') === 'true'; });
+      roving(g, sel || actifs(g)[0]);
+    });
+    document.addEventListener('keydown', clavier);
+    document.addEventListener('click', cliquer);
+    document.addEventListener('focusin', function (ev) {
+      var g = groupeDe(ev.target);
+      if (g) roving(g, ev.target);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+/* /heisei-clavier */
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="../system/heisei.js"></script>
+<script src="screen.js"></script>
 </body>
 </html>

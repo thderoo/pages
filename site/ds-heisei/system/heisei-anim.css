@@ -1,0 +1,90 @@
+/*
+ * Styles d'animation communs aux quatre écrans ds-heisei, écrits une fois ici.
+ * Le mouvement lui-même passe par GSAP (system/heisei.js) ; ce fichier ne porte que ce qui doit exister avant le script
+ * (masque de chargement), l'habillage de l'allumage, le clignotement du curseur et le curseur de souris.
+ * Couleurs : seulement var(--h-...) de heisei.css.
+ * Ni ombre floue, ni filtre, ni ombre de texte, ni dégradé.
+ */
+
+/* ---------------------------------------------------------------- 1. Masque de chargement
+   Tant que heisei.js n'a pas posé la classe h-on sur <html>, le corps est caché : les verres n'apparaissent pas allumés
+   avant que leur overlay d'allumage soit en place. Si le script ne tourne pas (CDN absent, erreur), le corps
+   réapparaît tout seul après 2,5 s. */
+@media (scripting: enabled) {
+  html:not(.h-on) body {
+    visibility: hidden;
+    animation: h-montre 0s linear 2.5s forwards;
+  }
+}
+
+@keyframes h-montre {
+  to { visibility: visible; }
+}
+
+/* ---------------------------------------------------------------- 2. Allumage des verres
+   Un overlay .h-allume est posé sur chaque verre pendant l'allumage, puis retiré du DOM. Le JS lui donne sa position,
+   sa taille et le même contour (clip-path) que le verre. Dedans : deux moitiés de la couleur du verre, qui se replient
+   vers les bords, et un trait central de la couleur du texte phosphore, comme le balayage d'un tube qui s'allume.
+   z-index : 100, au-dessus de tout élément des écrans (les plus hauts valent 2). */
+.h-allume {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.h-allume-haut,
+.h-allume-bas {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background-color: var(--h-verre-023);
+}
+
+.h-allume-haut {
+  top: 0;
+  transform-origin: 50% 0;
+}
+
+.h-allume-bas {
+  bottom: 0;
+  transform-origin: 50% 100%;
+}
+
+.h-allume-trait {
+  position: absolute;
+  left: 0;
+  top: calc(50% - 0.5px);
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  background-color: var(--h-phosphore-026);
+}
+
+/* ---------------------------------------------------------------- 3. Curseur de saisie
+   Cycle de 1,2 s : plein pendant 0,54 s, descente à 0,25 en 0,12 s, bas pendant 0,48 s, remontée en 0,06 s.
+   Jamais éteint tout à fait : le curseur reste calme. Sans animation si l'utilisateur demande moins de mouvement. */
+.h-curseur {
+  animation: h-curseur 1.2s linear infinite;
+}
+
+@keyframes h-curseur {
+  0%, 45% { opacity: 1; }
+  55%, 95% { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .h-curseur { animation: none; }
+}
+
+/* ---------------------------------------------------------------- 4. Interaction
+   Un élément cliquable (jeton clic de data-anim) montre la main. */
+[data-anim~="clic"] {
+  cursor: pointer;
+}
+
+/* Messagerie : un dossier en alerte reste orange quand il est choisi. */
+.h-ligne[aria-selected="true"] .m-dossiers-nom.k-alerte-texte {
+  color: var(--h-alerte-004);
+}

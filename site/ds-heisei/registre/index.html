@@ -5,24 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Registre</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&family=Zen+Kaku+Gothic+New&display=swap">
-<link rel="stylesheet" href="../kit/coque.css">
-<link rel="stylesheet" href="../kit/relief.css">
-<link rel="stylesheet" href="../kit/verre.css">
-<link rel="stylesheet" href="../kit/phosphore.css">
-<link rel="stylesheet" href="../kit/alerte.css">
-<link rel="stylesheet" href="../kit/bouton.css">
-<link rel="stylesheet" href="../kit/rainure.css">
-<link rel="stylesheet" href="../kit/vis.css">
-<link rel="stylesheet" href="../kit/onglet.css">
-<link rel="stylesheet" href="../kit/formulaire.css">
-<link rel="stylesheet" href="../kit/marque.css">
-<link rel="stylesheet" href="../kit/defilement.css">
-<style>
-  @font-face { font-family: "PixelMplus12"; src: url("https://cdn.jsdelivr.net/gh/itouhiro/PixelMplus@master/PixelMplus12-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
-</style>
+<link rel="stylesheet" href="../system/heisei.css">
 <link rel="stylesheet" href="screen.css">
+<link rel="stylesheet" href="../system/heisei-anim.css">
 </head>
-<body class="k-coque">
+<body class="k-coque h-ecran">
 <!-- Zone entete : bandeau du haut (0 a 34 px CSS) et barre du bas (683,33 a 716 px CSS). Classes reg-entete-*. -->
 <div class="plc k-rainure-h-fine reg-entete-h-haut"></div>
 <div class="plc k-rainure-filet-v reg-entete-plaque-g"></div>
@@ -31,22 +18,22 @@
 <div class="plc k-rainure-creux reg-entete-v-1"></div>
 <div class="plc k-rainure-creux reg-entete-v-2"></div>
 <div class="plc k-rainure-creux reg-entete-v-3"></div>
-<span class="titre reg-entete-titre reg-entete-titre-personnel">人事 PERSONNEL REGISTRY</span>
+<span class="titre reg-entete-titre reg-entete-titre-personnel" lang="ja">人事 PERSONNEL REGISTRY</span>
 <span class="titre reg-entete-titre reg-entete-titre-jp">REG-JP</span>
 <span class="titre reg-entete-titre reg-entete-titre-v21">V2.1</span>
 
-<div class="plc k-verre-cadre reg-entete-cadre-operateur"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-entete-cadre-operateur" data-anim="glass"><div class="k-verre"></div></div>
 <span class="txt k-phosphore-texte reg-entete-txt-operateur">OPERATOR SATO-K</span>
-<div class="plc k-verre-cadre reg-entete-cadre-usuario"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-entete-cadre-usuario" data-anim="glass"><div class="k-verre"></div></div>
 <span class="txt k-phosphore-texte reg-entete-txt-usuario">USER 07</span>
 
 <div class="plc k-rainure-h-entete-bas reg-entete-h-bas-haut"></div>
 <div class="plc k-rainure-lisere-bas reg-entete-h-bas-bas"></div>
-<div class="plc k-verre-cadre reg-entete-cadre-rec"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-entete-txt-rec">REC 0042 / 0318</span>
-<div class="plc k-verre-cadre reg-entete-cadre-lock"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-entete-txt-lock">LOCK NONE</span>
-<div class="plc k-verre-cadre reg-entete-cadre-mode"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-entete-cadre-rec" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-rec" data-anim="rec">REC 0042 / 0318</span>
+<div class="plc k-verre-cadre reg-entete-cadre-lock" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-entete-txt-lock" data-anim="lock">LOCK NONE</span>
+<div class="plc k-verre-cadre reg-entete-cadre-mode" data-anim="glass"><div class="k-verre"></div></div>
 <span class="txt k-phosphore-texte reg-entete-txt-mode">MODE EDIT</span>
 
 <!-- Zone recherche : colonne de gauche (plaque, rainure, grand verre, champs, liste, ascenseur, champ d'état). -->
@@ -56,141 +43,140 @@
 <div class="k-vis plc reg-recherche-vis-tr"></div>
 <div class="k-vis plc reg-recherche-vis-br"></div>
 
-<div class="titre reg-recherche-titre">検索 <span class="reg-recherche-titre-latin">SEARCH</span></div>
+<div class="titre reg-recherche-titre" lang="ja">検索 <span class="reg-recherche-titre-latin">SEARCH</span></div>
 
-<div class="k-verre-cadre plc reg-recherche-verre"><div class="k-verre"></div></div>
+<div class="k-verre-cadre plc reg-recherche-verre" data-anim="glass"><div class="k-verre"></div></div>
 
 <!-- Champ de saisie TANAKA, curseur bloc après le texte, bouton GO. -->
-<div class="k-verre-cadre plc reg-recherche-champ-texte"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-recherche-saisie">TANAKA</span>
-<div class="k-phosphore-trait plc reg-recherche-curseur"></div>
-<div class="k-bouton plc reg-recherche-go"><span class="k-bouton-libelle"><span class="k-bouton-latin">GO</span></span></div>
+<div class="k-verre-cadre plc reg-recherche-champ-texte" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-saisie" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="検索 SEARCH">TANAKA</span>
+<div class="k-phosphore-trait plc reg-recherche-curseur" data-anim="cursor"></div>
+<div class="k-bouton plc reg-recherche-go" role="button" tabindex="0"><span class="k-bouton-libelle"><span class="k-bouton-latin">GO</span></span></div>
 
 <!-- Liste déroulante DEPT : libellé, champ en verre, bouton à flèche levé. -->
 <span class="txt k-phosphore-texte reg-recherche-etiq-dept">DEPT</span>
-<div class="k-verre-cadre plc reg-recherche-champ-dept"><div class="k-verre"></div></div>
+<div class="k-verre-cadre plc reg-recherche-champ-dept" data-anim="glass"><div class="k-verre"></div></div>
 <span class="txt k-phosphore-texte reg-recherche-valeur-dept">ALL</span>
-<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-dept"></div>
+<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-dept" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="DEPT" tabindex="0"></div>
 
 <!-- Liste déroulante STATUS : libellé, champ en verre, bouton à flèche levé. -->
 <span class="txt k-phosphore-texte reg-recherche-etiq-statut">STATUS</span>
-<div class="k-verre-cadre plc reg-recherche-champ-statut"><div class="k-verre"></div></div>
+<div class="k-verre-cadre plc reg-recherche-champ-statut" data-anim="glass"><div class="k-verre"></div></div>
 <span class="txt k-phosphore-texte reg-recherche-valeur-statut">ACTIVE</span>
-<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-statut"></div>
+<div class="k-formulaire-bouton-fleche plc reg-recherche-fleche-statut" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="STATUS" tabindex="0"></div>
 
 <!-- Case à cocher INCLUDE RETIRED, décochée. -->
-<div class="k-formulaire-case plc reg-recherche-case"></div>
-<span class="txt k-phosphore-texte reg-recherche-case-libelle">INCLUDE RETIRED</span>
+<div class="k-formulaire-case plc reg-recherche-case" role="checkbox" aria-checked="false" aria-labelledby="reg-recherche-case-libelle" tabindex="0"></div>
+<span class="txt k-phosphore-texte reg-recherche-case-libelle" id="reg-recherche-case-libelle">INCLUDE RETIRED</span>
 
-<!-- Barre de la ligne sélectionnée (fond phosphore), posée avant la liste. -->
-<div class="k-phosphore-selection plc reg-recherche-barre"></div>
 
 <!-- Ascenseur : bouton haut, rail, curseur, bouton bas. -->
-<div class="k-defilement-fleche plc reg-recherche-sb-haut"><span class="k-defilement-triangle-haut"></span></div>
-<div class="k-defilement-glissiere plc reg-recherche-sb-rail"></div>
-<div class="k-defilement-curseur plc reg-recherche-sb-curseur"></div>
-<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-recherche-sb-bas"><span class="k-defilement-triangle-bas"></span></div>
+<div class="k-defilement-fleche plc reg-recherche-sb-haut" aria-hidden="true"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere plc reg-recherche-sb-rail" aria-hidden="true"></div>
+<div class="k-defilement-curseur plc reg-recherche-sb-curseur" aria-hidden="true"></div>
+<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-recherche-sb-bas" aria-hidden="true"><span class="k-defilement-triangle-bas"></span></div>
 
 <!-- Liste de 12 résultats : marque, code, nom, code de service. La ligne 1 est sur la barre. -->
-<div class="reg-recherche-liste">
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-contour plc reg-recherche-marque reg-recherche-marque-sel"></div>
-    <span class="txt k-phosphore-selection reg-recherche-code">E-0042</span>
-    <span class="txt k-phosphore-selection reg-recherche-nom">TANAKA H.</span>
-    <span class="txt k-phosphore-selection reg-recherche-svc">GA</span>
+<div class="reg-recherche-liste" role="listbox" aria-label="検索結果 RESULTS">
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="true" tabindex="0" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-contour plc reg-recherche-marque reg-recherche-marque-sel" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0042</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANAKA H.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">GA</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0043</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANAKA M.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0043</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANAKA M.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">SL</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0117</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAHASHI K.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">EN</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0117</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAKAHASHI K.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">EN</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0118</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANABE S.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">GA</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0118</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANABE S.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">GA</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0119</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANIGUCHI R.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">FN</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0119</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANIGUCHI R.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">FN</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0120</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKADA Y.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0120</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAKADA Y.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">SL</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0121</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANAKA T.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">HR</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0121</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANAKA T.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">HR</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0122</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKEDA N.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">EN</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0122</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAKEDA N.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">EN</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0123</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TANIMOTO J.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">GA</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0123</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TANIMOTO J.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">GA</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0124</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAGI A.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">FN</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0124</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAKAGI A.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">FN</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0125</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAMURA E.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">SL</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0125</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAMURA E.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">SL</span>
   </div>
-  <div class="reg-recherche-ligne">
-    <div class="k-marque-carre-clair plc reg-recherche-marque"></div>
-    <span class="txt k-phosphore-texte-doux reg-recherche-code">E-0126</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-nom">TAKAYAMA O.</span>
-    <span class="txt k-phosphore-texte-doux reg-recherche-svc">HR</span>
+  <div class="h-ligne reg-recherche-ligne" role="option" aria-selected="false" tabindex="-1" style="--lx:22.333px; --ly:-7px; --lw:240px; --lh:24.333px" data-anim="clic row">
+    <div class="k-marque-carre-clair plc reg-recherche-marque" data-anim="r-mark"></div>
+    <span class="txt k-phosphore-texte-doux reg-recherche-code" data-anim="r-code">E-0126</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-nom" data-anim="r-name">TAKAYAMA O.</span>
+    <span class="txt k-phosphore-texte-doux reg-recherche-svc" data-anim="r-svc">HR</span>
   </div>
 </div>
 
 <!-- Champ d'état : 12 HITS / 0318. -->
-<div class="k-verre-cadre plc reg-recherche-etat"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-recherche-etat-texte">12 HITS / 0318</span>
+<div class="k-verre-cadre plc reg-recherche-etat" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-recherche-etat-texte" data-anim="etat">12 HITS / 0318</span>
 
 <!-- Zone onglets : plaque de droite, six onglets, en-tête de fiche avec deux cachets. Coordonnées de page (1 px CSS = 3 px image). -->
 <div class="k-relief-plaque plc reg-onglets-plaque"></div>
 <div class="k-vis plc reg-onglets-vis-tl"></div>
 <div class="k-vis plc reg-onglets-vis-tr"></div>
 
-<div class="k-onglet-rangee plc reg-onglets-rangee">
-  <div class="k-onglet k-onglet-actif reg-onglets-tab-basic"><span class="k-onglet-libelle">基本<span class="k-onglet-latin"> BASIC</span></span></div>
-  <div class="k-onglet reg-onglets-tab-emp"><span class="k-onglet-libelle">雇用<span class="k-onglet-latin"> EMPLOYMENT</span></span></div>
-  <div class="k-onglet reg-onglets-tab-qual"><span class="k-onglet-libelle">資格<span class="k-onglet-latin"> QUALIFICATIONS</span></span></div>
-  <div class="k-onglet reg-onglets-tab-hist"><span class="k-onglet-libelle">履歴<span class="k-onglet-latin"> HISTORY</span></span></div>
-  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-family"><span class="k-onglet-libelle"><span class="k-onglet-latin">FAMILY</span></span></div>
-  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-attach"><span class="k-onglet-libelle"><span class="k-onglet-latin">ATTACH</span></span></div>
+<div class="k-onglet-rangee plc reg-onglets-rangee" role="tablist" aria-label="タブ TABS">
+  <div class="k-onglet k-onglet-actif reg-onglets-tab-basic" role="tab" id="reg-onglets-tab-basic" aria-selected="true" aria-controls="reg-formulaire-panneau" tabindex="0" data-anim="clic tab"><span class="k-onglet-libelle" lang="ja">基本<span class="k-onglet-latin"> BASIC</span></span></div>
+  <div class="k-onglet reg-onglets-tab-emp" role="tab" aria-selected="false" tabindex="-1" data-anim="clic tab"><span class="k-onglet-libelle" lang="ja">雇用<span class="k-onglet-latin"> EMPLOYMENT</span></span></div>
+  <div class="k-onglet reg-onglets-tab-qual" role="tab" aria-selected="false" tabindex="-1" data-anim="clic tab"><span class="k-onglet-libelle" lang="ja">資格<span class="k-onglet-latin"> QUALIFICATIONS</span></span></div>
+  <div class="k-onglet reg-onglets-tab-hist" role="tab" aria-selected="false" tabindex="-1" data-anim="clic tab"><span class="k-onglet-libelle" lang="ja">履歴<span class="k-onglet-latin"> HISTORY</span></span></div>
+  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-family" role="tab" aria-selected="false" tabindex="-1" data-anim="clic tab"><span class="k-onglet-libelle"><span class="k-onglet-latin">FAMILY</span></span></div>
+  <div class="k-onglet k-onglet-latin-seul reg-onglets-tab-attach" role="tab" aria-selected="false" tabindex="-1" data-anim="clic tab"><span class="k-onglet-libelle"><span class="k-onglet-latin">ATTACH</span></span></div>
 </div>
 
-<div class="k-verre-cadre plc reg-onglets-entete"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-onglets-titre">E-0042-17  TANAKA HIROSHI</span>
+<div class="k-verre-cadre plc reg-onglets-entete" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-onglets-titre" data-anim="ftitle">E-0042-17  TANAKA HIROSHI</span>
 
-<div class="plc k-alerte-cachet k-alerte-cachet-vert reg-onglets-cachet-ok">承認 APPROVED</div>
-<div class="plc k-alerte-cachet reg-onglets-cachet-alerte">保留 PENDING</div>
+<div class="plc k-alerte-cachet k-alerte-cachet-vert reg-onglets-cachet-ok" role="status" lang="ja">承認 APPROVED</div>
+<div class="plc k-alerte-cachet reg-onglets-cachet-alerte" role="status" lang="ja" data-anim="cachet-pend">保留 PENDING</div>
 
+<div class="reg-groupe" role="tabpanel" id="reg-formulaire-panneau" aria-labelledby="reg-onglets-tab-basic">
 <!-- Cadres : quatre groupes en creux (rainures du kit) -->
 <div class="plc k-rainure reg-formulaire-r-id-gauche"></div>
 <div class="plc k-rainure-filet-v-droit reg-formulaire-r-id-droite"></div>
@@ -214,101 +200,106 @@
 <div class="plc k-rainure-h reg-formulaire-r-fl-haut"></div>
 <div class="plc k-rainure-h-fine reg-formulaire-r-fl-bas"></div>
 <!-- Champs de saisie (verre) -->
-<div class="plc k-verre-cadre reg-formulaire-g-nom"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-emp"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-birth"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-sex"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-blood"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-dept"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-pos"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-grade"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-phone"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-ext"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-addr"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-mgr"><div class="k-verre"></div></div>
-<div class="plc k-verre-cadre reg-formulaire-g-badge"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-nom" data-anim="glass s-nom"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-emp" data-anim="glass s-emp"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-birth" data-anim="glass s-birth"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-sex" data-anim="glass s-sex"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-blood" data-anim="glass s-blood"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-dept" data-anim="glass s-dept"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-pos" data-anim="glass s-pos"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-grade" data-anim="glass s-grade"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-phone" data-anim="glass s-phone"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-ext" data-anim="glass s-ext"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-addr" data-anim="glass s-addr"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-mgr" data-anim="glass s-mgr"><div class="k-verre"></div></div>
+<div class="plc k-verre-cadre reg-formulaire-g-badge" data-anim="glass s-badge"><div class="k-verre"></div></div>
 <!-- Boutons à flèche des listes déroulantes -->
-<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-sex"></div>
-<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-blood"></div>
-<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-dept"></div>
-<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-pos"></div>
-<div class="plc k-formulaire-bouton-fleche-haut reg-formulaire-b-grade"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-sex" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="SEX" tabindex="0" data-anim="s-sex"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-blood" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="BLOOD" tabindex="0" data-anim="s-blood"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-dept" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="DEPT" tabindex="0" data-anim="s-dept"></div>
+<div class="plc k-formulaire-bouton-fleche reg-formulaire-b-pos" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="POS" tabindex="0" data-anim="s-pos"></div>
+<div class="plc k-formulaire-bouton-fleche-haut reg-formulaire-b-grade" role="combobox" aria-haspopup="listbox" aria-expanded="true" aria-controls="reg-formulaire-grade-liste" aria-label="GRADE" tabindex="0" data-anim="s-grade"></div>
 <!-- Cases à cocher FLAGS : deux colonnes, trois lignes ; coches sur les quatre cases cochées -->
-<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a0"></div>
-<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a1"></div>
-<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a2"></div>
-<div class="plc k-formulaire-case reg-formulaire-c-b0"></div>
-<div class="plc k-formulaire-case reg-formulaire-c-b1"></div>
-<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-b2"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a0" role="checkbox" aria-checked="true" aria-labelledby="reg-formulaire-fl-commute" tabindex="0" data-anim="c-f0 s-f0"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a1" role="checkbox" aria-checked="true" aria-labelledby="reg-formulaire-fl-union" tabindex="0" data-anim="c-f2 s-f2"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-a2" role="checkbox" aria-checked="true" aria-labelledby="reg-formulaire-fl-health" tabindex="0" data-anim="c-f4 s-f4"></div>
+<div class="plc k-formulaire-case reg-formulaire-c-b0" role="checkbox" aria-checked="false" aria-labelledby="reg-formulaire-fl-dorm" tabindex="0" data-anim="c-f1 s-f1"></div>
+<div class="plc k-formulaire-case reg-formulaire-c-b1" role="checkbox" aria-checked="false" aria-labelledby="reg-formulaire-fl-night" tabindex="0" data-anim="c-f3 s-f3"></div>
+<div class="plc k-formulaire-case k-formulaire-case-cochee reg-formulaire-c-b2" role="checkbox" aria-checked="true" aria-labelledby="reg-formulaire-fl-security" tabindex="0" data-anim="c-f5 s-f5"></div>
 <!-- Liste ouverte GRADE : liste (classe du kit), barre sélectionnée -->
-<div class="plc k-formulaire-liste reg-formulaire-liste"></div>
-<div class="plc k-phosphore-selection reg-formulaire-barre"><span class="txt reg-formulaire-valeur reg-formulaire-barre-texte">G-4</span></div>
+<div class="plc k-formulaire-liste reg-formulaire-liste" data-anim="glass s-grade"></div>
+
 <!-- Titres des groupes, sur la coque -->
-<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-id-titre">IDENTITY</span>
-<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-po-titre">POST</span>
-<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-ct-titre">CONTACT</span>
-<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-fl-titre">FLAGS</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-id-titre" data-anim="t-1">IDENTITY</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-po-titre" data-anim="t-2">POST</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-ct-titre" data-anim="t-3">CONTACT</span>
+<span class="titre k-bouton-libelle reg-formulaire-titre reg-formulaire-fl-titre" data-anim="t-4">FLAGS</span>
 <!-- Étiquettes sur la coque (--kit-sans) -->
-<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-id-nom-jp">氏名</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-nom">NAME</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-emp">EMP NO</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-birth">BIRTH</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-sex">SEX</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-blood">BLOOD</span>
-<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-dept-jp">部署</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-dept">DEPT</span>
-<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-pos-jp">役職</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-pos">POSITION</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-grade">GRADE</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-hired">HIRED</span>
-<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-status-jp">状態</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-status">STATUS</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-contract">CONTRACT</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-phone">PHONE</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-ext">EXT</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-addr">ADDRESS</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-mgr">MANAGER</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-commute">COMMUTE ALLOWANCE</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-dorm">DORMITORY</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-union">UNION MEMBER</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-night">NIGHT SHIFT</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-health">HEALTH CHECK DONE</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-security">SECURITY BADGE</span>
-<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-badge">BADGE EXPIRY</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-id-nom-jp" lang="ja" data-anim="jp">氏名</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-nom" data-anim="l-nom s-nom">NAME</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-emp" data-anim="l-emp s-emp">EMP NO</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-birth" data-anim="l-birth s-birth">BIRTH</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-sex" data-anim="l-sex s-sex">SEX</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-id-blood" data-anim="l-blood s-blood">BLOOD</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-dept-jp" lang="ja" data-anim="jp">部署</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-dept" data-anim="l-dept s-dept">DEPT</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-pos-jp" lang="ja" data-anim="jp">役職</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-pos" data-anim="l-pos s-pos">POSITION</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-grade" data-anim="l-grade s-grade">GRADE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-hired" data-anim="l-hired s-hired">HIRED</span>
+<span class="titre k-bouton-libelle reg-formulaire-jp reg-formulaire-po-status-jp" lang="ja" data-anim="jp">状態</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-status" data-anim="l-status s-status">STATUS</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-po-contract" data-anim="l-contract s-contract">CONTRACT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-phone" data-anim="l-phone s-phone">PHONE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-ext" data-anim="l-ext s-ext">EXT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-addr" data-anim="l-addr s-addr">ADDRESS</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-ct-mgr" data-anim="l-mgr s-mgr">MANAGER</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-commute" id="reg-formulaire-fl-commute" data-anim="l-f0 s-f0">COMMUTE ALLOWANCE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-dorm" id="reg-formulaire-fl-dorm" data-anim="l-f1 s-f1">DORMITORY</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-union" id="reg-formulaire-fl-union" data-anim="l-f2 s-f2">UNION MEMBER</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-night" id="reg-formulaire-fl-night" data-anim="l-f3 s-f3">NIGHT SHIFT</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-health" id="reg-formulaire-fl-health" data-anim="l-f4 s-f4">HEALTH CHECK DONE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-security" id="reg-formulaire-fl-security" data-anim="l-f5 s-f5">SECURITY BADGE</span>
+<span class="titre k-bouton-libelle reg-formulaire-etiq reg-formulaire-fl-badge" data-anim="l-badge s-badge">BADGE EXPIRY</span>
 <!-- Valeurs sur le verre (PixelMplus12, 12 px) -->
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-nom">TANAKA HIROSHI</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-emp">E-0042-17</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-birth">S45.04.12</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-sex">M</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-blood">A</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-dept">GENERAL AFFAIRS</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-pos">SECTION CHIEF</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-phone">03-5550-0142</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-ext">2217</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-addr">SUGINAMI-KU TOKYO 166-0004</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-mgr">E-0007-03 MORI K.</span>
-<span class="txt k-alerte-texte reg-formulaire-badge reg-formulaire-v-badge">H07.11.30</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-g-grade-txt">G-4</span>
-<span class="plc k-phosphore-trait reg-formulaire-curseur"></span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g2">G-2</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g3">G-3</span>
-<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g5">G-5</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-nom" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="NAME" data-anim="v-nom s-nom">TANAKA HIROSHI</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-emp" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="EMP NO" data-anim="v-emp s-emp">E-0042-17</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-birth" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="BIRTH" data-anim="v-birth s-birth">S45.04.12</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-sex" data-anim="v-sex s-sex">M</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-blood" data-anim="v-blood s-blood">A</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-dept" data-anim="v-dept s-dept">GENERAL AFFAIRS</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-pos" data-anim="v-pos s-pos">SECTION CHIEF</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-phone" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="PHONE" data-anim="v-phone s-phone">03-5550-0142</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-ext" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="EXT" data-anim="v-ext s-ext">2217</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-addr" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="ADDRESS" data-anim="v-addr s-addr">SUGINAMI-KU TOKYO 166-0004</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-v-mgr" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="MANAGER" data-anim="v-mgr s-mgr">E-0007-03 MORI K.</span>
+<span class="txt k-alerte-texte reg-formulaire-badge reg-formulaire-v-badge" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="BADGE EXPIRY" data-anim="v-badge s-badge">H07.11.30</span>
+<span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-g-grade-txt" data-anim="v-grade s-grade">G-4</span>
+<span class="plc k-phosphore-trait reg-formulaire-curseur" data-anim="cursor s-grade"></span>
+<div class="reg-groupe" role="listbox" id="reg-formulaire-grade-liste" aria-label="等級 GRADE">
+<div class="h-ligne reg-formulaire-opt" role="option" aria-selected="false" tabindex="-1" style="--lx:478.33px; --ly:338.67px; --lw:279.33px; --lh:19px" data-anim="clic grade s-grade"><span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g2" data-anim="v-gl0 s-grade">G-2</span></div>
+<div class="h-ligne reg-formulaire-opt" role="option" aria-selected="false" tabindex="-1" style="--lx:478.33px; --ly:356px; --lw:279.33px; --lh:19px" data-anim="clic grade s-grade"><span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g3" data-anim="v-gl1 s-grade">G-3</span></div>
+<div class="h-ligne reg-formulaire-barre reg-formulaire-opt" role="option" aria-selected="true" tabindex="0" style="--lx:0px; --ly:0px; --lw:279.33px; --lh:19px" data-anim="clic grade s-grade"><span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-barre-texte" data-anim="v-gb s-grade">G-4</span></div>
+<div class="h-ligne reg-formulaire-opt" role="option" aria-selected="false" tabindex="-1" style="--lx:478.33px; --ly:393px; --lw:279.33px; --lh:19px" data-anim="clic grade s-grade"><span class="txt k-phosphore-texte reg-formulaire-valeur reg-formulaire-l-g5" data-anim="v-gl2 s-grade">G-5</span></div>
+</div>
+</div>
 
 <!-- Zone historique : plaque HISTORY, tableau en verre, barre de defilement. -->
 <div class="k-relief-plaque plc reg-historique-plaque"></div>
 <div class="k-vis plc reg-historique-vis-1"></div>
 <div class="k-vis plc reg-historique-vis-2"></div>
-<div class="titre reg-historique-titre">履歴 HISTORY</div>
-<!-- En-tete -->
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-date"><span class="k-bouton-libelle"><span class="k-bouton-latin">DATE</span></span></div>
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-code"><span class="k-bouton-libelle"><span class="k-bouton-latin">CODE</span></span></div>
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-event"><span class="k-bouton-libelle"><span class="k-bouton-latin">EVENT</span></span></div>
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-by"><span class="k-bouton-libelle"><span class="k-bouton-latin">BY</span></span></div>
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-status"><span class="k-bouton-libelle"><span class="k-bouton-latin">STATUS</span></span></div>
-<div class="k-bouton plc reg-historique-hd reg-historique-hd-fin"></div>
+<div class="titre reg-historique-titre" lang="ja">履歴 HISTORY</div>
+<div class="reg-groupe" role="grid" aria-label="履歴 HISTORY">
+<div class="h-ligne" role="row" tabindex="-1" style="--lx:322.66px; --ly:445.33px; --lw:908.65px; --lh:17px">
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-date" role="columnheader"><span class="k-bouton-libelle"><span class="k-bouton-latin">DATE</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-code" role="columnheader"><span class="k-bouton-libelle"><span class="k-bouton-latin">CODE</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-event" role="columnheader"><span class="k-bouton-libelle"><span class="k-bouton-latin">EVENT</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-by" role="columnheader"><span class="k-bouton-libelle"><span class="k-bouton-latin">BY</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-status" role="columnheader"><span class="k-bouton-libelle"><span class="k-bouton-latin">STATUS</span></span></div>
+<div class="k-bouton plc reg-historique-hd reg-historique-hd-fin" role="columnheader" aria-label="actions"></div>
+</div>
 <!-- Tableau en verre -->
-<div class="k-verre-cadre plc reg-historique-cadre"><div class="k-verre"></div></div>
-<div class="k-phosphore-selection plc reg-historique-sel"></div>
+<div class="k-verre-cadre plc reg-historique-cadre" data-anim="glass"><div class="k-verre"></div></div>
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-0"></div>
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-1"></div>
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-2"></div>
@@ -317,59 +308,214 @@
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-5"></div>
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-6"></div>
 <div class="k-phosphore-segment-eteint plc reg-historique-sep reg-historique-sep-7"></div>
-<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-date">H07.10.28</span>
-<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-code">CHG-0388</span>
-<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-event">BADGE RENEWAL REQUEST</span>
-<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-by">SATO-K</span>
-<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-status">保留 PENDING</span>
-<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-date">H07.10.02</span>
-<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-code">CHG-0371</span>
-<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-event">DEPT TRANSFER TO GA</span>
-<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-by">MORI-K</span>
-<span class="txt k-phosphore-selection reg-historique-r1 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-date">H07.07.15</span>
-<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-code">GHG-0342</span>
-<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-event">GRADE G-3 TO G-4</span>
-<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-by">MORI-K</span>
-<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-date">H07.04.01</span>
-<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-code">CHG-0310</span>
-<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-event">ANNUAL REVIEW 94</span>
-<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-by">HR-02</span>
-<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-date">H06.12.20</span>
-<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-code">CHG-0287</span>
-<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-event">ADDRESS CHANGE</span>
-<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-by">SATO-K</span>
-<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-date">H06.09.05</span>
-<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-code">CHG-0259</span>
-<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-event">HEALTH CHECK RECORDED</span>
-<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-by">CLINIC</span>
-<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-date">H06.04.01</span>
-<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-code">CHG-0211</span>
-<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-event">ANNUAL REVIEW 93</span>
-<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-by">HR-02</span>
-<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-status">承認 APPROVED</span>
-<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-date">H05.11.11</span>
-<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-code">CHG-0178</span>
-<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-event">TRAINING JOB-SAFETY</span>
-<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-by">HR-02</span>
-<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-status">承認 APPROVED</span>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:470.47px; --lw:908.65px; --lh:17px">
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-date" role="gridcell" data-anim="hr0">H07.10.28</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-code" role="gridcell" data-anim="hr0">CHG-0388</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-event" role="gridcell" data-anim="hr0">BADGE RENEWAL REQUEST</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-by" role="gridcell" data-anim="hr0">SATO-K</span>
+<span class="txt k-alerte-texte reg-historique-r0 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr0">保留 PENDING</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="true" tabindex="0" style="--lx:322.66px; --ly:490.66px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r1 reg-historique-c-date" role="gridcell" data-anim="hr1">H07.10.02</span>
+<span class="txt k-phosphore-texte reg-historique-r1 reg-historique-c-code" role="gridcell" data-anim="hr1">CHG-0371</span>
+<span class="txt k-phosphore-texte reg-historique-r1 reg-historique-c-event" role="gridcell" data-anim="hr1">DEPT TRANSFER TO GA</span>
+<span class="txt k-phosphore-texte reg-historique-r1 reg-historique-c-by" role="gridcell" data-anim="hr1">MORI-K</span>
+<span class="txt k-phosphore-texte reg-historique-r1 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr1">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:510.84px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-date" role="gridcell" data-anim="hr2">H07.07.15</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-code" role="gridcell" data-anim="hr2">GHG-0342</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-event" role="gridcell" data-anim="hr2">GRADE G-3 TO G-4</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-by" role="gridcell" data-anim="hr2">MORI-K</span>
+<span class="txt k-phosphore-texte reg-historique-r2 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr2">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:531.03px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-date" role="gridcell" data-anim="hr3">H07.04.01</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-code" role="gridcell" data-anim="hr3">CHG-0310</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-event" role="gridcell" data-anim="hr3">ANNUAL REVIEW 94</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-by" role="gridcell" data-anim="hr3">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r3 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr3">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:551.22px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-date" role="gridcell" data-anim="hr4">H06.12.20</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-code" role="gridcell" data-anim="hr4">CHG-0287</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-event" role="gridcell" data-anim="hr4">ADDRESS CHANGE</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-by" role="gridcell" data-anim="hr4">SATO-K</span>
+<span class="txt k-phosphore-texte reg-historique-r4 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr4">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:571.41px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-date" role="gridcell" data-anim="hr5">H06.09.05</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-code" role="gridcell" data-anim="hr5">CHG-0259</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-event" role="gridcell" data-anim="hr5">HEALTH CHECK RECORDED</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-by" role="gridcell" data-anim="hr5">CLINIC</span>
+<span class="txt k-phosphore-texte reg-historique-r5 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr5">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:591.61px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-date" role="gridcell" data-anim="hr6">H06.04.01</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-code" role="gridcell" data-anim="hr6">CHG-0211</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-event" role="gridcell" data-anim="hr6">ANNUAL REVIEW 93</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-by" role="gridcell" data-anim="hr6">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r6 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr6">承認 APPROVED</span>
+</div>
+<div class="h-ligne" role="row" aria-selected="false" tabindex="-1" style="--lx:322.66px; --ly:611.8px; --lw:908.65px; --lh:17px">
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-date" role="gridcell" data-anim="hr7">H05.11.11</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-code" role="gridcell" data-anim="hr7">CHG-0178</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-event" role="gridcell" data-anim="hr7">TRAINING JOB-SAFETY</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-by" role="gridcell" data-anim="hr7">HR-02</span>
+<span class="txt k-phosphore-texte reg-historique-r7 reg-historique-c-status" role="gridcell" lang="ja" data-anim="hr7">承認 APPROVED</span>
+</div>
+</div>
 <!-- Barre de defilement -->
-<div class="k-defilement-fleche k-defilement-fleche-clair plc reg-historique-bt reg-historique-bt-haut"><span class="k-defilement-triangle-haut"></span></div>
-<div class="k-defilement-glissiere plc reg-historique-rail"></div>
-<div class="k-defilement-curseur plc reg-historique-curseur"></div>
-<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-historique-bt reg-historique-bt-bas"><span class="k-defilement-triangle-bas"></span></div>
+<div class="k-defilement-fleche k-defilement-fleche-clair plc reg-historique-bt reg-historique-bt-haut" aria-hidden="true"><span class="k-defilement-triangle-haut"></span></div>
+<div class="k-defilement-glissiere plc reg-historique-rail" aria-hidden="true"></div>
+<div class="k-defilement-curseur plc reg-historique-curseur" aria-hidden="true"></div>
+<div class="k-defilement-fleche k-defilement-fleche-bas plc reg-historique-bt reg-historique-bt-bas" aria-hidden="true"><span class="k-defilement-triangle-bas"></span></div>
 
 <!-- Zone actions : rangée du bas (champ LAST EDIT en verre, boutons SAVE, CANCEL, PRINT). -->
-<div class="k-verre-cadre plc reg-actions-champ"><div class="k-verre"></div></div>
-<span class="txt k-phosphore-texte reg-actions-texte">LAST EDIT H07.10.28 23:31 SATO-K</span>
+<div class="k-verre-cadre plc reg-actions-champ" data-anim="glass"><div class="k-verre"></div></div>
+<span class="txt k-phosphore-texte reg-actions-texte" role="textbox" tabindex="0" aria-readonly="true" aria-label="LAST EDIT" data-anim="lastedit">LAST EDIT H07.10.28 23:31 SATO-K</span>
 
-<div class="k-bouton plc reg-actions-save"><span class="k-bouton-libelle"><span class="k-bouton-jp">保存</span><span class="k-bouton-latin"> SAVE</span></span></div>
-<div class="k-bouton plc reg-actions-cancel"><span class="k-bouton-libelle"><span class="k-bouton-jp">取消</span><span class="k-bouton-latin"> CANCEL</span></span></div>
-<div class="k-bouton plc reg-actions-print"><span class="k-bouton-libelle"><span class="k-bouton-jp">印刷</span><span class="k-bouton-latin"> PRINT</span></span></div>
+<div class="reg-groupe" role="toolbar" aria-label="操作 ACTIONS">
+<div class="k-bouton plc reg-actions-save" role="button" tabindex="0"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">保存</span><span class="k-bouton-latin"> SAVE</span></span></div>
+<div class="k-bouton plc reg-actions-cancel" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">取消</span><span class="k-bouton-latin"> CANCEL</span></span></div>
+<div class="k-bouton plc reg-actions-print" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">印刷</span><span class="k-bouton-latin"> PRINT</span></span></div>
+</div>
 
+<script>
+/* heisei-clavier */
+(function () {
+  'use strict';
+  var GROUPES = { toolbar: 'button', menubar: 'menuitem', listbox: 'option', tablist: 'tab', tree: 'treeitem', grid: 'row' };
+  var HORIZ = { toolbar: 1, menubar: 1, tablist: 1 };
+  var GRP = '[role=toolbar],[role=menubar],[role=listbox],[role=tablist],[role=tree],[role=grid]';
+  var ACT = '[role=option],[role=row],[role=treeitem],[role=tab],[role=menuitem],[role=button],[role=checkbox],[role=combobox]';
+  var FOC = 'a[href],button,input,select,textarea,[tabindex],[contenteditable]';
+
+  // Groupe dont el est un élément direct (plus proche ancêtre de groupe, du bon rôle), sinon null.
+  function groupeDe(el) {
+    if (!el || !el.getAttribute) return null;
+    var p = el.parentElement && el.parentElement.closest(GRP);
+    return p && GROUPES[p.getAttribute('role')] === el.getAttribute('role') ? p : null;
+  }
+  function membres(g) {
+    return [].filter.call(g.querySelectorAll('[role=' + GROUPES[g.getAttribute('role')] + ']'), function (e) { return groupeDe(e) === g; });
+  }
+  function actifs(g) {
+    return membres(g).filter(function (e) { return e.getAttribute('aria-disabled') !== 'true'; });
+  }
+  function roving(g, cible) {
+    membres(g).forEach(function (e) { e.setAttribute('tabindex', e === cible ? '0' : '-1'); });
+  }
+  function bascule(el, attr) {
+    var v = el.getAttribute(attr) !== 'true';
+    el.setAttribute(attr, String(v));
+    return v;
+  }
+  // Donne le focus à un élément ; dans un groupe, il devient le seul tabulable, et un onglet devient sélectionné.
+  function aller(el) {
+    if (!el) return;
+    var g = groupeDe(el);
+    if (g && g.getAttribute('role') === 'tablist') { choisir(el); return; }
+    if (g) roving(g, el);
+    el.focus();
+  }
+  function choisir(el) {
+    var g = groupeDe(el);
+    if (g) {
+      membres(g).forEach(function (e) {
+        var v = e === el;
+        e.setAttribute('aria-selected', String(v));
+        if (e.getAttribute('role') === 'tab') e.classList.toggle('k-onglet-actif', v);
+      });
+      roving(g, el);
+    }
+    el.focus();
+  }
+  // Effet d'une activation (Entrée, Espace, clic) ou d'une touche ↓ sur une combobox.
+  function activer(el, t) {
+    var r = el.getAttribute('role');
+    if (el.getAttribute('aria-disabled') === 'true') return;
+    if (r === 'combobox') { bascule(el, 'aria-expanded'); return; }
+    if (r === 'checkbox') { if (t !== 'Enter') el.classList.toggle('k-formulaire-case-cochee', bascule(el, 'aria-checked')); return; }
+    if (r === 'button' && el.hasAttribute('aria-pressed')) { el.classList.toggle('k-bouton-enfonce', bascule(el, 'aria-pressed')); return; }
+    if (r === 'option' || r === 'row' || r === 'treeitem' || r === 'tab') { choisir(el); return; }
+    if (t !== 'click') el.click();
+  }
+  // Pas de bouclage : on reste sur l'élément actif extrême.
+  function pas(g, el, d) {
+    var a = actifs(g), c = a[a.indexOf(el) + d];
+    if (c) aller(c);
+  }
+  // Arbre : → entre dans l'élément suivant de niveau +1 ; ← remonte au précédent de niveau -1.
+  function arbre(g, el, k) {
+    var a = actifs(g), i = a.indexOf(el), lv = Number(el.getAttribute('aria-level')), c = null, j;
+    if (k === 'ArrowRight') {
+      if (a[i + 1] && Number(a[i + 1].getAttribute('aria-level')) === lv + 1) c = a[i + 1];
+    } else {
+      for (j = i - 1; j >= 0 && !c; j--) {
+        if (Number(a[j].getAttribute('aria-level')) === lv - 1) c = a[j];
+      }
+    }
+    if (c) aller(c);
+  }
+  // Boîte de dialogue : Tab et Maj+Tab bouclent entre ses éléments focalisables.
+  function dialogue(ev, el) {
+    var f = [].filter.call(el.closest('[role=dialog]').querySelectorAll(FOC), function (e) {
+      return e.getAttribute('aria-disabled') !== 'true' && e.getAttribute('tabindex') !== '-1';
+    });
+    var i = f.indexOf(el);
+    if (!f.length) return;
+    if (ev.shiftKey && i <= 0) { ev.preventDefault(); f[f.length - 1].focus(); }
+    else if (!ev.shiftKey && i === f.length - 1) { ev.preventDefault(); f[0].focus(); }
+  }
+  function clavier(ev) {
+    var el = ev.target, k = ev.key, g, gr, a, prev, next;
+    if (!el || !el.getAttribute) return;
+    if (k === 'Tab' && el.closest('[role=dialog]')) { dialogue(ev, el); return; }
+    g = groupeDe(el);
+    if (g) {
+      gr = g.getAttribute('role');
+      a = actifs(g);
+      prev = HORIZ[gr] ? 'ArrowLeft' : 'ArrowUp';
+      next = HORIZ[gr] ? 'ArrowRight' : 'ArrowDown';
+      if (k === 'Home' || k === 'End') aller(k === 'Home' ? a[0] : a[a.length - 1]);
+      else if (k === prev) pas(g, el, -1);
+      else if (k === next) pas(g, el, 1);
+      else if (gr === 'tree' && (k === 'ArrowLeft' || k === 'ArrowRight')) arbre(g, el, k);
+      else if (k === 'Enter' || k === ' ') activer(el, k);
+      else return;
+      ev.preventDefault();
+      return;
+    }
+    if (!el.matches(ACT)) return;
+    if (k === 'Enter' || k === ' ' || (k === 'ArrowDown' && el.getAttribute('role') === 'combobox')) {
+      ev.preventDefault();
+      activer(el, k);
+    }
+  }
+  function cliquer(ev) {
+    var el = ev.target.closest && ev.target.closest(ACT);
+    if (el) activer(el, 'click');
+  }
+  function init() {
+    [].forEach.call(document.querySelectorAll(GRP), function (g) {
+      var sel = membres(g).find(function (e) { return e.getAttribute('aria-selected') === 'true'; });
+      roving(g, sel || actifs(g)[0]);
+    });
+    document.addEventListener('keydown', clavier);
+    document.addEventListener('click', cliquer);
+    document.addEventListener('focusin', function (ev) {
+      var g = groupeDe(ev.target);
+      if (g) roving(g, ev.target);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+/* /heisei-clavier */
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="../system/heisei.js"></script>
+<script src="screen.js"></script>
 </body>
 </html>

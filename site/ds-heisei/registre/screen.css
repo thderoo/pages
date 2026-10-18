@@ -3,16 +3,10 @@
 
 /* Repère : 1 px CSS = 3 px d'image (3840 x 2160). Page = écran 1280 x 720 CSS. */
 body {
-  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
-  --kit-mono: "PixelMplus12", ui-monospace, monospace;
-  margin: 0;
   width: 1280px;
   height: 720px;
   overflow: hidden;
   position: relative;
-  font-kerning: none;
-  font-synthesis: none;
-  color: var(--k-bouton-libelle);
 }
 
 /* Placement seul : position absolue sur les éléments des matières. */
@@ -967,3 +961,9 @@ body {
   width: 122.33px;
   height: 34px;
 }
+
+/* Conteneur de groupe (liste, grille, panneau, barre d'outils) : 0,0 sans taille, les enfants gardent leurs coordonnées. */
+.reg-groupe { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
+/* Option de liste sur le verre : au-dessus de la boîte de liste, comme ses textes d'origine (z-index 2). */
+.reg-formulaire-opt { z-index: 2; }

@@ -5,19 +5,11 @@
 <meta name="viewport" content="width=1280">
 <title>連絡 MESSAGES</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&family=Zen+Kaku+Gothic+New&display=swap">
-<link rel="stylesheet" href="../kit/coque.css">
-<link rel="stylesheet" href="../kit/relief.css">
-<link rel="stylesheet" href="../kit/rainure.css">
-<link rel="stylesheet" href="../kit/vis.css">
-<link rel="stylesheet" href="../kit/verre.css">
-<link rel="stylesheet" href="../kit/phosphore.css">
-<link rel="stylesheet" href="../kit/alerte.css">
-<link rel="stylesheet" href="../kit/bouton.css">
-<link rel="stylesheet" href="../kit/defilement.css">
-<link rel="stylesheet" href="../kit/marque.css">
+<link rel="stylesheet" href="../system/heisei.css">
 <link rel="stylesheet" href="screen.css">
+<link rel="stylesheet" href="../system/heisei-anim.css">
 </head>
-<body class="k-coque">
+<body class="k-coque h-ecran">
 <!-- Zone barres : barre d'outils du haut et bande d'état du bas. -->
 
 <!-- Rainures entre plaques (barre du haut). -->
@@ -33,25 +25,29 @@
 
 <!-- Plaque-titre « 連絡 MESSAGES ». -->
 <div class="k-relief-plaque k-relief-plaque-inverse m-plc m-barres-titre-plaque"></div>
-<span class="m-plc m-barres-titre k-bouton-libelle">連絡 MESSAGES</span>
+<span class="m-plc m-barres-titre k-bouton-libelle" lang="ja">連絡 MESSAGES</span>
 
 <!-- Rangée de 4 boutons levés. -->
-<div class="k-bouton m-plc m-barres-btn m-barres-btn-new"><span class="k-bouton-libelle"><span class="k-bouton-jp">新規</span><span class="k-bouton-latin m-barres-latin"> NEW</span></span></div>
-<div class="k-bouton m-plc m-barres-btn m-barres-btn-reply"><span class="k-bouton-libelle"><span class="k-bouton-jp">返信</span><span class="k-bouton-latin m-barres-latin"> REPLY</span></span></div>
-<div class="k-bouton m-plc m-barres-btn m-barres-btn-forward"><span class="k-bouton-libelle"><span class="k-bouton-jp">転送</span><span class="k-bouton-latin m-barres-latin"> FORWARD</span></span></div>
-<div class="k-bouton m-plc m-barres-btn m-barres-btn-delete"><span class="k-bouton-libelle"><span class="k-bouton-jp">削除</span><span class="k-bouton-latin m-barres-latin"> DELETE</span></span></div>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="toolbar" aria-label="操作 ACTIONS">
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-new" role="button" tabindex="0"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">新規</span><span class="k-bouton-latin m-barres-latin"> NEW</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-reply" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">返信</span><span class="k-bouton-latin m-barres-latin"> REPLY</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-forward" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">転送</span><span class="k-bouton-latin m-barres-latin"> FORWARD</span></span></div>
+<div class="k-bouton m-plc m-barres-btn m-barres-btn-delete" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">削除</span><span class="k-bouton-latin m-barres-latin"> DELETE</span></span></div>
+</div>
 
 <!-- Champ de recherche en verre, en haut à droite. -->
-<div class="k-verre-cadre m-plc m-barres-verre-recherche"><div class="k-verre"></div></div>
-<span class="k-phosphore-texte m-plc m-barres-txt m-barres-recherche">検索<span class="m-barres-sep"> SEARCH</span></span>
-<span class="k-phosphore-texte m-plc m-barres-txt m-barres-saisie">TANAKA</span>
-<div class="k-phosphore-trait m-plc m-barres-curseur"></div>
+<div class="k-verre-cadre m-plc m-barres-verre-recherche" data-anim="glass"><div class="k-verre"></div></div>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-recherche" lang="ja">検索<span class="m-barres-sep"> SEARCH</span></span>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-saisie" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="検索 SEARCH">TANAKA</span>
+<div class="k-phosphore-trait m-plc m-barres-curseur" data-anim="cursor-search"></div>
 
 <!-- Bande d'état du bas : deux champs de verre. -->
-<div class="k-verre-cadre m-plc m-barres-verre-bas-gauche"><div class="k-verre"></div></div>
-<div class="k-verre-cadre m-plc m-barres-verre-bas-droite"><div class="k-verre"></div></div>
-<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-gauche">INBOX 12 / UNREAD 05</span>
-<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-droite">SMTP OK  POP3 OK</span>
+<div class="k-verre-cadre m-plc m-barres-verre-bas-gauche" data-anim="glass"><div class="k-verre"></div></div>
+<div class="k-verre-cadre m-plc m-barres-verre-bas-droite" data-anim="glass"><div class="k-verre"></div></div>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="status" aria-label="状態 STATUS">
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-gauche" data-anim="etat-g">INBOX 12 / UNREAD 05</span>
+<span class="k-phosphore-texte m-plc m-barres-txt m-barres-etat m-barres-etat-droite">SMTP OK  POP3 <span data-anim="pop">OK</span></span>
+</div>
 
 <!-- Panneau 箱 FOLDERS : plaque en coin, vis, titre, cadre de verre, rangées de dossiers, quota. -->
 <div class="m-plc k-relief-plaque k-relief-plaque-creux-bas k-relief-plaque-coin m-dossiers-plaque"></div>
@@ -59,47 +55,64 @@
 <div class="k-vis m-plc m-dossiers-vis-tr"></div>
 <div class="k-vis m-plc m-dossiers-vis-bl"></div>
 <div class="k-vis m-plc m-dossiers-vis-br"></div>
-<div class="m-plc m-dossiers-titre"><span class="m-dossiers-kanji">箱</span> FOLDERS</div>
-<div class="m-plc k-verre-cadre m-dossiers-cadre"><div class="k-verre"></div></div>
+<div class="m-plc m-dossiers-titre"><span class="m-dossiers-kanji" lang="ja">箱</span> FOLDERS</div>
+<div class="m-plc k-verre-cadre m-dossiers-cadre" data-anim="glass"><div class="k-verre"></div></div>
 <div class="m-plc k-rainure-filet-verre m-dossiers-filet"></div>
-<div class="m-plc k-phosphore-texte m-dossiers-quota">QUOTA  412 / 1024 MB</div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-0"></div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-1"></div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-2"></div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-3"></div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-4"></div>
-<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-5"></div>
+<div class="m-plc k-phosphore-texte m-dossiers-quota" data-anim="quota-txt">QUOTA  412 / 1024 MB</div>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="meter" aria-label="QUOTA" aria-valuemin="0" aria-valuemax="1024" aria-valuenow="412" aria-valuetext="412 / 1024 MB">
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-0" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-1" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-2" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-3" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-4" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment m-dossiers-case m-dossiers-case-5" data-anim="qcell"></div>
 <div class="m-plc k-phosphore-segment m-dossiers-sliver"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-0"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-1"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-2"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-3"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-4"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-5"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-6"></div>
-<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-7"></div>
-<div class="m-plc k-phosphore-selection-sombre m-dossiers-sel m-dossiers-l0"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-0" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-1" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-2" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-3" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-4" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-5" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-6" data-anim="qcell"></div>
+<div class="m-plc k-phosphore-segment-eteint-clair m-dossiers-case m-dossiers-eteint-7" data-anim="qcell"></div>
+</div>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="listbox" aria-label="箱 FOLDERS">
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="true" tabindex="0" style="--lx:25px; --ly:87.67px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l0"></div>
-<span class="m-plc k-phosphore-texte-sourd m-dossiers-nom m-dossiers-l0">INBOX</span>
-<span class="m-plc k-phosphore-texte-sourd m-dossiers-compte m-dossiers-l0">12</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l0" data-anim="fnom">INBOX</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l0" data-anim="fcompte">12</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:124.66px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-alerte-puce m-dossiers-marque m-dossiers-l1"></div>
-<span class="m-plc k-alerte-texte m-dossiers-nom m-dossiers-l1">URGENT</span>
-<span class="m-plc k-alerte-texte m-dossiers-compte m-dossiers-l1">02</span>
+<span class="m-plc k-alerte-texte m-dossiers-nom m-dossiers-l1" data-anim="fnom">URGENT</span>
+<span class="m-plc k-alerte-texte m-dossiers-compte m-dossiers-l1" data-anim="fcompte">02</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:161.99px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l2"></div>
-<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l2">SENT</span>
-<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l2">148</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l2" data-anim="fnom">SENT</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l2" data-anim="fcompte">148</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:198.99px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l3"></div>
-<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l3">DRAFT</span>
-<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l3">01</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l3" data-anim="fnom">DRAFT</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l3" data-anim="fcompte">01</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:235.99px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l4"></div>
-<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l4">ARCHIVE</span>
-<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l4">1204</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l4" data-anim="fnom">ARCHIVE</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l4" data-anim="fcompte">1204</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:272.83px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l5"></div>
-<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l5">PROJECTS</span>
-<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l5">37</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l5" data-anim="fnom">PROJECTS</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l5" data-anim="fcompte">37</span>
+</div>
+<div class="h-ligne h-ligne-sombre" role="option" aria-selected="false" tabindex="-1" style="--lx:25px; --ly:309.66px; --lw:189.67px; --lh:35.67px; width:1280px">
 <div class="m-plc k-phosphore-segment m-dossiers-marque m-dossiers-l6"></div>
-<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l6">TRASH</span>
-<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l6">09</span>
+<span class="m-plc k-phosphore-texte m-dossiers-nom m-dossiers-l6" data-anim="fnom">TRASH</span>
+<span class="m-plc k-phosphore-texte m-dossiers-compte m-dossiers-l6" data-anim="fcompte">09</span>
+</div>
+</div>
 
 <!-- Panneau 受信箱 INBOX : plaque, vis, titre, cadre de verre, liste, barre de défilement. -->
 <div class="m-plc k-relief-plaque k-relief-plaque-creux-bas m-liste-plaque"></div>
@@ -107,139 +120,149 @@
 <div class="k-vis m-plc m-liste-vis m-liste-vis-tr"></div>
 <div class="k-vis m-plc m-liste-vis m-liste-vis-bl"></div>
 <div class="k-vis m-plc m-liste-vis m-liste-vis-br"></div>
-<div class="m-plc m-liste-titre m-liste-titre-jp">受信箱</div>
-<div class="m-plc m-liste-titre m-liste-titre-latin">INBOX</div>
+<div class="m-plc m-liste-titre m-liste-titre-jp" data-anim="ltitre-jp">受信箱</div>
+<div class="m-plc m-liste-titre m-liste-titre-latin" data-anim="ltitre-latin">INBOX</div>
 <div class="k-verre-cadre m-plc m-liste-cadre"></div>
-<div class="k-verre m-plc m-liste-verre"></div>
+<div class="k-verre m-plc m-liste-verre" data-anim="glass"></div>
 <!-- Lignes de messages (11). Chaque ligne : marque, expéditeur, sujet, heure. -->
-  <div class="m-plc m-liste-ligne m-liste-l1 k-phosphore-selection-sombre m-liste-selection">
-    <span class="m-plc m-liste-txt m-liste-expediteur">TANAKA.H</span>
-    <span class="m-plc m-liste-txt m-liste-sujet">RE: SERVER ROOM ACCESS</span>
-    <span class="m-plc m-liste-txt m-liste-heure">23:41</span>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="listbox" aria-label="受信箱 INBOX">
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l1 m-liste-selection" role="option" aria-selected="true" tabindex="0" style="--lx:0px; --ly:0px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">TANAKA.H</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">RE: SERVER ROOM ACCESS</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">23:41</span>
+    <span class="m-plc m-liste-filet" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l2">
-    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">SATO.M</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">MONTHLY REPORT 10</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">23:12</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l2" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-phosphore-segment" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">SATO.M</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">MONTHLY REPORT 10</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">23:12</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l3">
-    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">SYS-ADMIN</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">BACKUP JOB-0412 DONE</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">22:58</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l3" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-phosphore-segment" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">SYS-ADMIN</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">BACKUP JOB-0412 DONE</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">22:58</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l4">
-    <span class="m-plc m-liste-marque k-phosphore-segment"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">YAMADA.K</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">MEETING NOTES 10/30</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">22:30</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l4" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-phosphore-segment" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">YAMADA.K</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">MEETING NOTES 10/30</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">22:30</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l5">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">WATANABE.T</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">LEAVE REQUEST</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">21:47</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l5" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">WATANABE.T</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">LEAVE REQUEST</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">21:47</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l6">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">HR-DEPT</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">NOTICE 07-114</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">20:15</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l6" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">HR-DEPT</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">NOTICE 07-114</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">20:15</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l7">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">KOBAYASHI.A</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">RE: PRINTER 3F</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">19:52</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l7" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">KOBAYASHI.A</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">RE: PRINTER 3F</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">19:52</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l8">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">ITO.S</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">ESTIMATE 0933</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">18:20</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l8" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">ITO.S</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">ESTIMATE 0933</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">18:20</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l9">
-    <span class="m-plc m-liste-marque k-alerte-puce"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-alerte-texte">SYS-ADMIN</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-alerte-texte">DISK USAGE WARNING</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-alerte-texte">17:44</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l9" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-alerte-puce" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-alerte-texte" data-anim="rx">SYS-ADMIN</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-alerte-texte" data-anim="rs">DISK USAGE WARNING</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-alerte-texte" data-anim="rh">17:44</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l10">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">NAKAMURA.Y</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">LUNCH ORDER</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">12:05</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l10" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">NAKAMURA.Y</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">LUNCH ORDER</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">12:05</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
-  <div class="m-plc m-liste-ligne m-liste-l11">
-    <span class="m-plc m-liste-marque k-marque-carre-creux"></span>
-    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd">ADM-OFFICE</span>
-    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd">FORM 22 REMINDER</span>
-    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd">09:30</span>
-    <span class="m-plc m-liste-filet k-phosphore-segment-eteint"></span>
+  <div class="h-ligne h-ligne-sombre m-plc m-liste-ligne m-liste-l11" role="option" aria-selected="false" tabindex="-1" style="--lx:0px; --ly:5.55px; --lw:349px; --lh:36px" data-anim="clic row">
+    <span class="m-plc m-liste-marque k-marque-carre-creux" data-anim="rm"></span>
+    <span class="m-plc m-liste-txt m-liste-expediteur k-phosphore-texte-sourd" data-anim="rx">ADM-OFFICE</span>
+    <span class="m-plc m-liste-txt m-liste-sujet k-phosphore-texte-sourd" data-anim="rs">FORM 22 REMINDER</span>
+    <span class="m-plc m-liste-txt m-liste-heure k-phosphore-texte-sourd" data-anim="rh">09:30</span>
+    <span class="m-plc m-liste-filet k-phosphore-segment-eteint" data-anim="rf"></span>
   </div>
+</div>
 <!-- Barre de défilement : bouton haut, curseur, glissière, bouton bas. -->
+<div class="m-plc" style="left:0; top:0; width:0; height:0" aria-hidden="true">
 <div class="k-bouton k-defilement-fleche m-plc m-liste-defil-haut"><span class="k-defilement-triangle-haut"></span></div>
 <div class="k-defilement-glissiere m-plc m-liste-piste"></div>
 <div class="k-bouton k-defilement-curseur m-plc m-liste-curseur"></div>
 <div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-liste-defil-bas"><span class="k-defilement-triangle-bas"></span></div>
+</div>
 
 <!-- Zone lecture : panneau 本文 MESSAGE (volet de lecture), boîte CSS x 642 à 1275, y 43,67 à 418,67. -->
+<div class="m-plc h-ligne" style="left:0; top:0; width:0; height:0; --lx:652.66px; --ly:75.66px; --lw:589px; --lh:332px" role="region" tabindex="0" aria-label="本文 MESSAGE">
 <div class="k-relief-plaque k-relief-plaque-inverse m-plc m-lecture-plaque"></div>
 <div class="k-vis m-plc m-lecture-vis-g"></div>
 <div class="k-vis m-plc m-lecture-vis-d"></div>
 
 <!-- Titre sur la coque. -->
-<span class="m-plc m-lecture-titre m-lecture-titre-jp">本文</span>
+<span class="m-plc m-lecture-titre m-lecture-titre-jp" lang="ja">本文</span>
 <span class="m-plc m-lecture-titre m-lecture-titre-latin">MESSAGE</span>
 
 <!-- Cadre en creux et verre. -->
-<div class="k-verre-cadre m-plc m-lecture-cadre"><div class="k-verre"></div></div>
+<div class="k-verre-cadre m-plc m-lecture-cadre" data-anim="glass"><div class="k-verre"></div></div>
 
 <!-- En-tête : étiquettes puis valeurs, 4 lignes. -->
 <span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h1">FROM</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h1">TANAKA.H  (SYSTEMS DEPT)</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h1" data-anim="lval">TANAKA.H  (SYSTEMS DEPT)</span>
 <span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h2">TO</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h2">YOU</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h2" data-anim="lval">YOU</span>
 <span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h3">DATE</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h3">H07.11.03 23:41</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h3" data-anim="lval">H07.11.03 23:41</span>
 <span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-etiq m-lecture-h4">SUBJECT</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h4">RE: SERVER ROOM ACCESS</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-val m-lecture-h4" data-anim="lval">RE: SERVER ROOM ACCESS</span>
 
 <!-- Filet de séparation. -->
 <div class="k-rainure-filet-verre-fort m-plc m-lecture-filet"></div>
 
 <!-- Corps du message. -->
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b1">Good evening. The key card for the server room on 5F is ready.</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b2">Please collect it from the security desk before Friday.</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b3">Access hours are 08:00 to 20:00, and the log is checked weekly.</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b4">If the night shift needs entry, contact me first.</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b5">Thank you.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b1" data-anim="lbody">Good evening. The key card for the server room on 5F is ready.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b2" data-anim="lbody">Please collect it from the security desk before Friday.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b3" data-anim="lbody">Access hours are 08:00 to 20:00, and the log is checked weekly.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b4" data-anim="lbody">If the night shift needs entry, contact me first.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-b5" data-anim="lbody">Thank you.</span>
 
 <!-- Partie citée (la ligne vide précède, sans élément). -->
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c1">&gt; On 10/30 you wrote:</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c2">&gt; Could I get access to the server room on 5F?</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c3">&gt; I need to replace a drive in the file server.</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c1" data-anim="lquote">&gt; On 10/30 you wrote:</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c2" data-anim="lquote">&gt; Could I get access to the server room on 5F?</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-col-corps m-lecture-c3" data-anim="lquote">&gt; I need to replace a drive in the file server.</span>
 
 <!-- Pièce jointe : marque en crochets (un élément), nom et taille. -->
-<div class="k-marque-crochets m-plc m-lecture-crochets"></div>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-nom">ACCESS-FORM.TXT</span>
-<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-taille">2KB</span>
+<div class="k-marque-crochets m-plc m-lecture-crochets" data-anim="lpj"></div>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-nom" data-anim="lpj">ACCESS-FORM.TXT</span>
+<span class="k-phosphore-texte m-plc m-lecture-txt m-lecture-pj-taille" data-anim="lpj">2KB</span>
+</div>
 
 <!-- Barre de défilement : flèche haut, piste, curseur, flèche bas. Curseur posé en phosphore éteint (voir rapport). -->
+<div class="m-plc" style="left:0; top:0; width:0; height:0" aria-hidden="true">
 <div class="k-bouton k-defilement-fleche m-plc m-lecture-haut"><span class="k-defilement-triangle-haut"></span></div>
 <div class="k-defilement-piste-claire m-plc m-lecture-piste"></div>
 <div class="k-phosphore-segment-eteint m-plc m-lecture-curseur"></div>
 <div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-lecture-bas"><span class="k-defilement-triangle-bas"></span></div>
+</div>
 
 <!-- Zone reponse : panneau 返信 REPLY. Tout est en enfants directs de body (placement absolu, page 1280 x 720). -->
 <div class="k-relief-plaque k-relief-plaque-creux-bas k-relief-plaque-gorge-haut k-coque k-coque-sombre m-plc m-reponse-panneau"></div>
@@ -247,47 +270,187 @@
 <div class="k-vis m-plc m-reponse-vis m-reponse-vis-hd"></div>
 <div class="k-vis m-plc m-reponse-vis m-reponse-vis-bg"></div>
 <div class="k-vis m-plc m-reponse-vis m-reponse-vis-bd"></div>
-<span class="m-plc m-reponse-titre m-reponse-titre-jp">返信</span>
+<span class="m-plc m-reponse-titre m-reponse-titre-jp" lang="ja">返信</span>
 <span class="m-plc m-reponse-titre m-reponse-titre-lat">REPLY</span>
 
 <!-- Champ TO -->
 <div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-to"></div>
-<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-to-jp">宛先</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-to-jp" lang="ja">宛先</span>
 <span class="m-plc m-reponse-etiquette m-reponse-etq-to-lat">TO</span>
-<div class="k-verre-cadre m-plc m-reponse-cadre-to"><div class="k-verre"></div></div>
-<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-to">TANAKA.H</span>
+<div class="k-verre-cadre m-plc m-reponse-cadre-to" data-anim="glass"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-to" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="宛先 TO" data-anim="r-to">TANAKA.H</span>
 
 <!-- Champ SUBJECT -->
 <div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-sub"></div>
-<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-sub-jp">件名</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-sub-jp" lang="ja">件名</span>
 <span class="m-plc m-reponse-etiquette m-reponse-etq-sub-lat">SUBJECT</span>
-<div class="k-verre-cadre m-plc m-reponse-cadre-sub"><div class="k-verre"></div></div>
-<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-sub">RE: RE: SERVER ROOM ACCESS</span>
+<div class="k-verre-cadre m-plc m-reponse-cadre-sub" data-anim="glass"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-sub" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-label="件名 SUBJECT" data-anim="r-sub">RE: RE: SERVER ROOM ACCESS</span>
 
 <!-- Zone BODY : plaque, verre, trois lignes, curseur, barre de defilement -->
 <div class="k-relief-plaque k-relief-plaque-etiquette m-plc m-reponse-etq-body"></div>
-<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-body-jp">本文</span>
+<span class="m-plc m-reponse-etiquette m-reponse-etiquette-jp m-reponse-etq-body-jp" lang="ja">本文</span>
 <span class="m-plc m-reponse-etiquette m-reponse-etq-body-lat">BODY</span>
-<div class="k-verre-cadre m-plc m-reponse-cadre-body"><div class="k-verre"></div></div>
-<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-corps">Thank you for the quick answer. I will come to the security desk<br>tomorrow morning and bring the signed form.<br>I will also need</span>
-<div class="k-phosphore-trait m-plc m-reponse-curseur"></div>
+<div class="k-verre-cadre m-plc m-reponse-cadre-body" data-anim="glass"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-corps" role="textbox" tabindex="0" contenteditable="plaintext-only" aria-multiline="true" aria-label="本文 BODY"><span data-anim="rb1">Thank you for the quick answer. I will come to the security desk</span><br><span data-anim="rb2">tomorrow morning and bring the signed form.</span><br><span data-anim="rb3">I will also need</span></span>
+<div class="k-phosphore-trait m-plc m-reponse-curseur" data-anim="cursor-reply"></div>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" aria-hidden="true">
 <div class="k-bouton k-defilement-fleche m-plc m-reponse-sb-haut"><span class="k-defilement-triangle-haut"></span></div>
 <div class="k-defilement-glissiere m-plc m-reponse-sb-piste"></div>
 <div class="k-bouton k-defilement-curseur m-plc m-reponse-sb-pouce"></div>
 <div class="k-bouton k-defilement-fleche k-defilement-fleche-bas m-plc m-reponse-sb-bas"><span class="k-defilement-triangle-bas"></span></div>
+</div>
 
 <!-- Rangee de boutons et champ CHARS -->
-<div class="k-bouton m-plc m-reponse-btn-send"><span class="k-bouton-libelle"><span class="k-bouton-jp">送信</span><span class="k-bouton-latin m-reponse-gap"> SEND</span></span></div>
-<div class="k-bouton m-plc m-reponse-btn-save"><span class="k-bouton-libelle"><span class="k-bouton-jp">保存</span><span class="k-bouton-latin m-reponse-gap"> SAVE</span></span></div>
-<div class="k-bouton m-plc m-reponse-btn-cancel"><span class="k-bouton-libelle"><span class="k-bouton-jp">取消</span><span class="k-bouton-latin m-reponse-gap"> CANCEL</span></span></div>
-<div class="k-verre-cadre m-plc m-reponse-cadre-chars"><div class="k-verre"></div></div>
-<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-jp">文字</span>
+<div class="m-plc" style="left:0; top:0; width:0; height:0" role="toolbar" aria-label="返信操作 REPLY ACTIONS">
+<div class="k-bouton m-plc m-reponse-btn-send" role="button" tabindex="0"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">送信</span><span class="k-bouton-latin m-reponse-gap"> SEND</span></span></div>
+<div class="k-bouton m-plc m-reponse-btn-save" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">保存</span><span class="k-bouton-latin m-reponse-gap"> SAVE</span></span></div>
+<div class="k-bouton m-plc m-reponse-btn-cancel" role="button" tabindex="-1"><span class="k-bouton-libelle"><span class="k-bouton-jp" lang="ja">取消</span><span class="k-bouton-latin m-reponse-gap"> CANCEL</span></span></div>
+</div>
+<div class="k-verre-cadre m-plc m-reponse-cadre-chars" data-anim="glass"><div class="k-verre"></div></div>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-jp" lang="ja">文字</span>
 <span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-lat">CHARS</span>
-<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-num">118</span>
+<span class="m-plc k-phosphore-texte m-reponse-verre m-reponse-chars-num" data-anim="r-chars">118</span>
 
 <!-- Assemblage : jonctions verticales entre zones (rainures du kit) -->
 <div class="k-rainure m-plc m-assemblage-fi"></div>
 <div class="k-rainure m-plc m-assemblage-im"></div>
 
+<script>
+/* heisei-clavier */
+(function () {
+  'use strict';
+  var GROUPES = { toolbar: 'button', menubar: 'menuitem', listbox: 'option', tablist: 'tab', tree: 'treeitem', grid: 'row' };
+  var HORIZ = { toolbar: 1, menubar: 1, tablist: 1 };
+  var GRP = '[role=toolbar],[role=menubar],[role=listbox],[role=tablist],[role=tree],[role=grid]';
+  var ACT = '[role=option],[role=row],[role=treeitem],[role=tab],[role=menuitem],[role=button],[role=checkbox],[role=combobox]';
+  var FOC = 'a[href],button,input,select,textarea,[tabindex],[contenteditable]';
+
+  // Groupe dont el est un élément direct (plus proche ancêtre de groupe, du bon rôle), sinon null.
+  function groupeDe(el) {
+    if (!el || !el.getAttribute) return null;
+    var p = el.parentElement && el.parentElement.closest(GRP);
+    return p && GROUPES[p.getAttribute('role')] === el.getAttribute('role') ? p : null;
+  }
+  function membres(g) {
+    return [].filter.call(g.querySelectorAll('[role=' + GROUPES[g.getAttribute('role')] + ']'), function (e) { return groupeDe(e) === g; });
+  }
+  function actifs(g) {
+    return membres(g).filter(function (e) { return e.getAttribute('aria-disabled') !== 'true'; });
+  }
+  function roving(g, cible) {
+    membres(g).forEach(function (e) { e.setAttribute('tabindex', e === cible ? '0' : '-1'); });
+  }
+  function bascule(el, attr) {
+    var v = el.getAttribute(attr) !== 'true';
+    el.setAttribute(attr, String(v));
+    return v;
+  }
+  // Donne le focus à un élément ; dans un groupe, il devient le seul tabulable, et un onglet devient sélectionné.
+  function aller(el) {
+    if (!el) return;
+    var g = groupeDe(el);
+    if (g && g.getAttribute('role') === 'tablist') { choisir(el); return; }
+    if (g) roving(g, el);
+    el.focus();
+  }
+  function choisir(el) {
+    var g = groupeDe(el);
+    if (g) {
+      membres(g).forEach(function (e) {
+        var v = e === el;
+        e.setAttribute('aria-selected', String(v));
+        if (e.getAttribute('role') === 'tab') e.classList.toggle('k-onglet-actif', v);
+      });
+      roving(g, el);
+    }
+    el.focus();
+  }
+  // Effet d'une activation (Entrée, Espace, clic) ou d'une touche ↓ sur une combobox.
+  function activer(el, t) {
+    var r = el.getAttribute('role');
+    if (el.getAttribute('aria-disabled') === 'true') return;
+    if (r === 'combobox') { bascule(el, 'aria-expanded'); return; }
+    if (r === 'checkbox') { if (t !== 'Enter') el.classList.toggle('k-formulaire-case-cochee', bascule(el, 'aria-checked')); return; }
+    if (r === 'button' && el.hasAttribute('aria-pressed')) { el.classList.toggle('k-bouton-enfonce', bascule(el, 'aria-pressed')); return; }
+    if (r === 'option' || r === 'row' || r === 'treeitem' || r === 'tab') { choisir(el); return; }
+    if (t !== 'click') el.click();
+  }
+  // Pas de bouclage : on reste sur l'élément actif extrême.
+  function pas(g, el, d) {
+    var a = actifs(g), c = a[a.indexOf(el) + d];
+    if (c) aller(c);
+  }
+  // Arbre : → entre dans l'élément suivant de niveau +1 ; ← remonte au précédent de niveau -1.
+  function arbre(g, el, k) {
+    var a = actifs(g), i = a.indexOf(el), lv = Number(el.getAttribute('aria-level')), c = null, j;
+    if (k === 'ArrowRight') {
+      if (a[i + 1] && Number(a[i + 1].getAttribute('aria-level')) === lv + 1) c = a[i + 1];
+    } else {
+      for (j = i - 1; j >= 0 && !c; j--) {
+        if (Number(a[j].getAttribute('aria-level')) === lv - 1) c = a[j];
+      }
+    }
+    if (c) aller(c);
+  }
+  // Boîte de dialogue : Tab et Maj+Tab bouclent entre ses éléments focalisables.
+  function dialogue(ev, el) {
+    var f = [].filter.call(el.closest('[role=dialog]').querySelectorAll(FOC), function (e) {
+      return e.getAttribute('aria-disabled') !== 'true' && e.getAttribute('tabindex') !== '-1';
+    });
+    var i = f.indexOf(el);
+    if (!f.length) return;
+    if (ev.shiftKey && i <= 0) { ev.preventDefault(); f[f.length - 1].focus(); }
+    else if (!ev.shiftKey && i === f.length - 1) { ev.preventDefault(); f[0].focus(); }
+  }
+  function clavier(ev) {
+    var el = ev.target, k = ev.key, g, gr, a, prev, next;
+    if (!el || !el.getAttribute) return;
+    if (k === 'Tab' && el.closest('[role=dialog]')) { dialogue(ev, el); return; }
+    g = groupeDe(el);
+    if (g) {
+      gr = g.getAttribute('role');
+      a = actifs(g);
+      prev = HORIZ[gr] ? 'ArrowLeft' : 'ArrowUp';
+      next = HORIZ[gr] ? 'ArrowRight' : 'ArrowDown';
+      if (k === 'Home' || k === 'End') aller(k === 'Home' ? a[0] : a[a.length - 1]);
+      else if (k === prev) pas(g, el, -1);
+      else if (k === next) pas(g, el, 1);
+      else if (gr === 'tree' && (k === 'ArrowLeft' || k === 'ArrowRight')) arbre(g, el, k);
+      else if (k === 'Enter' || k === ' ') activer(el, k);
+      else return;
+      ev.preventDefault();
+      return;
+    }
+    if (!el.matches(ACT)) return;
+    if (k === 'Enter' || k === ' ' || (k === 'ArrowDown' && el.getAttribute('role') === 'combobox')) {
+      ev.preventDefault();
+      activer(el, k);
+    }
+  }
+  function cliquer(ev) {
+    var el = ev.target.closest && ev.target.closest(ACT);
+    if (el) activer(el, 'click');
+  }
+  function init() {
+    [].forEach.call(document.querySelectorAll(GRP), function (g) {
+      var sel = membres(g).find(function (e) { return e.getAttribute('aria-selected') === 'true'; });
+      roving(g, sel || actifs(g)[0]);
+    });
+    document.addEventListener('keydown', clavier);
+    document.addEventListener('click', cliquer);
+    document.addEventListener('focusin', function (ev) {
+      var g = groupeDe(ev.target);
+      if (g) roving(g, ev.target);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+/* /heisei-clavier */
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="../system/heisei.js"></script>
+<script src="screen.js"></script>
 </body>
 </html>

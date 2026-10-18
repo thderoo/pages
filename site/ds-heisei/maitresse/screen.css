@@ -3,16 +3,10 @@
    Valeurs copiées de KIT/assemblage.html (mesurées sur la maîtresse). Les zones ajoutent leurs propres classes. */
 
 body {
-  --kit-sans: "Barlow Semi Condensed", "Zen Kaku Gothic New", system-ui, sans-serif;
-  --kit-mono: "PixelMplus12", ui-monospace, monospace;
-  margin: 0;
   width: 1280px;
   height: 720px;
   overflow: hidden;
   position: relative;
-  font-kerning: none;
-  font-synthesis: none;
-  color: var(--k-bouton-libelle);
 }
 
 /* Placement seul : position absolue sur les éléments des matières. */
@@ -105,6 +99,9 @@ body {
 .m-haut-sysok-cadre { left: 1183px; top: 5.33px; width: 81px; height: 24.33px; }
 .m-haut-sysok-texte { left: 1200px; top: 12px; letter-spacing: 2.2px; }
 
+/* Conteneur de rôle sans taille (menu, liste, barres d'outils, jauges, journal, image) : 0,0, enfants gardés à leurs coordonnées. */
+.m-ancre { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
 /* ---------- zone : noeuds ---------- */
 /* Zone noeuds (panneau NODE LIST et ses 3 boutons). Placement seul, en px CSS de l'écran 1280 x 720.
    Mesures sur IMG : S/noeuds/mesures.md (px image / 3). Aucune couleur ici : les couleurs viennent des classes du kit. */
@@ -127,12 +124,12 @@ body {
 /* Cadre en creux du verre. */
 .m-noeuds-cadre { left: 17px; top: 73.67px; width: 252.33px; height: 378.67px; }
 
-/* Ligne sélectionnée ND-004 : aplat, marque de contour. Les enfants sont en coordonnées de l'aplat. */
-.m-noeuds-sel { left: 21.33px; top: 155px; width: 243.5px; height: 23.33px; }
-.m-noeuds-sel-marque { left: 10.67px; top: 5.67px; width: 9.33px; height: 10.33px; }
-.m-noeuds-sel-code { left: 30px; top: 5.67px; }
-.m-noeuds-sel-nom { left: 99px; top: 5.67px; }
-.m-noeuds-sel-lat { left: 196.33px; top: 5.67px; }
+/* Ligne sélectionnée ND-004 : son wrapper (h-ligne, boîte en --l* dans le HTML) remplace la barre retirée.
+   Ses enfants sont en coordonnées absolues de l'écran : ancienne position dans la barre + 21,33 px en x, + 155 px en y. */
+.m-noeuds-sel-marque { left: 32px; top: 160.67px; width: 9.33px; height: 10.33px; }
+.m-noeuds-sel-code { left: 51.33px; top: 160.67px; }
+.m-noeuds-sel-nom { left: 120.33px; top: 160.67px; }
+.m-noeuds-sel-lat { left: 217.66px; top: 160.67px; }
 
 /* Lignes du verre : chaque ligne est ancrée à son haut (mNN), ses enfants sont posés en colonnes. */
 .m-noeuds-ligne { position: absolute; left: 0; top: 0; width: 0; height: 0; }
