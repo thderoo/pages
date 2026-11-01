@@ -37,6 +37,13 @@ toucher.
   délégation de l'utilisateur. La police se change en une ligne
   (`--font-display`).
 
+- `playback-bench/` : banc de lecture vidéo (2026-11-01). Compare les voies
+  de rendu de libmedia AVPlayer 1.3.1 (WebGPU, Canvas2D/WebGL, wasm, MSE) et
+  le `<video>` natif sur 6 encodages d'un extrait de Tears of Steel (CC-BY
+  3.0, Blender Foundation), avec stats en direct et plein écran. libmedia
+  (`lib/`, LGPL-3.0) et ses `.wasm` (`wasm/`) sont servis depuis le dossier,
+  pas depuis un CDN.
+
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 
 Une page Juicy n'est pas un document avec des effets par-dessus : c'est une
