@@ -40,7 +40,9 @@ toucher.
 - `playback-bench/` : banc de lecture vidéo (2026-11-01). Compare les voies
   de rendu de libmedia AVPlayer 1.3.1 (WebGPU, Canvas2D/WebGL, wasm, MSE) et
   le `<video>` natif sur 6 encodages d'un extrait de Tears of Steel (CC-BY
-  3.0, Blender Foundation), avec stats en direct et plein écran. libmedia
+  3.0, Blender Foundation) et 6 clips de Big Buck Bunny (CC-BY 3.0) en
+  1080p60, 4K30 et 4K60, en H.264 et HEVC, avec stats en direct et plein
+  écran. libmedia
   (`lib/`, LGPL-3.0) et ses `.wasm` (`wasm/`) sont servis depuis le dossier,
   pas depuis un CDN.
 
