@@ -50,7 +50,8 @@
     flex-direction: column;
   }
   a { color: var(--accent); }
-  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+  .artist .hit:focus-visible, .work-frame:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
@@ -109,37 +110,52 @@
     gap: 12px;
   }
   .artist {
-    background: var(--card);
+    position: relative;
+    background: var(--line);
     border: 1px solid var(--line);
     border-radius: 8px;
-    padding: 12px;
+    overflow: hidden;
     min-width: 0;
   }
-  .artist h2 { font-size: 1.05rem; margin: 0 0 6px; font-weight: 650; overflow-wrap: anywhere; }
-  .artist h2 a { color: var(--fg); text-decoration: none; }
-  .artist h2 a:hover { text-decoration: underline; }
+  .artist h2 { font-size: 1.05rem; margin: 0 0 2px; font-weight: 650; overflow-wrap: anywhere; color: #fff; }
+  .artist:hover h2 { text-decoration: underline; }
+  /* Whole card is one link: a transparent layer over it, under the text. */
+  .artist .hit { position: absolute; inset: 0; z-index: 1; border-radius: 8px; }
 
   .stats-line .nowrap { white-space: nowrap; }
   .stats-line {
-    margin: 0 0 10px;
+    margin: 0;
     font-size: .85rem;
-    color: var(--muted);
     line-height: 1.35;
+    opacity: .9;
+  }
+
+  /* Text sitting on the bottom of an image, over a dark gradient. */
+  .cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 36px 12px 10px;
+    background: linear-gradient(to top, rgba(0, 0, 0, .75), rgba(0, 0, 0, 0));
+    color: #fff;
+    pointer-events: none;
   }
 
   .previews {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    gap: 0;
   }
   .preview {
     position: relative;
     display: block;
-    border-radius: 6px;
     overflow: hidden;
     background: var(--line);
     min-width: 0;
   }
+  .preview .placeholder { border: 0; border-radius: 0; }
   .preview img {
     display: block;
     width: 100%;
@@ -150,7 +166,7 @@
     position: absolute;
     left: 4px;
     right: 4px;
-    bottom: 4px;
+    top: 4px;
     display: flex;
     flex-wrap: wrap;
     gap: 3px;
@@ -184,24 +200,27 @@
   .altonly { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; margin-bottom: 12px; }
   #works {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 12px;
   }
   .work { margin: 0; min-width: 0; }
+  /* The whole illustration is the link to its Scryfall page. */
   .work-frame {
     position: relative;
-    border-radius: 4.5%;
+    display: block;
+    border-radius: 6px;
     overflow: hidden;
     background: var(--line);
-    aspect-ratio: 488 / 680;
+    aspect-ratio: 4 / 3;
+    color: #fff;
+    text-decoration: none;
   }
   .work-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .work-frame .placeholder { height: 100%; aspect-ratio: auto; }
-  .work figcaption { font-size: .85rem; margin-top: 6px; }
-  .work figcaption a { font-weight: 600; overflow-wrap: anywhere; }
-  .work .meta { color: var(--muted); display: block; }
-  .work .badges-inline { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
-  .work .badge { background: var(--line); color: var(--fg); }
+  .work-frame .placeholder { height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; }
+  .work-frame .cap { font-size: .9rem; }
+  .work-frame .cap-name { display: block; font-weight: 650; overflow-wrap: anywhere; }
+  .work-frame .cap-meta { display: block; font-size: .8rem; opacity: .9; }
+  .work-frame:hover .cap-name { text-decoration: underline; }
 
   .sentinel { height: 1px; }
 
@@ -215,6 +234,8 @@
   footer p { margin: 4px 0; }
 
   @media (max-width: 480px) {
+    /* Narrow cards: taller previews so the caption does not reach the badges. */
+    .preview img, .preview .placeholder { aspect-ratio: 3 / 4; }
     header.bar { padding: 10px 12px; }
     main { padding: 12px; }
     .count { margin-left: 0; width: 100%; }
@@ -408,7 +429,6 @@
   });
 
   function artistCard(a) {
-    const link = el('a', { href: '#artist=' + encodeURIComponent(a.id), text: a.name });
     const stats = el('p', { class: 'stats-line' });
     const parts = [
       plural(a.illustrations, 'illustration', 'illustrations'),
@@ -418,8 +438,10 @@
     ];
     stats.textContent = parts.join(' · ') + ' · ';
     stats.appendChild(el('span', { class: 'nowrap', text: yearsText(a) }));
+    const cap = el('div', { class: 'cap' }, [el('h2', { text: a.name }), stats]);
     const previews = el('div', { class: 'previews' }, a.preview.map(previewEl));
-    return el('article', { class: 'artist' }, [el('h2', null, [link]), stats, previews]);
+    const hit = el('a', { class: 'hit', href: '#artist=' + encodeURIComponent(a.id), 'aria-label': a.name });
+    return el('article', { class: 'artist' }, [previews, cap, hit]);
   }
 
   function badgesEl(alt, cls) {
@@ -436,7 +458,7 @@
     }
     const badges = badgesEl(w.alt, 'badges');
     if (badges) children.push(badges);
-    return el('a', { class: 'preview', href: w.uri, target: '_blank', rel: 'noopener', title: w.name + ' · ' + w.set_name }, children);
+    return el('div', { class: 'preview' }, children);
   }
 
   // ---------- detail view ----------
@@ -491,19 +513,18 @@
 
   function workEl(w) {
     const year = w.released ? w.released.slice(0, 4) : '—';
-    const frame = el('div', { class: 'work-frame' }, [
-      w.image
-        ? el('img', { src: w.image, alt: w.name, loading: 'lazy', decoding: 'async' })
-        : (w.art_crop
-            ? el('img', { src: w.art_crop, alt: w.name, loading: 'lazy', decoding: 'async' })
-            : el('span', { class: 'placeholder', text: w.name })),
+    const media = w.art_crop || w.image
+      ? el('img', { src: w.art_crop || w.image, alt: w.name, loading: 'lazy', decoding: 'async' })
+      : el('span', { class: 'placeholder', text: w.name });
+    const cap = el('span', { class: 'cap' }, [
+      el('span', { class: 'cap-name', text: w.name }),
+      el('span', { class: 'cap-meta', text: w.set_name + ' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings') }),
     ]);
-    const link = el('a', { href: w.uri, target: '_blank', rel: 'noopener', text: w.name });
-    const meta = el('span', { class: 'meta', text: w.set_name + ' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings') });
-    const children = [link, meta];
-    const badges = badgesEl(w.alt, 'badges-inline');
+    const children = [media, cap];
+    const badges = badgesEl(w.alt, 'badges');
     if (badges) children.push(badges);
-    return el('figure', { class: 'work' }, [frame, el('figcaption', null, children)]);
+    const link = el('a', { class: 'work-frame', href: w.uri, target: '_blank', rel: 'noopener', title: w.name + ' · ' + w.set_name }, children);
+    return el('div', { class: 'work' }, [link]);
   }
 
   // ---------- routing ----------
