@@ -119,16 +119,13 @@
   .artist h2 a { color: var(--fg); text-decoration: none; }
   .artist h2 a:hover { text-decoration: underline; }
 
-  dl.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: 4px 12px;
+  .stats-line .nowrap { white-space: nowrap; }
+  .stats-line {
     margin: 0 0 10px;
     font-size: .85rem;
+    color: var(--muted);
+    line-height: 1.35;
   }
-  dl.stats div { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
-  dl.stats dt { color: var(--muted); }
-  dl.stats dd { margin: 0; font-weight: 600; }
 
   .previews {
     display: grid;
@@ -412,19 +409,17 @@
 
   function artistCard(a) {
     const link = el('a', { href: '#artist=' + encodeURIComponent(a.id), text: a.name });
-    const stats = el('dl', { class: 'stats' }, [
-      statItem('Illustrations', a.illustrations),
-      statItem('Printings', a.printings),
-      statItem('Distinct card names', a.cards),
-      statItem('Alternative illustrations', a.alt_illustrations),
-      statItem('Years', yearsText(a)),
-    ]);
+    const stats = el('p', { class: 'stats-line' });
+    const parts = [
+      plural(a.illustrations, 'illustration', 'illustrations'),
+      plural(a.printings, 'printing', 'printings'),
+      plural(a.cards, 'distinct card name', 'distinct card names'),
+      a.alt_illustrations + ' alternative',
+    ];
+    stats.textContent = parts.join(' · ') + ' · ';
+    stats.appendChild(el('span', { class: 'nowrap', text: yearsText(a) }));
     const previews = el('div', { class: 'previews' }, a.preview.map(previewEl));
     return el('article', { class: 'artist' }, [el('h2', null, [link]), stats, previews]);
-  }
-
-  function statItem(label, value) {
-    return el('div', null, [el('dt', { text: label }), el('dd', { text: String(value) })]);
   }
 
   function badgesEl(alt, cls) {
