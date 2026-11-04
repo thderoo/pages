@@ -57,7 +57,12 @@ un aller-retour (`goto` ailleurs puis `goBack`), pas seulement un `reload`.
 - `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
   Magic (2026-11-04), aperçu de 4 illustrations (2 × 2) mettant en avant les
   alternatives (full art, borderless, showcase…), vue de toutes les
-  illustrations d'un artiste. HTML/CSS/JS sobre, sans dépendance, interface
+  illustrations d'un artiste. Onglet Sets : même chose pour les extensions
+  (filtre par type), page d'extension avec une case par illustration
+  montrée dans sa version de ce set ; liens croisés (le set d'une case mène
+  à la page d'extension, l'artiste à la page d'artiste). Le cache porte une
+  version (`DATA_VERSION`) : un cache d'une forme plus ancienne se
+  recharge. HTML/CSS/JS sobre, sans dépendance, interface
   en anglais (décisions de l'utilisateur). Aucune donnée servie avec la page :
   le navigateur télécharge le bulk `default_cards` de Scryfall (d'office à
   la première ouverture, sans cache), l'agrège dans un Web Worker inline, et garde le
