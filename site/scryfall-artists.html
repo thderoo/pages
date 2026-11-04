@@ -209,12 +209,19 @@
     pointer-events: none;
   }
 
-  /* Four previews, 2 x 2, edge to edge, each at the native ratio of art_crop. */
+  /* Up to four previews, edge to edge, in a fixed 4:3 frame (2 x 2 cells at the ratio
+     of art_crop). Fewer previews take the whole frame: 1 fills it, 2 split it in two
+     full-height halves, 3 put the first one full height on the left. */
   .previews {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    aspect-ratio: 4 / 3;
     gap: 0;
   }
+  .previews.n1 .preview { grid-column: 1 / -1; grid-row: 1 / -1; }
+  .previews.n2 .preview { grid-row: 1 / -1; }
+  .previews.n3 .preview:first-child { grid-row: 1 / -1; }
   .preview {
     position: relative;
     display: block;
@@ -222,14 +229,13 @@
     background: var(--line);
     min-width: 0;
   }
-  .preview .placeholder { border: 0; border-radius: 0; aspect-ratio: 4 / 3; }
+  .preview .placeholder { border: 0; border-radius: 0; aspect-ratio: auto; height: 100%; }
   .preview img {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 100%;
     object-fit: cover;
   }
-  .preview.empty { aspect-ratio: 4 / 3; background: var(--empty); }
   .badges {
     position: absolute;
     left: 4px;
@@ -1342,9 +1348,8 @@
   function listCard(name, stats, preview, works, href) {
     const cap = el('div', { class: 'cap' }, [el('h2', { text: name }), stats]);
     const cells = preview.slice(0, 4).map((id) => previewEl(works.find((x) => x.illustration_id === id)));
-    while (cells.length < 4) cells.push(el('div', { class: 'preview empty' }));
     const hit = el('a', { class: 'hit', href, 'aria-label': name });
-    return el('article', { class: 'artist' }, [el('div', { class: 'previews' }, cells), cap, hit]);
+    return el('article', { class: 'artist' }, [el('div', { class: 'previews n' + cells.length }, cells), cap, hit]);
   }
 
   function badgesEl(alt, cls) {
