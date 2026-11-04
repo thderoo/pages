@@ -51,8 +51,8 @@ toucher.
   alternatives (full art, borderless, showcase…), vue de toutes les
   illustrations d'un artiste. HTML/CSS/JS sobre, sans dépendance, interface
   en anglais (décisions de l'utilisateur). Aucune donnée servie avec la page :
-  le navigateur télécharge le bulk `default_cards` de Scryfall (un bouton
-  « Load from Scryfall »), l'agrège dans un Web Worker inline, et garde le
+  le navigateur télécharge le bulk `default_cards` de Scryfall (d'office à
+  la première ouverture, sans cache), l'agrège dans un Web Worker inline, et garde le
   résultat en IndexedDB. Rechargement automatique si le cache a plus de 30
   jours, bouton « Refresh from Scryfall » pour le reste. L'agrégation JS
   porte la logique de `datasets/scryfall-artists/build.py` de global-workspace :
