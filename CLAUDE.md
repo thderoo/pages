@@ -46,6 +46,16 @@ toucher.
   (`lib/`, LGPL-3.0) et ses `.wasm` (`wasm/`) sont servis depuis le dossier,
   pas depuis un CDN.
 
+- `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
+  Magic (2026-11-04), aperçu de 3 illustrations mettant en avant les
+  alternatives (full art, borderless, showcase…), vue de toutes les
+  illustrations d'un artiste. HTML/CSS/JS sobre, sans dépendance, interface
+  en anglais (décisions de l'utilisateur). Données dans
+  `scryfall-artists/` (`index.json` + `works/<n>.json`), produites par
+  `tools/scryfall-artists-split.py` depuis le dataset
+  `datasets/scryfall-artists/artists.json` de global-workspace ; images
+  servies par le CDN de Scryfall.
+
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 
 Une page Juicy n'est pas un document avec des effets par-dessus : c'est une
