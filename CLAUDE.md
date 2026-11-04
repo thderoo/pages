@@ -47,14 +47,18 @@ toucher.
   pas depuis un CDN.
 
 - `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
-  Magic (2026-11-04), aperçu de 3 illustrations mettant en avant les
+  Magic (2026-11-04), aperçu de 4 illustrations (2 × 2) mettant en avant les
   alternatives (full art, borderless, showcase…), vue de toutes les
   illustrations d'un artiste. HTML/CSS/JS sobre, sans dépendance, interface
-  en anglais (décisions de l'utilisateur). Données dans
-  `scryfall-artists/` (`index.json` + `works/<n>.json`), produites par
-  `tools/scryfall-artists-split.py` depuis le dataset
-  `datasets/scryfall-artists/artists.json` de global-workspace ; images
-  servies par le CDN de Scryfall.
+  en anglais (décisions de l'utilisateur). Aucune donnée servie avec la page :
+  le navigateur télécharge le bulk `default_cards` de Scryfall (un bouton
+  « Load from Scryfall »), l'agrège dans un Web Worker inline, et garde le
+  résultat en IndexedDB. Rechargement automatique si le cache a plus de 30
+  jours, bouton « Refresh from Scryfall » pour le reste. L'agrégation JS
+  porte la logique de `datasets/scryfall-artists/build.py` de global-workspace :
+  les deux restent alignées (une modification de l'un se reporte dans
+  l'autre, et l'équivalence se vérifie contre `artists.json`). Images servies
+  par le CDN de Scryfall.
 
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 

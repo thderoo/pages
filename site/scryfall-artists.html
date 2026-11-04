@@ -11,8 +11,10 @@
     --fg: #1c1c1a;
     --muted: #66665f;
     --line: #d9d9d2;
+    --empty: #bdbdb5;
     --card: #ffffff;
     --accent: #2453a6;
+    --error: #b3261e;
     --badge-bg: rgba(20, 20, 18, 0.82);
     --badge-fg: #ffffff;
   }
@@ -22,8 +24,10 @@
       --fg: #ebebe6;
       --muted: #9a9a92;
       --line: #35352f;
+      --empty: #4a4a44;
       --card: #1e1e1c;
       --accent: #8fb3f0;
+      --error: #f2b8b5;
       --badge-bg: rgba(0, 0, 0, 0.78);
       --badge-fg: #ffffff;
     }
@@ -33,8 +37,10 @@
     --fg: #ebebe6;
     --muted: #9a9a92;
     --line: #35352f;
+    --empty: #4a4a44;
     --card: #1e1e1c;
     --accent: #8fb3f0;
+    --error: #f2b8b5;
     --badge-bg: rgba(0, 0, 0, 0.78);
     --badge-fg: #ffffff;
   }
@@ -71,7 +77,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
   }
   .controls input[type="search"] {
@@ -84,7 +90,7 @@
     background: var(--card);
     color: var(--fg);
   }
-  .controls select, .controls button, .back {
+  .controls select, .controls button, .back, .btn {
     font: inherit;
     padding: 6px 10px;
     border: 1px solid var(--line);
@@ -93,20 +99,59 @@
     color: var(--fg);
     cursor: pointer;
   }
+  .btn:disabled { opacity: .6; cursor: default; }
   .controls label.sortlabel { color: var(--muted); font-size: .9rem; }
   .count { color: var(--muted); font-size: .9rem; margin-left: auto; }
+  @media (max-width: 480px) {
+    .controls input[type="search"] { flex-basis: 100%; }
+    .controls select { flex: 1 1 0; min-width: 0; }
+    .count { margin-left: 0; }
+  }
 
   main {
     flex: 1;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 16px;
   }
+
+  /* Loading panel: intro, progress bar, or error. */
+  .loader { margin: 8px 0 20px; }
+  .loader p { margin: 0 0 12px; color: var(--muted); }
+  .float {
+    position: fixed;
+    z-index: 40;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100vw - 32px));
+    box-sizing: border-box;
+    padding: 16px;
+    background: var(--card);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  }
+  .float[hidden] { display: none; }
+  /* While an old list is visible: bottom right, and bottom full width on narrow screens. */
+  .float.corner { left: auto; right: 16px; bottom: 16px; top: auto; transform: none; }
+  .float-step { margin: 0 0 8px; font-weight: 650; }
+  .float progress {
+    display: block;
+    width: 100%;
+    height: 10px;
+    margin-bottom: 8px;
+    accent-color: var(--accent);
+  }
+  #progress-text { margin: 0 0 8px; color: var(--muted); font-size: .9rem; }
+  #loader-error { color: var(--error); margin: 0 0 10px; }
   #status { color: var(--muted); margin: 24px 0; }
+
   #list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
     gap: 12px;
   }
   .artist {
@@ -143,9 +188,10 @@
     pointer-events: none;
   }
 
+  /* Four previews, 2 x 2, edge to edge, each at the native ratio of art_crop. */
   .previews {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0;
   }
   .preview {
@@ -155,13 +201,14 @@
     background: var(--line);
     min-width: 0;
   }
-  .preview .placeholder { border: 0; border-radius: 0; aspect-ratio: 8 / 9; }
+  .preview .placeholder { border: 0; border-radius: 0; aspect-ratio: 4 / 3; }
   .preview img {
     display: block;
     width: 100%;
-    aspect-ratio: 8 / 9;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
   }
+  .preview.empty { aspect-ratio: 4 / 3; background: var(--empty); }
   .badges {
     position: absolute;
     left: 4px;
@@ -198,6 +245,7 @@
   #detail-head h2 { font-size: 1.3rem; margin: 0; overflow-wrap: anywhere; }
   #detail-meta { color: var(--muted); font-size: .9rem; margin: 0 0 12px; }
   .altonly { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; margin-bottom: 12px; }
+  #detail-status { color: var(--muted); }
   #works {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
@@ -222,6 +270,36 @@
   .work-frame .cap-meta { display: block; font-size: .8rem; opacity: .9; }
   .work-frame:hover .cap-name { text-decoration: underline; }
 
+  /* Hover preview of one illustration, uncropped, in the artist view. Mouse only. */
+  #zoom {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: rgba(0, 0, 0, .6);
+  }
+  #zoom[hidden] { display: none !important; }
+  #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  #zoom img {
+    display: block;
+    width: 90vw;
+    height: calc(90vh - 40px);
+    object-fit: contain;
+  }
+  #zoom figcaption {
+    color: #fff;
+    background: rgba(0, 0, 0, .75);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .9rem;
+    max-width: 90vw;
+    overflow-wrap: anywhere;
+  }
+  @media (hover: none) { #zoom { display: none !important; } }
+
   .sentinel { height: 1px; }
 
   footer {
@@ -234,11 +312,10 @@
   footer p { margin: 4px 0; }
 
   @media (max-width: 480px) {
-    /* Narrow cards: taller previews so the caption does not reach the badges. */
-    .preview img, .preview .placeholder { aspect-ratio: 1 / 2; }
     header.bar { padding: 10px 12px; }
     main { padding: 12px; }
     .count { margin-left: 0; width: 100%; }
+    .float.corner { left: 16px; right: 16px; width: auto; }
   }
 </style>
 </head>
@@ -260,11 +337,17 @@
     </select>
     <button type="button" id="dir" aria-label="Sort direction">Descending</button>
     <span class="count" id="count" aria-live="polite"></span>
+    <button type="button" id="refresh" class="btn" hidden>Refresh from Scryfall</button>
   </div>
 </header>
 
 <main>
-  <p id="status">Loading…</p>
+  <section id="loader" class="loader" hidden>
+    <p id="intro">Data comes from Scryfall's daily bulk file, ~80 MB download.</p>
+    <button type="button" id="load" class="btn">Load from Scryfall</button>
+  </section>
+
+  <p id="status" hidden></p>
 
   <section id="list-view" hidden>
     <div id="list"></div>
@@ -278,7 +361,7 @@
     </div>
     <p id="detail-meta"></p>
     <label class="altonly"><input type="checkbox" id="alt-only"> Alternative only</label>
-    <p id="detail-status" class="sentinel-status" hidden></p>
+    <p id="detail-status" hidden></p>
     <div id="works"></div>
   </section>
 </main>
@@ -288,13 +371,301 @@
   <p>Images © their respective artists and Wizards of the Coast, via Scryfall.</p>
 </footer>
 
+<!-- Loading card: floats over the page. Centred when there is no data yet, bottom right while an old list stays visible. -->
+<div id="float" class="float" role="status" aria-live="polite" hidden>
+  <p id="float-step" class="float-step"></p>
+  <progress id="progress" max="1" value="0"></progress>
+  <p id="progress-text"></p>
+  <p id="loader-error" role="alert" hidden></p>
+  <button type="button" id="retry" class="btn" hidden>Try again</button>
+</div>
+
+<div id="zoom" hidden aria-hidden="true">
+  <figure>
+    <img id="zoom-img" alt="">
+    <figcaption id="zoom-cap"></figcaption>
+  </figure>
+</div>
+
 <script>
 (() => {
   'use strict';
 
+  // ---------- Web Worker: download, decompress, aggregate ----------
+  // Runs inside a Blob worker. It must stay self-contained: it is serialised
+  // with Function.prototype.toString(). The logic mirrors
+  // datasets/scryfall-artists/build.py of global-workspace (keep both aligned).
+  function workerMain() {
+    'use strict';
+    const BULK_URL = 'https://api.scryfall.com/bulk-data';
+    const BULK_TYPE = 'default_cards';
+    const PREVIEW_SIZE = 4;
+    const ALT_PROMO_TYPES = new Set([
+      'japanshowcase', 'schinesealtart', 'godzillaseries', 'draculaseries',
+      'concept', 'poster', 'sourcematerial',
+    ]);
+
+    // Code point order, as Python compares strings (JS compares UTF-16 units).
+    function cpCmp(a, b) {
+      const n = Math.min(a.length, b.length);
+      for (let i = 0; i < n; i++) {
+        let x = a.charCodeAt(i), y = b.charCodeAt(i);
+        if (x !== y) {
+          if (x >= 0xd800 && x <= 0xdfff) x += 0x2000; else if (x >= 0xe000) x -= 0x800;
+          if (y >= 0xd800 && y <= 0xdfff) y += 0x2000; else if (y >= 0xe000) y -= 0x800;
+          return x < y ? -1 : 1;
+        }
+      }
+      return a.length === b.length ? 0 : (a.length < b.length ? -1 : 1);
+    }
+    // Python str.lower(): per code point, so no context-dependent final sigma.
+    function lowerPy(s) { return Array.from(s, (c) => c.toLowerCase()).join(''); }
+    // Compares tuples of numbers and strings, lexicographically.
+    function cmpKey(x, y) {
+      for (let i = 0; i < x.length; i++) {
+        const r = typeof x[i] === 'number' ? x[i] - y[i] : cpCmp(x[i], y[i]);
+        if (r) return r;
+      }
+      return 0;
+    }
+    // Python `a or b or []` on lists.
+    function nonEmpty(a, b) { return a && a.length ? a : (b && b.length ? b : []); }
+    // Python `dict.get(key, default)`.
+    function getOr(obj, key, dflt) {
+      return obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : dflt;
+    }
+    // Python `face.get("image_uris") or top.get("image_uris") or {}` (empty dict is falsy).
+    function pickImages(face, top) {
+      if (face.image_uris && Object.keys(face.image_uris).length) return face.image_uris;
+      if (top.image_uris && Object.keys(top.image_uris).length) return top.image_uris;
+      return {};
+    }
+
+    // An Art Series card (layout art_series) is never an alternative, even when Scryfall marks it borderless.
+    function altTags(card) {
+      if (card.layout === 'art_series') return [];
+      const tags = new Set();
+      if (card.full_art) tags.add('full_art');
+      if (card.border_color === 'borderless') tags.add('borderless');
+      if (card.textless) tags.add('textless');
+      for (const fx of card.frame_effects || []) {
+        if (fx === 'showcase' || fx === 'extendedart') tags.add(fx);
+        else if (fx === 'fullart') tags.add('full_art');
+      }
+      for (const pt of card.promo_types || []) if (ALT_PROMO_TYPES.has(pt)) tags.add(pt);
+      return [...tags].sort();
+    }
+
+    function slug(name) {
+      const s = name.normalize('NFKD').replace(/[^\x00-\x7f]/g, '').toLowerCase();
+      return 'name:' + s.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function cardEntries(card) {
+      const faces = card.illustration_id
+        ? [[card, card]]
+        : (card.card_faces || []).filter((f) => f.illustration_id).map((f) => [f, card]);
+      const out = [];
+      for (const [face, top] of faces) {
+        let ids = nonEmpty(face.artist_ids, top.artist_ids);
+        const fid = face.artist_id;
+        if (fid && face !== top) ids = [fid];
+        const artist = face.artist || top.artist || '';
+        let names = artist ? artist.split(' & ').map((n) => n.trim()) : [];
+        if (!ids.length) {
+          if (!artist) continue;
+          ids = [slug(artist)];
+          names = [artist];
+        }
+        if (names.length !== ids.length) names = ids.length === 1 ? [artist] : [];
+        out.push({
+          ill: face.illustration_id, ids, names,
+          name: face.name || top.name, images: pickImages(face, top),
+        });
+      }
+      return out;
+    }
+
+    function bestPrint(ps) {
+      let best = null, bestKey = null;
+      for (const p of ps) {
+        const key = [p.placeholder ? 1 : 0, p.art_series ? 1 : 0, -p.alt.length, p.released, p.set];
+        if (best === null || cmpKey(key, bestKey) < 0) { best = p; bestKey = key; }
+      }
+      return best;
+    }
+
+    function makeWork(ps) {
+      const b = bestPrint(ps);
+      return {
+        illustration_id: b.illustration_id, name: b.name, set: b.set,
+        set_name: b.set_name, released: b.released, image: b.image,
+        art_crop: b.art_crop, uri: b.uri, printings: ps.length, alt: b.alt,
+      };
+    }
+
+    // PREVIEW_SIZE illustrations: alternatives first, then the others; those only
+    // existing as an Art Series card (souvenirs) come last. Distinct card names first.
+    function pickPreview(works, souvenirs) {
+      const ranked = works.slice().sort((a, b) =>
+        (b.alt.length - a.alt.length) || cpCmp(a.released, b.released) || cpCmp(a.name, b.name));
+      const alts = ranked.filter((w) => w.alt.length);
+      const rest = ranked.filter((w) => !w.alt.length && !souvenirs.has(w.illustration_id));
+      const last = ranked.filter((w) => !w.alt.length && souvenirs.has(w.illustration_id));
+      const chosen = [], names = new Set();
+      for (const pool of [alts, rest, last]) {
+        for (const fresh of [true, false]) {
+          for (const w of pool) {
+            if (chosen.length === PREVIEW_SIZE) break;
+            if (chosen.includes(w) || (fresh && names.has(w.name))) continue;
+            chosen.push(w);
+            names.add(w.name);
+          }
+        }
+      }
+      return chosen.map((w) => w.illustration_id);
+    }
+
+    function mostCommon(counts) {
+      let best = null, bestN = -1;
+      for (const [k, n] of counts) if (n > bestN) { best = k; bestN = n; }
+      return best;
+    }
+
+    class Aggregator {
+      constructor() {
+        this.prints = new Map();  // artist id -> Map(illustration_id -> prints[])
+        this.votes = new Map();   // artist id -> Map(name -> count)
+        this.years = new Map();   // artist id -> years[]
+        this.cards = 0;
+      }
+      add(card) {
+        this.cards++;
+        const released = card.released_at || '';
+        const tags = altTags(card);
+        const placeholder = card.image_status === 'placeholder' || card.image_status === 'missing';
+        const artSeries = card.layout === 'art_series';
+        for (const e of cardEntries(card)) {
+          const img = e.images;
+          const p = {
+            illustration_id: e.ill, name: e.name, set: card.set, set_name: card.set_name,
+            released, image: getOr(img, 'normal', ''), art_crop: getOr(img, 'art_crop', ''),
+            uri: card.scryfall_uri, alt: tags, placeholder, art_series: artSeries,
+          };
+          e.ids.forEach((aid, i) => {
+            let byIll = this.prints.get(aid);
+            if (!byIll) { byIll = new Map(); this.prints.set(aid, byIll); }
+            let list = byIll.get(e.ill);
+            if (!list) { list = []; byIll.set(e.ill, list); }
+            list.push(p);
+            if (e.names.length) {
+              let v = this.votes.get(aid);
+              if (!v) { v = new Map(); this.votes.set(aid, v); }
+              const nm = e.names[i];
+              v.set(nm, (v.get(nm) || 0) + 1);
+            }
+            if (released) {
+              let y = this.years.get(aid);
+              if (!y) { y = []; this.years.set(aid, y); }
+              y.push(parseInt(released.slice(0, 4), 10));
+            }
+          });
+        }
+      }
+      result(updatedAt) {
+        const artists = [];
+        const souvenirs = new Set();  // illustrations whose only showable print is an Art Series card
+        for (const byIll of this.prints.values()) {
+          for (const [ill, ps] of byIll) if (bestPrint(ps).art_series) souvenirs.add(ill);
+        }
+        for (const [aid, byIll] of this.prints) {
+          const works = [];
+          for (const ps of byIll.values()) works.push(makeWork(ps));
+          works.sort((a, b) => cmpKey(
+            [a.released, a.name, a.illustration_id],
+            [b.released, b.name, b.illustration_id]));
+          const votes = this.votes.get(aid);
+          const years = this.years.get(aid) || [];
+          artists.push({
+            id: aid,
+            name: votes ? mostCommon(votes) : aid,
+            illustrations: works.length,
+            printings: works.reduce((s, w) => s + w.printings, 0),
+            cards: new Set(works.map((w) => w.name)).size,
+            alt_illustrations: works.filter((w) => w.alt.length).length,
+            first_year: years.length ? years.reduce((m, y) => (y < m ? y : m)) : null,
+            last_year: years.length ? years.reduce((m, y) => (y > m ? y : m)) : null,
+            preview: pickPreview(works, souvenirs),
+            works,
+          });
+        }
+        artists.sort((a, b) => cpCmp(lowerPy(a.name), lowerPy(b.name)));
+        return {
+          generated_at: new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00'),
+          source: { bulk: BULK_TYPE, updated_at: updatedAt },
+          artists,
+        };
+      }
+    }
+
+    async function run() {
+      try {
+        const meta = await fetch(BULK_URL, { headers: { Accept: 'application/json' } });
+        if (!meta.ok) throw new Error('bulk-data HTTP ' + meta.status);
+        const entry = (await meta.json()).data.find((e) => e.type === BULK_TYPE);
+        if (!entry) throw new Error('no ' + BULK_TYPE + ' entry');
+        self.postMessage({ type: 'bulk', size: entry.compressed_size || 0, updated_at: entry.updated_at });
+
+        // The bulk entry carries jsonl_download_uri (JSON Lines, gzipped), as build.py.
+        const res = await fetch(entry.jsonl_download_uri || entry.download_uri);
+        if (!res.ok) throw new Error('download HTTP ' + res.status);
+        let got = 0;
+        const counter = new TransformStream({
+          transform(chunk, ctl) {
+            got += chunk.byteLength;
+            self.postMessage({ type: 'bytes', n: got });
+            ctl.enqueue(chunk);
+          },
+        });
+        const reader = res.body
+          .pipeThrough(counter)
+          .pipeThrough(new DecompressionStream('gzip'))
+          .pipeThrough(new TextDecoderStream())
+          .getReader();
+
+        const agg = new Aggregator();
+        let buf = '';
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += value;
+          let start = 0, nl;
+          while ((nl = buf.indexOf('\n', start)) !== -1) {
+            if (nl > start) {
+              agg.add(JSON.parse(buf.slice(start, nl)));
+              if (agg.cards % 2000 === 0) self.postMessage({ type: 'cards', n: agg.cards });
+            }
+            start = nl + 1;
+          }
+          buf = buf.slice(start);
+        }
+        if (buf.trim()) agg.add(JSON.parse(buf));
+        self.postMessage({ type: 'cards', n: agg.cards });
+        self.postMessage({ type: 'done', data: agg.result(entry.updated_at) });
+      } catch (e) {
+        self.postMessage({ type: 'error', message: (e && e.message) || String(e) });
+      }
+    }
+    run();
+  }
+
+  // ---------- page ----------
+
+  const CACHE_DB = 'scryfall-artists';
+  const CACHE_STORE = 'bulk';
+  const CACHE_KEY = 'default_cards';
+  const MAX_AGE_MS = 30 * 24 * 3600 * 1000;
   const BATCH = 60;
-  const DATA_INDEX = 'scryfall-artists/index.json';
-  const DATA_WORKS = (n) => 'scryfall-artists/works/' + n + '.json';
 
   // Known alt values get a readable label; any other value is shown as-is.
   const ALT_LABELS = {
@@ -329,6 +700,7 @@
   // Search key: lower case, no diacritics.
   const fold = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const plural = (n, one, many) => n.toLocaleString('en-US') + ' ' + (n === 1 ? one : many);
+  const mb = (n) => (n / 1e6).toFixed(1);
   const yearsText = (a) => {
     if (a.first_year == null && a.last_year == null) return '—';
     if (a.first_year === a.last_year) return String(a.first_year);
@@ -337,43 +709,164 @@
 
   const dom = {
     bar: $('bar'), q: $('q'), sort: $('sort'), dir: $('dir'), count: $('count'),
-    status: $('status'), listView: $('list-view'), list: $('list'), sentinel: $('sentinel'),
-    detail: $('detail'), detailName: $('detail-name'), detailMeta: $('detail-meta'),
-    back: $('back'), altOnly: $('alt-only'), works: $('works'), detailStatus: $('detail-status'),
-    source: $('source'),
+    refresh: $('refresh'), loader: $('loader'), intro: $('intro'), float: $('float'),
+    floatStep: $('float-step'), progress: $('progress'), progressText: $('progress-text'),
+    loaderError: $('loader-error'), retry: $('retry'), load: $('load'), status: $('status'), listView: $('list-view'), list: $('list'),
+    sentinel: $('sentinel'), detail: $('detail'), detailName: $('detail-name'),
+    detailMeta: $('detail-meta'), back: $('back'), altOnly: $('alt-only'), works: $('works'),
+    detailStatus: $('detail-status'), source: $('source'),
   };
 
   const state = { q: '', sort: 'illustrations', desc: true };
-  let index = null;          // parsed index.json, with search keys added
+  let index = null;          // { artists, folded: Map(id -> search key), byId: Map }
   let view = [];             // artists after filter + sort
   let shown = 0;             // how many of `view` are in the DOM
   let openId = null;         // artist id shown in detail view, or null
   let works = [];           // works of the open artist
-  let renderToken = 0;
   let listScroll = 0;
   let lastHash = location.hash;
   let cameFromList = false;
-  const shardCache = new Map();
+  let loading = false;
+  let worker = null;
+  let workerUrl = null;
+  let bulkSize = 0;
 
-  // ---------- data ----------
+  // ---------- IndexedDB cache (every access may fail: no cache, no crash) ----------
 
-  function loadIndex() {
-    return fetch(DATA_INDEX).then((r) => {
-      if (!r.ok) throw new Error('index.json: HTTP ' + r.status);
-      return r.json();
+  function openCache() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
+      const req = indexedDB.open(CACHE_DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(CACHE_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
+      req.onblocked = () => reject(new Error('IndexedDB blocked'));
     });
   }
 
-  function loadShard(n) {
-    if (!shardCache.has(n)) {
-      const p = fetch(DATA_WORKS(n)).then((r) => {
-        if (!r.ok) throw new Error('works/' + n + '.json: HTTP ' + r.status);
-        return r.json();
-      });
-      p.catch(() => shardCache.delete(n));
-      shardCache.set(n, p);
+  function cacheRun(mode, make) {
+    return openCache().then((db) => new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, mode);
+      const req = make(tx.objectStore(CACHE_STORE));
+      let result;
+      req.onsuccess = () => { result = req.result; };
+      tx.oncomplete = () => { db.close(); resolve(result); };
+      tx.onerror = tx.onabort = () => {
+        db.close();
+        reject(tx.error || new Error('IndexedDB transaction failed'));
+      };
+    }));
+  }
+
+  const cacheGet = () => cacheRun('readonly', (s) => s.get(CACHE_KEY)).catch(() => null);
+  const cachePut = (rec) => cacheRun('readwrite', (s) => s.put(rec, CACHE_KEY)).catch(() => {});
+
+  // ---------- loading ----------
+
+  function workerSource() {
+    if (!workerUrl) {
+      workerUrl = URL.createObjectURL(new Blob(['(' + workerMain.toString() + ')();'], { type: 'text/javascript' }));
     }
-    return shardCache.get(n);
+    return workerUrl;
+  }
+
+  function stopWorker() {
+    if (worker) { worker.terminate(); worker = null; }
+  }
+
+  function setProgressText(text) { dom.progressText.textContent = text; }
+  function setStep(text) { dom.floatStep.textContent = text; }
+
+  function startLoad() {
+    if (loading) return;
+    loading = true;
+    dom.refresh.disabled = true;
+    bulkSize = 0;
+    dom.progress.removeAttribute('value');
+    setStep('Starting…');
+    setProgressText('');
+    showLoader('progress');
+    try {
+      worker = new Worker(workerSource());
+    } catch (e) {
+      fail(e.message);
+      return;
+    }
+    worker.onmessage = (ev) => onWorkerMessage(ev.data);
+    worker.onerror = (ev) => fail(ev.message || 'worker error');
+  }
+
+  function onWorkerMessage(m) {
+    if (m.type === 'bulk') {
+      bulkSize = m.size;
+      dom.progress.max = bulkSize || 1;
+      dom.progress.value = 0;
+      setStep('Downloading…');
+      setProgressText(mb(0) + ' / ' + mb(bulkSize) + ' MB');
+    } else if (m.type === 'bytes') {
+      dom.progress.value = m.n;
+      setStep('Downloading…');
+      setProgressText(mb(m.n) + ' / ' + mb(bulkSize) + ' MB');
+    } else if (m.type === 'cards') {
+      // The total card count is not known in advance: the bar turns indeterminate.
+      dom.progress.removeAttribute('value');
+      setStep('Building artists…');
+      setProgressText(m.n.toLocaleString('en-US') + ' cards processed');
+    } else if (m.type === 'done') {
+      finishLoad(m.data);
+    } else if (m.type === 'error') {
+      fail(m.message);
+    }
+  }
+
+  function finishLoad(data) {
+    stopWorker();
+    loading = false;
+    // Put before showing: the cache write copies the data asynchronously.
+    cachePut({ updated_at: data.source.updated_at, loaded_at: Date.now(), data });
+    showData(data);
+    dom.float.hidden = true;
+    dom.refresh.disabled = false;
+  }
+
+  function fail(message) {
+    stopWorker();
+    loading = false;
+    dom.refresh.disabled = false;
+    setStep('Loading failed');
+    showLoader('error', 'Could not load Scryfall data (' + message + ').');
+  }
+
+  // mode: 'intro' (no data yet: intro panel), 'progress' or 'error' (loading card).
+  // The card floats centred when there is no data, bottom right over an old list.
+  function showLoader(mode, message) {
+    dom.loader.hidden = mode !== 'intro';
+    dom.float.hidden = mode === 'intro';
+    dom.float.classList.toggle('corner', index !== null);
+    dom.progress.hidden = mode !== 'progress';
+    dom.progressText.hidden = mode !== 'progress';
+    dom.loaderError.hidden = mode !== 'error';
+    dom.loaderError.textContent = mode === 'error' ? message : '';
+    dom.retry.hidden = mode !== 'error';
+    dom.load.disabled = false;
+  }
+
+  // ---------- data ----------
+
+  function showData(data) {
+    const folded = new Map();
+    const byId = new Map();
+    for (const a of data.artists) {
+      folded.set(a.id, fold(a.name));
+      byId.set(a.id, a);
+    }
+    index = { artists: data.artists, folded, byId };
+    dom.source.textContent = 'Source: Scryfall bulk data (' + (data.source.bulk || 'default_cards') +
+      '), updated ' + (data.source.updated_at || '').slice(0, 10) + '.';
+    dom.refresh.hidden = false;
+    applyList();
+    lastHash = location.hash;
+    route();
   }
 
   // ---------- list view ----------
@@ -382,11 +875,12 @@
     const q = fold(state.q.trim());
     const key = state.sort;
     const dir = state.desc ? -1 : 1;
-    let arr = q ? index.artists.filter((a) => a._f.includes(q)) : index.artists.slice();
+    const f = (a) => index.folded.get(a.id);
+    let arr = q ? index.artists.filter((a) => f(a).includes(q)) : index.artists.slice();
     arr.sort((a, b) => {
       let r;
       if (key === 'name') {
-        r = a._f < b._f ? -dir : a._f > b._f ? dir : 0;
+        r = f(a) < f(b) ? -dir : f(a) > f(b) ? dir : 0;
       } else {
         const x = a[key], y = b[key];
         // Missing values always go last, whatever the direction.
@@ -394,7 +888,7 @@
         else r = dir * (x - y);
       }
       if (r) return r;
-      return a._f < b._f ? -1 : a._f > b._f ? 1 : 0;
+      return f(a) < f(b) ? -1 : f(a) > f(b) ? 1 : 0;
     });
     view = arr;
     shown = 0;
@@ -439,7 +933,9 @@
     stats.textContent = parts.join(' · ') + ' · ';
     stats.appendChild(el('span', { class: 'nowrap', text: yearsText(a) }));
     const cap = el('div', { class: 'cap' }, [el('h2', { text: a.name }), stats]);
-    const previews = el('div', { class: 'previews' }, a.preview.map(previewEl));
+    const cells = a.preview.slice(0, 4).map((id) => previewEl(id, a));
+    while (cells.length < 4) cells.push(el('div', { class: 'preview empty' }));
+    const previews = el('div', { class: 'previews' }, cells);
     const hit = el('a', { class: 'hit', href: '#artist=' + encodeURIComponent(a.id), 'aria-label': a.name });
     return el('article', { class: 'artist' }, [previews, cap, hit]);
   }
@@ -449,7 +945,8 @@
     return el('span', { class: cls }, alt.map((v) => el('span', { class: 'badge', text: altLabel(v) })));
   }
 
-  function previewEl(w) {
+  function previewEl(illId, a) {
+    const w = a.works.find((x) => x.illustration_id === illId);
     const children = [];
     if (w.art_crop) {
       children.push(el('img', { src: w.art_crop, alt: w.name, loading: 'lazy', decoding: 'async' }));
@@ -479,21 +976,8 @@
          yearsText(a)].join(' · ')
       : '';
     dom.works.textContent = '';
-    works = [];
-    if (!a) { dom.detailStatus.hidden = true; return; }
-
-    dom.detailStatus.hidden = false;
-    dom.detailStatus.textContent = 'Loading illustrations…';
-    const token = ++renderToken;
-    loadShard(a.shard).then((data) => {
-      if (token !== renderToken) return;
-      works = data[a.id] || [];
-      dom.detailStatus.hidden = true;
-      renderWorks();
-    }).catch((err) => {
-      if (token !== renderToken) return;
-      dom.detailStatus.textContent = 'Could not load illustrations (' + err.message + ').';
-    });
+    works = a ? a.works : [];
+    renderWorks();
   }
 
   function renderWorks() {
@@ -505,7 +989,7 @@
       dom.detailStatus.textContent = 'No alternative illustration.';
       return;
     }
-    if (works.length && !onlyAlt) dom.detailStatus.hidden = true;
+    dom.detailStatus.hidden = true;
     const frag = document.createDocumentFragment();
     for (const w of items) frag.appendChild(workEl(w));
     dom.works.appendChild(frag);
@@ -523,27 +1007,27 @@
     const children = [media, cap];
     const badges = badgesEl(w.alt, 'badges');
     if (badges) children.push(badges);
-    const link = el('a', { class: 'work-frame', href: w.uri, target: '_blank', rel: 'noopener', title: w.name + ' · ' + w.set_name }, children);
+    const link = el('a', {
+      class: 'work-frame', href: w.uri, target: '_blank', rel: 'noopener',
+      title: w.name + ' · ' + w.set_name,
+      'data-zoom': w.art_crop || w.image || null, 'data-name': w.name,
+    }, children);
     return el('div', { class: 'work' }, [link]);
   }
 
   // ---------- routing ----------
 
-  let listScrollSaved = 0;
-
   function showList() {
     openId = null;
+    hideZoom();
     dom.detail.hidden = true;
     dom.bar.hidden = false;
-    if (view.length === 0) {
-      dom.listView.hidden = true;
-    } else {
-      dom.listView.hidden = false;
-    }
+    dom.listView.hidden = view.length === 0;
     window.scrollTo(0, listScroll);
   }
 
   function route() {
+    if (!index) return;   // no data yet: routed again when it arrives
     const m = location.hash.match(/^#artist=(.+)$/);
     if (m) {
       let id = null;
@@ -570,36 +1054,48 @@
 
   dom.q.addEventListener('input', () => {
     state.q = dom.q.value;
-    applyList();
+    if (index) applyList();
   });
   dom.sort.addEventListener('change', () => {
     state.sort = dom.sort.value;
-    applyList();
+    if (index) applyList();
   });
   dom.dir.addEventListener('click', () => {
     state.desc = !state.desc;
     dom.dir.textContent = state.desc ? 'Descending' : 'Ascending';
-    applyList();
+    if (index) applyList();
   });
   dom.altOnly.addEventListener('change', renderWorks);
 
+  // ---------- hover preview (mouse only) ----------
+
+  const zoomBox = $('zoom'), zoomImg = $('zoom-img'), zoomCap = $('zoom-cap');
+  const canHover = window.matchMedia('(hover: hover)');
+  function hideZoom() { zoomBox.hidden = true; zoomImg.removeAttribute('src'); }
+  dom.works.addEventListener('mouseover', (e) => {
+    const frame = e.target.closest ? e.target.closest('.work-frame') : null;
+    if (!frame || !frame.dataset.zoom || !canHover.matches) { hideZoom(); return; }
+    zoomImg.src = frame.dataset.zoom;
+    zoomImg.alt = frame.dataset.name;
+    zoomCap.textContent = frame.dataset.name;
+    zoomBox.hidden = false;
+  });
+  dom.works.addEventListener('mouseleave', hideZoom);
+  dom.load.addEventListener('click', startLoad);
+  dom.retry.addEventListener('click', startLoad);
+  dom.refresh.addEventListener('click', startLoad);
+
   // ---------- start ----------
 
-  loadIndex().then((data) => {
-    index = data;
-    index.byId = new Map();
-    for (const a of index.artists) {
-      a._f = fold(a.name);
-      index.byId.set(a.id, a);
+  // With a cache: show it at once; reload by itself when it is older than 30 days.
+  // Without one (or without IndexedDB): ask for the explicit load.
+  cacheGet().then((rec) => {
+    if (rec && rec.data) {
+      showData(rec.data);
+      if (Date.now() - rec.loaded_at > MAX_AGE_MS) startLoad();
+    } else {
+      showLoader('intro');
     }
-    dom.source.textContent = 'Source: Scryfall bulk data (' + (data.source.bulk || 'default_cards') +
-      '), updated ' + (data.source.updated_at || '').slice(0, 10) + '.';
-    dom.status.hidden = true;
-    applyList();
-    lastHash = location.hash;
-    route();
-  }).catch((err) => {
-    dom.status.textContent = 'Could not load the artist index (' + err.message + ').';
   });
 })();
 </script>
