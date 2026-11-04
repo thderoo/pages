@@ -59,8 +59,13 @@ un aller-retour (`goto` ailleurs puis `goBack`), pas seulement un `reload`.
   alternatives (full art, borderless, showcase…), vue de toutes les
   illustrations d'un artiste. Onglet Sets : même chose pour les extensions
   (filtre par type), page d'extension avec une case par illustration
-  montrée dans sa version de ce set ; liens croisés (le set d'une case mène
-  à la page d'extension, l'artiste à la page d'artiste). Le cache porte une
+  montrée dans sa version de ce set. Onglet Cards : une entrée par nom de
+  carte, page de carte avec toutes ses illustrations ; cet index se construit
+  dans la page depuis les extensions (rien de plus dans le cache ni dans
+  `build.py`). Liens croisés partout : nom de carte vers sa page, set vers la
+  page d'extension, artiste vers la page d'artiste, y compris dans la
+  légende du zoom ; Scryfall n'est lié que depuis le zoom (l'impression
+  affichée) et l'en-tête des pages d'extension et de carte. Le cache porte une
   version (`DATA_VERSION`) : un cache d'une forme plus ancienne se
   recharge. HTML/CSS/JS sobre, sans dépendance, interface
   en anglais (décisions de l'utilisateur). Aucune donnée servie avec la page :

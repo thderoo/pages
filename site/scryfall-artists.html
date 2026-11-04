@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
-<title>Scryfall artists &amp; sets</title>
+<title>Scryfall artists, sets &amp; cards</title>
 <style>
   :root {
     --bg: #f6f6f3;
@@ -308,6 +308,8 @@
     pointer-events: auto;
   }
   .work-frame .cap-name:hover { text-decoration: underline; }
+  .work-frame span.cap-name { pointer-events: none; }
+  .work-frame span.cap-name:hover { text-decoration: none; }
   .work-frame .cap-meta { display: block; font-size: .8rem; opacity: .9; }
   .cap-link { color: #fff; text-decoration: none; pointer-events: auto; }
   .cap-link:hover { text-decoration: underline; }
@@ -398,10 +400,11 @@
 
 <header class="bar" id="bar">
   <div class="bar-top">
-    <h1>Scryfall artists &amp; sets</h1>
+    <h1>Scryfall artists, sets &amp; cards</h1>
     <nav class="tabs" aria-label="Lists">
       <a href="#" id="tab-artists" class="tab">Artists</a>
       <a href="#sets" id="tab-sets" class="tab">Sets</a>
+      <a href="#cards" id="tab-cards" class="tab">Cards</a>
     </nav>
     <button type="button" id="refresh" class="btn" hidden>Refresh from Scryfall</button>
   </div>
@@ -440,6 +443,24 @@
     </span>
     <span class="count" id="set-count" aria-live="polite"></span>
   </div>
+  <div class="controls" id="card-controls" hidden>
+    <input type="search" id="card-q" placeholder="Search by card name" aria-label="Search cards by name" autocomplete="off">
+    <span class="sortgroup">
+    <label class="sortlabel" for="card-sort">Sort by</label>
+    <select id="card-sort">
+      <option value="illustrations">Illustrations</option>
+      <option value="printings">Printings</option>
+      <option value="artists">Artists</option>
+      <option value="sets">Sets</option>
+      <option value="alt_illustrations">Alternative illustrations</option>
+      <option value="name">Name</option>
+      <option value="first_year">First year</option>
+      <option value="last_year">Last year</option>
+    </select>
+    <button type="button" id="card-dir" aria-label="Sort direction">Descending</button>
+    </span>
+    <span class="count" id="card-count" aria-live="polite"></span>
+  </div>
 </header>
 
 <main>
@@ -454,6 +475,11 @@
   <section id="set-list-view" hidden>
     <div id="set-list" class="cards"></div>
     <div id="set-sentinel" class="sentinel" aria-hidden="true"></div>
+  </section>
+
+  <section id="card-list-view" hidden>
+    <div id="card-list" class="cards"></div>
+    <div id="card-sentinel" class="sentinel" aria-hidden="true"></div>
   </section>
 
   <section id="detail" hidden>
@@ -484,6 +510,16 @@
           <option value="printings">Printings</option>
         </select>
         <button type="button" id="set-work-dir" aria-label="Sort direction">Ascending</button>
+      </span>
+      <span class="sortgroup" id="card-work-sorting" hidden>
+        <label class="sortlabel" for="card-work-sort">Sort by</label>
+        <select id="card-work-sort">
+          <option value="released">Release date</option>
+          <option value="artist">Artist</option>
+          <option value="set_name">Set</option>
+          <option value="printings">Printings</option>
+        </select>
+        <button type="button" id="card-work-dir" aria-label="Sort direction">Ascending</button>
       </span>
     </div>
     <p id="detail-status" hidden></p>
@@ -906,16 +942,18 @@
   const dom = {
     bar: $('bar'), q: $('q'), sort: $('sort'), dir: $('dir'), count: $('count'),
     setQ: $('set-q'), setType: $('set-type'), setSort: $('set-sort'), setDir: $('set-dir'), setCount: $('set-count'),
-    artistControls: $('artist-controls'), setControls: $('set-controls'),
-    tabArtists: $('tab-artists'), tabSets: $('tab-sets'),
+    cardQ: $('card-q'), cardSort: $('card-sort'), cardDir: $('card-dir'), cardCount: $('card-count'),
+    artistControls: $('artist-controls'), setControls: $('set-controls'), cardControls: $('card-controls'),
+    tabArtists: $('tab-artists'), tabSets: $('tab-sets'), tabCards: $('tab-cards'),
     refresh: $('refresh'), float: $('float'),
     floatStep: $('float-step'), progress: $('progress'), progressText: $('progress-text'),
     loaderError: $('loader-error'), retry: $('retry'), status: $('status'),
-    listView: $('list-view'), setListView: $('set-list-view'),
+    listView: $('list-view'), setListView: $('set-list-view'), cardListView: $('card-list-view'),
     detail: $('detail'), detailName: $('detail-name'),
     detailMeta: $('detail-meta'), back: $('back'), altOnly: $('alt-only'), works: $('works'),
     workSort: $('work-sort'), workDir: $('work-dir'), setWorkSort: $('set-work-sort'), setWorkDir: $('set-work-dir'),
-    artistWorkSorting: $('artist-work-sorting'), setWorkSorting: $('set-work-sorting'),
+    artistWorkSorting: $('artist-work-sorting'), setWorkSorting: $('set-work-sorting'), cardWorkSorting: $('card-work-sorting'),
+    cardWorkSort: $('card-work-sort'), cardWorkDir: $('card-work-dir'),
     detailStatus: $('detail-status'), source: $('source'),
   };
 
@@ -924,12 +962,14 @@
   const setState = { q: '', type: '', sort: 'released', desc: true };
   const workState = { sort: 'released', desc: false };
   const setWorkState = { sort: 'number', desc: false };
+  const cardState = { q: '', sort: 'illustrations', desc: true };
+  const cardWorkState = { sort: 'released', desc: false };
   let index = null;          // artists, sets and their lookup maps
   let tab = 'artists';       // list shown when no detail page is open
-  let detail = null;         // { kind: 'artist' | 'set', item } while a detail page is open
+  let detail = null;         // { kind: 'artist' | 'set' | 'card', item } while a detail page is open
   let detailWorks = [];
-  const listScroll = { artists: 0, sets: 0 };
-  const emptyMsg = { artists: '', sets: '' };
+  const listScroll = { artists: 0, sets: 0, cards: 0 };
+  const emptyMsg = { artists: '', sets: '', cards: '' };
   // The page restores the list scroll itself (detail pages open at the top).
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   // Hashes visited in this page, to tell whether Back can go back inside the page.
@@ -1069,7 +1109,10 @@
       byCode.set(st.code, st);
       types.set(st.type, (types.get(st.type) || 0) + 1);
     }
-    index = { artists: data.artists, folded, byId, sets, setFolded, byCode };
+    const cards = buildCards(sets);
+    const cardFolded = new Map(), byName = new Map();
+    for (const c of cards) { cardFolded.set(c.name, fold(c.name)); byName.set(c.name, c); }
+    index = { artists: data.artists, folded, byId, sets, setFolded, byCode, cards, cardFolded, byName };
     dom.source.textContent = 'Source: Scryfall bulk data (' + (data.source.bulk || 'default_cards') +
       '), updated ' + (data.source.updated_at || '').slice(0, 10) + '.';
     dom.refresh.hidden = false;
@@ -1090,8 +1133,12 @@
     setState.sort = dom.setSort.value;
     workState.sort = dom.workSort.value;
     setWorkState.sort = dom.setWorkSort.value;
+    cardState.q = dom.cardQ.value;
+    cardState.sort = dom.cardSort.value;
+    cardWorkState.sort = dom.cardWorkSort.value;
     applyArtists();
     applySets();
+    applyCards();
     route();
   }
 
@@ -1125,6 +1172,7 @@
 
   const artistLister = makeLister($('list'), $('sentinel'), (a) => artistCard(a), BATCH);
   const setLister = makeLister($('set-list'), $('set-sentinel'), (st) => setCard(st), BATCH);
+  const cardLister = makeLister($('card-list'), $('card-sentinel'), (c) => cardCard(c), BATCH);
   const workLister = makeLister(dom.works, $('works-sentinel'), (w) => workEl(w), 120);
 
   // Numbers compare as numbers, names folded; missing values always go last.
@@ -1194,6 +1242,85 @@
     return listCard(st.name, stats, st.preview, st.works, '#set=' + encodeURIComponent(st.code));
   }
 
+  // ---------- cards (one per card name), built in the page from the sets ----------
+  // Each set lists its illustrations with the name of the print it shows, so an
+  // illustration reused under another name (a token, a reprint) counts for both.
+  function buildCards(sets) {
+    const byName = new Map();   // name -> { ills: Map(illustration_id -> entry), codes: Set, first, last }
+    for (const st of sets) {
+      for (const w of st.works) {
+        let c = byName.get(w.name);
+        if (!c) { c = { ills: new Map(), codes: new Set(), first: '', last: '' }; byName.set(w.name, c); }
+        c.codes.add(st.code);
+        if (w.released && (!c.first || w.released < c.first)) c.first = w.released;
+        if (w.released && w.released > c.last) c.last = w.released;
+        let e = c.ills.get(w.illustration_id);
+        if (!e) { e = { w, st, printings: 0, artists: [] }; c.ills.set(w.illustration_id, e); }
+        else if (betterPrint(w, st, e.w, e.st) > 0) { e.w = w; e.st = st; }
+        e.printings += w.printings;
+        for (const a of w.artist_ids) if (!e.artists.includes(a)) e.artists.push(a);
+      }
+    }
+    const cards = [];
+    for (const [name, c] of byName) {
+      const works = [...c.ills.values()].map((e) => ({
+        illustration_id: e.w.illustration_id, name, set: e.st.code, set_name: e.st.name,
+        released: e.w.released, image: e.w.image, art_crop: e.w.art_crop, uri: e.w.uri,
+        printings: e.printings, alt: e.w.alt, artist_ids: e.artists,
+      }));
+      works.sort((a, b) => cmpBy(a.released, b.released, 1) || cmpBy(a.set_name, b.set_name, 1));
+      const artists = new Set(works.flatMap((w) => w.artist_ids));
+      cards.push({
+        name, illustrations: works.length,
+        printings: works.reduce((n, w) => n + w.printings, 0),
+        artists: artists.size, sets: c.codes.size,
+        alt_illustrations: works.filter((w) => w.alt.length).length,
+        first_year: c.first ? +c.first.slice(0, 4) : null, last_year: c.last ? +c.last.slice(0, 4) : null,
+        // Preview: most alternative first, then oldest.
+        preview: works.slice().sort((a, b) => (b.alt.length - a.alt.length) || cmpBy(a.released, b.released, 1))
+          .slice(0, 4).map((w) => w.illustration_id),
+        works,
+      });
+    }
+    return cards;
+  }
+
+  // The print shown for an illustration of a card: with a scan, then most alternative,
+  // then oldest, then by set code.
+  function betterPrint(w, st, bw, bst) {
+    return (!!w.image - !!bw.image) || (w.alt.length - bw.alt.length) ||
+      -cmpBy(w.released, bw.released, 1) || (st.code < bst.code ? 1 : 0);
+  }
+
+  function applyCards() {
+    const q = fold(cardState.q.trim());
+    const dir = cardState.desc ? -1 : 1;
+    const f = (c) => index.cardFolded.get(c.name);
+    const arr = q ? index.cards.filter((c) => f(c).includes(q)) : index.cards.slice();
+    arr.sort((a, b) => (cardState.sort === 'name' ? cmpBy(a.name, b.name, dir) : cmpBy(a[cardState.sort], b[cardState.sort], dir))
+      || cmpBy(a.name, b.name, 1));
+    // A search equal to a card name puts that card first.
+    const exact = arr.findIndex((c) => f(c) === q);
+    if (exact > 0) arr.unshift(arr.splice(exact, 1)[0]);
+    dom.cardCount.textContent = plural(arr.length, 'card', 'cards');
+    emptyMsg.cards = arr.length ? '' : 'No card matches “' + cardState.q.trim() + '”.';
+    cardLister.set(arr);
+    showListParts();
+  }
+
+  function cardCard(c) {
+    const stats = el('p', { class: 'stats-line' });
+    stats.textContent = [
+      plural(c.illustrations, 'illustration', 'illustrations'),
+      plural(c.printings, 'printing', 'printings'),
+      plural(c.artists, 'artist', 'artists'),
+      plural(c.sets, 'set', 'sets'),
+      c.alt_illustrations + ' alternative',
+    ].join(' · ') + ' · ';
+    stats.appendChild(el('span', { class: 'nowrap', text: yearsText(c) }));
+    return listCard(c.name, stats, c.preview, c.works, '#card=' + encodeURIComponent(c.name));
+  }
+
   // One list card: 2 x 2 previews, text over them, the whole card links to its page.
   function listCard(name, stats, preview, works, href) {
     const cap = el('div', { class: 'cap' }, [el('h2', { text: name }), stats]);
@@ -1221,18 +1348,19 @@
   // ---------- detail pages (an artist or a set) ----------
 
   function openDetail(kind, key) {
-    const item = kind === 'artist' ? index.byId.get(key) : index.byCode.get(key);
+    const item = kind === 'artist' ? index.byId.get(key) : kind === 'set' ? index.byCode.get(key) : index.byName.get(key);
     detail = { kind, item };
     hideZoom();
-    dom.listView.hidden = dom.setListView.hidden = dom.status.hidden = true;
+    dom.listView.hidden = dom.setListView.hidden = dom.cardListView.hidden = dom.status.hidden = true;
     dom.bar.hidden = true;
     dom.detail.hidden = false;
     window.scrollTo(0, 0);
     dom.artistWorkSorting.hidden = kind !== 'artist';
     dom.setWorkSorting.hidden = kind !== 'set';
+    dom.cardWorkSorting.hidden = kind !== 'card';
     dom.detailMeta.textContent = '';
     if (!item) {
-      dom.detailName.textContent = kind === 'artist' ? 'Artist not found' : 'Set not found';
+      dom.detailName.textContent = { artist: 'Artist', set: 'Set', card: 'Card' }[kind] + ' not found';
     } else if (kind === 'artist') {
       dom.detailName.textContent = item.name;
       dom.detailMeta.textContent = [
@@ -1241,6 +1369,17 @@
         plural(item.cards, 'distinct card name', 'distinct card names'),
         plural(item.alt_illustrations, 'alternative illustration', 'alternative illustrations'),
         yearsText(item)].join(' · ');
+    } else if (kind === 'card') {
+      dom.detailName.textContent = item.name;
+      dom.detailMeta.append(text([
+        plural(item.illustrations, 'illustration', 'illustrations'),
+        plural(item.printings, 'printing', 'printings'),
+        plural(item.artists, 'artist', 'artists'),
+        plural(item.sets, 'set', 'sets'),
+        plural(item.alt_illustrations, 'alternative illustration', 'alternative illustrations'),
+        yearsText(item)].join(' · ') + ' · '),
+        el('a', { href: 'https://scryfall.com/search?q=' + encodeURIComponent('!"' + item.name + '" unique:art'),
+          target: '_blank', rel: 'noopener', text: 'Scryfall page' }));
     } else {
       dom.detailName.textContent = item.name;
       dom.detailMeta.append(text([
@@ -1261,7 +1400,7 @@
     const kind = detail ? detail.kind : 'artist';
     const onlyAlt = dom.altOnly.checked;
     const list = onlyAlt ? detailWorks.filter((w) => w.alt && w.alt.length) : detailWorks;
-    const ws = kind === 'artist' ? workState : setWorkState;
+    const ws = { artist: workState, set: setWorkState, card: cardWorkState }[kind];
     const dir = ws.desc ? -1 : 1;
     const keyOf = (w) => {
       if (ws.sort === 'artist') return artistName(w.artist_ids[0] || '');
@@ -1294,24 +1433,32 @@
     const hit = w.image || art
       ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name,
           'data-image': w.image, 'data-art': art, 'data-name': w.name, 'data-uri': w.uri,
-          'data-ill': w.illustration_id, 'data-set': kind === 'artist' ? w.set : detail.item.code }, [media])
+          'data-ill': w.illustration_id, 'data-set': kind === 'set' ? detail.item.code : w.set }, [media])
       : media;
     const meta = el('span', { class: 'cap-meta' });
-    if (kind === 'artist') {
+    const artistLinks = () => w.artist_ids.forEach((id, i) => {
+      if (i) meta.append(text(' & '));
+      meta.append(el('a', { class: 'cap-link', href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
+    });
+    if (kind === 'card') {
+      artistLinks();
+      meta.append(text(w.artist_ids.length ? ' · ' : ''),
+        el('a', { class: 'cap-link', href: '#set=' + encodeURIComponent(w.set), text: w.set_name }),
+        text(' · ' + (w.released ? w.released.slice(0, 4) : '—') + ' · ' + plural(w.printings, 'printing', 'printings')));
+    } else if (kind === 'artist') {
       const year = w.released ? w.released.slice(0, 4) : '—';
       meta.append(
         el('a', { class: 'cap-link', href: '#set=' + encodeURIComponent(w.set), text: w.set_name }),
         text(' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings')));
     } else {
-      w.artist_ids.forEach((id, i) => {
-        if (i) meta.append(text(' & '));
-        meta.append(el('a', { class: 'cap-link', href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
-      });
+      artistLinks();
       const year = w.released ? w.released.slice(0, 4) : '—';
       meta.append(text((w.artist_ids.length ? ' · ' : '') + '#' + w.number + ' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings')));
     }
     const cap = el('span', { class: 'cap' }, [
-      el('a', { class: 'cap-name', href: w.uri, target: '_blank', rel: 'noopener', text: w.name }), meta,
+      // The card name leads to the card page (plain text on the card page itself).
+      kind === 'card' ? el('span', { class: 'cap-name', text: w.name })
+        : el('a', { class: 'cap-name', href: '#card=' + encodeURIComponent(w.name), text: w.name }), meta,
     ]);
     const children = [hit, cap];
     const badges = badgesEl(w.alt, 'badges');
@@ -1319,18 +1466,20 @@
     return el('div', { class: 'work' }, [el('div', { class: 'work-frame' }, children)]);
   }
 
-  // ---------- routing: '' artists, #sets, #artist=<id>, #set=<code> ----------
+  // ---------- routing: '' artists, #sets, #cards, #artist=<id>, #set=<code>, #card=<name> ----------
 
   // Visibility of the list parts for the current tab.
   function showListParts() {
     if (detail) return;
-    const artists = tab === 'artists';
-    dom.artistControls.hidden = !artists;
-    dom.setControls.hidden = artists;
-    dom.tabArtists.setAttribute('aria-current', artists ? 'page' : 'false');
-    dom.tabSets.setAttribute('aria-current', artists ? 'false' : 'page');
-    dom.listView.hidden = !artists || !!emptyMsg.artists;
-    dom.setListView.hidden = artists || !!emptyMsg.sets;
+    dom.artistControls.hidden = tab !== 'artists';
+    dom.setControls.hidden = tab !== 'sets';
+    dom.cardControls.hidden = tab !== 'cards';
+    dom.tabArtists.setAttribute('aria-current', tab === 'artists' ? 'page' : 'false');
+    dom.tabSets.setAttribute('aria-current', tab === 'sets' ? 'page' : 'false');
+    dom.tabCards.setAttribute('aria-current', tab === 'cards' ? 'page' : 'false');
+    dom.listView.hidden = tab !== 'artists' || !!emptyMsg.artists;
+    dom.setListView.hidden = tab !== 'sets' || !!emptyMsg.sets;
+    dom.cardListView.hidden = tab !== 'cards' || !!emptyMsg.cards;
     dom.status.hidden = !emptyMsg[tab];
     dom.status.textContent = emptyMsg[tab];
   }
@@ -1349,14 +1498,14 @@
   function route() {
     if (!index) return;   // no data yet: routed again when it arrives
     const h = location.hash;
-    const m = h.match(/^#(artist|set)=(.+)$/);
+    const m = h.match(/^#(artist|set|card)=(.+)$/);
     if (m) {
       let key = null;
       try { key = decodeURIComponent(m[2]); } catch (e) { key = null; }
       if (!detail) listScroll[tab] = window.scrollY;
       openDetail(m[1], key);
     } else {
-      showList(h === '#sets' ? 'sets' : 'artists');
+      showList(h === '#sets' ? 'sets' : h === '#cards' ? 'cards' : 'artists');
     }
   }
 
@@ -1369,7 +1518,7 @@
 
   dom.back.addEventListener('click', () => {
     if (navStack.length > 1) history.back();
-    else location.hash = detail && detail.kind === 'set' ? '#sets' : '';
+    else location.hash = detail ? { artist: '', set: '#sets', card: '#cards' }[detail.kind] : '';
   });
 
   // ---------- controls ----------
@@ -1388,6 +1537,19 @@
     setState.desc = !setState.desc;
     dom.setDir.textContent = setState.desc ? 'Descending' : 'Ascending';
     if (index) applySets();
+  });
+  dom.cardQ.addEventListener('input', () => { cardState.q = dom.cardQ.value; if (index) applyCards(); });
+  dom.cardSort.addEventListener('change', () => { cardState.sort = dom.cardSort.value; if (index) applyCards(); });
+  dom.cardDir.addEventListener('click', () => {
+    cardState.desc = !cardState.desc;
+    dom.cardDir.textContent = cardState.desc ? 'Descending' : 'Ascending';
+    if (index) applyCards();
+  });
+  dom.cardWorkSort.addEventListener('change', () => { cardWorkState.sort = dom.cardWorkSort.value; renderWorks(); });
+  dom.cardWorkDir.addEventListener('click', () => {
+    cardWorkState.desc = !cardWorkState.desc;
+    dom.cardWorkDir.textContent = cardWorkState.desc ? 'Descending' : 'Ascending';
+    renderWorks();
   });
   dom.altOnly.addEventListener('change', renderWorks);
   dom.workSort.addEventListener('change', () => { workState.sort = dom.workSort.value; renderWorks(); });
@@ -1467,18 +1629,20 @@
   function captionZoom(size) {
     const f = zoomCard.formats[zoomAt];
     zoomCap.textContent = '';
-    // Line 1: the card (Scryfall), its artists and its set (pages of this site).
-    zoomCap.append(el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: zoomCard.name }));
+    // Line 1: the card, its artists and its set (pages of this site).
+    zoomCap.append(el('a', { href: '#card=' + encodeURIComponent(zoomCard.name), text: zoomCard.name }));
     zoomCard.artistIds.forEach((id, i) => {
       zoomCap.append(text(i ? ' & ' : ' · '), el('a', { href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
     });
     if (zoomCard.set) {
       zoomCap.append(text(' · '), el('a', { href: '#set=' + encodeURIComponent(zoomCard.set.code), text: zoomCard.set.name }));
     }
-    // Line 2: the format shown.
+    // Line 2: the format shown, the file, and this print on Scryfall.
     zoomCap.append(el('br'),
       text(f.label + ' ' + f.type + (size ? ' · ' + size : '') + ' · '),
-      el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }));
+      el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }),
+      text(' · '),
+      el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: 'Scryfall' }));
   }
 
   // Stage: the HD card fitted beside (or above, on narrow screens) the menu; the whole
