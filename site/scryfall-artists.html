@@ -924,6 +924,11 @@
     dom.source.textContent = 'Source: Scryfall bulk data (' + (data.source.bulk || 'default_cards') +
       '), updated ' + (data.source.updated_at || '').slice(0, 10) + '.';
     dom.refresh.hidden = false;
+    // The browser may restore the controls (search, sort menus) when the page is reopened
+    // from history: take their values, so the order shown matches the menu.
+    state.q = dom.q.value;
+    state.sort = dom.sort.value;
+    workState.sort = $('work-sort').value;
     applyList();
     lastHash = location.hash;
     route();
