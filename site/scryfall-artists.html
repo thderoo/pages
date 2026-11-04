@@ -288,7 +288,8 @@
   .work-frame .cap-name:hover { text-decoration: underline; }
   .work-frame .cap-meta { display: block; font-size: .8rem; opacity: .9; }
 
-  /* Enlarged full card, opened by a click in the artist view. */
+  /* Enlarged card, opened by a click in the artist view: the image at its own size
+     (shrunk only to fit), and on its right the menu of Scryfall image formats. */
   #zoom {
     position: fixed;
     inset: 0;
@@ -296,25 +297,58 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, .6);
+    padding: 16px;
+    background: rgba(0, 0, 0, .75);
     cursor: zoom-out;
   }
   #zoom[hidden] { display: none !important; }
-  #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  #zoom img {
-    display: block;
-    max-width: 90vw;
-    max-height: calc(90vh - 40px);
-    border-radius: 4.75% / 3.4%;  /* card corners: ~3 mm on 63 x 88 mm, hides the JPEG's white corners */
-  }
+  .zoom-panel { display: flex; align-items: center; gap: 16px; max-width: 100%; max-height: 100%; }
+  #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; cursor: default; }
+  #zoom img { display: block; max-width: 100%; }
+  #zoom img.round { border-radius: 4.75% / 3.4%; }  /* card corners: ~3 mm on 63 x 88 mm, hides the JPEG's white corners */
   #zoom figcaption {
     color: #fff;
-    background: rgba(0, 0, 0, .75);
-    padding: 4px 10px;
-    border-radius: 6px;
     font-size: .9rem;
-    max-width: 90vw;
+    text-align: center;
     overflow-wrap: anywhere;
+  }
+  #zoom figcaption a { color: #fff; }
+  #zoom-menu {
+    position: fixed;          /* pinned to the right edge: it stays put when the format changes */
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 200px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 6px;
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--fg);
+    cursor: default;
+  }
+  .fmt {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .fmt:hover { background: var(--line); }
+  .fmt[aria-current="true"] { background: var(--line); font-weight: 650; }
+  .fmt .fmt-type { color: var(--muted); font-size: .8rem; align-self: center; }
+  @media (min-width: 720px) { #zoom { padding-right: 232px; } }   /* image centred left of the menu */
+  @media (max-width: 719px) {
+    .zoom-panel { flex-direction: column; }
+    #zoom-menu { position: static; transform: none; display: flex; flex-wrap: wrap; gap: 4px; max-height: none; width: 100%; }
+    .fmt { width: auto; }
   }
 
   .sentinel { height: 1px; }
@@ -404,10 +438,13 @@
 </div>
 
 <div id="zoom" hidden>
-  <figure>
-    <img id="zoom-img" alt="">
-    <figcaption id="zoom-cap"></figcaption>
-  </figure>
+  <div class="zoom-panel">
+    <figure>
+      <img id="zoom-img" alt="">
+      <figcaption id="zoom-cap"></figcaption>
+    </figure>
+    <nav id="zoom-menu" aria-label="Image formats"></nav>
+  </div>
 </div>
 
 <script>
@@ -1039,10 +1076,9 @@
     const media = w.art_crop || w.image
       ? el('img', { src: w.art_crop || w.image, alt: w.name, loading: 'lazy', decoding: 'async' })
       : el('span', { class: 'placeholder', text: w.name });
-    // Zoom shows the whole card in Scryfall's `large` size, whose URL is the `normal` one with /large/.
-    const full = w.image ? w.image.replace('/normal/', '/large/') : w.art_crop;
-    const hit = full
-      ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name, 'data-zoom': full, 'data-name': w.name }, [media])
+    const hit = w.image || w.art_crop
+      ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name,
+          'data-image': w.image, 'data-art': w.art_crop, 'data-name': w.name, 'data-uri': w.uri }, [media])
       : media;
     const cap = el('span', { class: 'cap' }, [
       el('a', { class: 'cap-name', href: w.uri, target: '_blank', rel: 'noopener', text: w.name }),
@@ -1113,25 +1149,108 @@
     renderWorks();
   });
 
-  // ---------- enlarged illustration (click to open, click or Escape to close) ----------
+  // ---------- enlarged card and its image formats ----------
+  // Click opens, a click on the backdrop or Escape closes, the menu or Up/Down picks a format.
 
-  const zoomBox = $('zoom'), zoomImg = $('zoom-img'), zoomCap = $('zoom-cap');
-  function hideZoom() { zoomBox.hidden = true; zoomImg.removeAttribute('src'); zoomImg.style.width = ''; }
-  // Scale the image up to fill 90% of the viewport, keeping its ratio.
-  zoomImg.addEventListener('load', () => {
-    const k = Math.min(innerWidth * 0.9 / zoomImg.naturalWidth, (innerHeight * 0.9 - 40) / zoomImg.naturalHeight);
+  // Scryfall image formats, as [key, label, file type, rounded card corners].
+  // Every URL is the `normal` one with /normal/ replaced by /<key>/ and the matching
+  // extension (checked on all 124,127 images of the default_cards bulk).
+  const FORMATS = [
+    ['large', 'Large', 'jpg', true], ['png', 'HD', 'png', true], ['normal', 'Normal', 'jpg', true],
+    ['small', 'Small', 'jpg', true], ['border_crop', 'Border crop', 'jpg', false],
+    ['art_crop', 'Art crop', 'jpg', false], ['display', 'Display', 'webp', true],
+    ['grid', 'Grid', 'webp', true], ['thumb', 'Thumb', 'webp', true],
+    ['crop', 'Crop', 'webp', false], ['art', 'Art', 'webp', false],
+  ];
+  const formatUrl = (normal, key, ext) =>
+    normal.replace('/normal/', '/' + key + '/').replace(/\.jpg(\?|$)/, '.' + ext + '$1');
+
+  const zoomBox = $('zoom'), zoomImg = $('zoom-img'), zoomCap = $('zoom-cap'), zoomMenu = $('zoom-menu');
+  let zoomCard = null;    // { name, uri, formats: [{ label, type, url, round }] }
+  let zoomAt = 0;         // index of the format shown
+
+  function hideZoom() {
+    zoomBox.hidden = true;
+    zoomCard = null;
+    zoomImg.removeAttribute('src');
+    zoomImg.style.width = '';
+  }
+
+  function openZoom(btn) {
+    const { image, art, name, uri } = btn.dataset;
+    const formats = image
+      ? FORMATS.map(([key, label, type, round]) => ({ label, type: type.toUpperCase(), url: formatUrl(image, key, type), round }))
+      : [{ label: 'Art crop', type: 'JPG', url: art, round: false }];   // card without a scan
+    zoomCard = { name, uri, formats };
+    zoomMenu.textContent = '';
+    formats.forEach((f, i) => {
+      const b = el('button', { type: 'button', class: 'fmt', 'data-i': i }, [
+        el('span', { text: f.label }), el('span', { class: 'fmt-type', text: f.type }),
+      ]);
+      zoomMenu.appendChild(b);
+    });
+    zoomBox.hidden = false;
+    showFormat(0);
+    zoomMenu.querySelector('.fmt').focus();
+  }
+
+  function showFormat(i) {
+    const f = zoomCard.formats[i];
+    zoomAt = i;
+    zoomMenu.querySelectorAll('.fmt').forEach((b, j) => b.setAttribute('aria-current', j === i ? 'true' : 'false'));
+    zoomImg.className = f.round ? 'round' : '';
+    zoomImg.alt = zoomCard.name + ' (' + f.label + ')';
+    zoomImg.src = f.url;
+    captionZoom('');
+  }
+
+  function captionZoom(size) {
+    const f = zoomCard.formats[zoomAt];
+    zoomCap.textContent = '';
+    zoomCap.append(
+      el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: zoomCard.name }),
+      document.createTextNode(' · ' + f.label + ' ' + f.type + (size ? ' · ' + size : '') + ' · '),
+      el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }),
+    );
+  }
+
+  // Natural size, shrunk to fit beside (or above, on narrow screens) the menu; never enlarged.
+  function fitZoom() {
+    if (!zoomCard || !zoomImg.naturalWidth) return;
+    const narrow = innerWidth < 720;
+    const maxW = innerWidth - 32 - (narrow ? 0 : zoomMenu.offsetWidth + 16);
+    const maxH = (narrow ? innerHeight * 0.6 : innerHeight - 32) - 48;
+    const k = Math.min(1, maxW / zoomImg.naturalWidth, maxH / zoomImg.naturalHeight);
     zoomImg.style.width = Math.floor(zoomImg.naturalWidth * k) + 'px';
+  }
+  zoomImg.addEventListener('load', () => {
+    if (!zoomCard) return;
+    captionZoom(zoomImg.naturalWidth + ' × ' + zoomImg.naturalHeight);
+    fitZoom();
   });
+  window.addEventListener('resize', fitZoom);
+
   dom.works.addEventListener('click', (e) => {
     const btn = e.target.closest('.zoom-btn');
-    if (!btn) return;
-    zoomImg.src = btn.dataset.zoom;
-    zoomImg.alt = btn.dataset.name;
-    zoomCap.textContent = btn.dataset.name;
-    zoomBox.hidden = false;
+    if (btn) openZoom(btn);
   });
-  zoomBox.addEventListener('click', hideZoom);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !zoomBox.hidden) hideZoom(); });
+  zoomMenu.addEventListener('click', (e) => {
+    const b = e.target.closest('.fmt');
+    if (b) showFormat(Number(b.dataset.i));
+  });
+  zoomBox.addEventListener('click', (e) => {
+    if (!e.target.closest('figure, #zoom-menu')) hideZoom();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (zoomBox.hidden) return;
+    if (e.key === 'Escape') hideZoom();
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const n = zoomCard.formats.length;
+      showFormat((zoomAt + (e.key === 'ArrowDown' ? 1 : -1) + n) % n);
+      zoomMenu.querySelectorAll('.fmt')[zoomAt].focus();
+    }
+  });
   dom.retry.addEventListener('click', startLoad);
   dom.refresh.addEventListener('click', startLoad);
 
