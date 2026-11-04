@@ -33,6 +33,20 @@ liste en suit un autre (2026-11-04, `scryfall-artists.html` : menu sur
 « Alternative illustrations », liste triée par illustrations). Le tester par
 un aller-retour (`goto` ailleurs puis `goBack`), pas seulement un `reload`.
 
+Deux pièges des tests sous Chromium headless (2026-11-04, zoom de
+`scryfall-artists.html` qui passait sous son panneau chez l'utilisateur et
+pas dans les tests) :
+
+- headless masque les barres de défilement (`--hide-scrollbars`) : une mise
+  en page calculée sur `innerWidth`, qui inclut la barre, y paraît juste et
+  déborde chez l'utilisateur. Lancer avec
+  `ignoreDefaultArgs: ['--hide-scrollbars']`, et mesurer la place sur
+  l'élément lui-même (`clientWidth`), pas sur la fenêtre ;
+- `python3 -m http.server` n'envoie pas d'en-tête de cache et un profil
+  persistant garde la page : le test tourne alors sur l'ancienne version.
+  Servir avec `Cache-Control: no-store` et vider le cache du profil avant
+  de mesurer.
+
 ## Pages hors lib
 
 - `crumb-ui.html` : démo du design system fictif « Crumb UI » (biscuit &

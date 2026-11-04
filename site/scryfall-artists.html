@@ -330,7 +330,8 @@
   }
   #zoom[hidden] { display: none !important; }
   .zoom-panel { display: flex; align-items: center; gap: 32px; max-width: 100%; max-height: 100%; }
-  #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; cursor: default; }
+  /* The figure never shrinks: the stage is sized to fit, so the image cannot slide under the side panel. */
+  #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: none; cursor: default; }
   #zoom img { display: block; max-width: 100%; }
   #zoom img.round { border-radius: 4.75% / 3.4%; }  /* card corners: ~3 mm on 63 x 88 mm, hides the JPEG's white corners */
   /* Right of the image: what the card is (with links), then the format menu. */
@@ -1668,10 +1669,16 @@
 
   // Stage: the HD card fitted beside (or above, on narrow screens) the menu; the whole
   // free area for a card without a scan. Each format shows at its own size, shrunk to fit it.
+  // Sizes are measured on the zoom layer itself (a scrollbar is not part of it) and on
+  // the side panel, minus a safety margin, rather than taken from constants.
+  const ZOOM_MARGIN = 50;
   function sizeStage() {
-    const narrow = innerWidth < 720;
-    const maxW = innerWidth - 32 - (narrow ? 0 : 240 + 32);
-    const maxH = narrow ? innerHeight * 0.5 : innerHeight - 32;   // narrow: the side panel goes below
+    const narrow = getComputedStyle(zoomBox.querySelector('.zoom-panel')).flexDirection === 'column';
+    const side = zoomBox.querySelector('.zoom-side');
+    const gap = parseFloat(getComputedStyle(zoomBox.querySelector('.zoom-panel')).columnGap) || 0;
+    const boxW = zoomBox.clientWidth - 32, boxH = zoomBox.clientHeight - 32;   // minus #zoom padding
+    const maxW = Math.max(100, boxW - (narrow ? 0 : side.offsetWidth + gap + ZOOM_MARGIN));
+    const maxH = Math.max(100, narrow ? boxH * 0.5 : boxH - ZOOM_MARGIN);   // narrow: the side panel goes below
     let w = maxW, h = maxH;
     if (zoomCard.scanned) {
       const k = Math.min(1, maxW / HD_SIZE[0], maxH / HD_SIZE[1]);
