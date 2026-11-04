@@ -286,7 +286,7 @@
   .work-frame .cap-name:hover { text-decoration: underline; }
   .work-frame .cap-meta { display: block; font-size: .8rem; opacity: .9; }
 
-  /* Enlarged illustration, uncropped, opened by a click in the artist view. */
+  /* Enlarged full card, opened by a click in the artist view. */
   #zoom {
     position: fixed;
     inset: 0;
@@ -303,6 +303,7 @@
     display: block;
     max-width: 90vw;
     max-height: calc(90vh - 40px);
+    border-radius: 4.75% / 3.4%;  /* card corners: ~3 mm on 63 x 88 mm, hides the JPEG's white corners */
   }
   #zoom figcaption {
     color: #fff;
@@ -1008,9 +1009,10 @@
     const media = w.art_crop || w.image
       ? el('img', { src: w.art_crop || w.image, alt: w.name, loading: 'lazy', decoding: 'async' })
       : el('span', { class: 'placeholder', text: w.name });
-    const src = w.art_crop || w.image;
-    const hit = src
-      ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name, 'data-zoom': src, 'data-name': w.name }, [media])
+    // Zoom shows the whole card in Scryfall's `large` size, whose URL is the `normal` one with /large/.
+    const full = w.image ? w.image.replace('/normal/', '/large/') : w.art_crop;
+    const hit = full
+      ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name, 'data-zoom': full, 'data-name': w.name }, [media])
       : media;
     const cap = el('span', { class: 'cap' }, [
       el('a', { class: 'cap-name', href: w.uri, target: '_blank', rel: 'noopener', text: w.name }),
