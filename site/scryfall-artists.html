@@ -106,6 +106,7 @@
     .controls input[type="search"] { flex-basis: 100%; }
     .controls select { flex: 1 1 0; min-width: 0; }
     .count { margin-left: 0; }
+    .detail-controls .altonly { flex-basis: 100%; }
   }
 
   main {
@@ -242,7 +243,8 @@
   #detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
   #detail-head h2 { font-size: 1.3rem; margin: 0; overflow-wrap: anywhere; }
   #detail-meta { color: var(--muted); font-size: .9rem; margin: 0 0 12px; }
-  .altonly { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; margin-bottom: 12px; }
+  .altonly { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; margin-right: 8px; }
+  .detail-controls { margin: 0 0 12px; max-width: none; }
   #detail-status { color: var(--muted); }
   #works {
     display: grid;
@@ -371,7 +373,17 @@
       <h2 id="detail-name"></h2>
     </div>
     <p id="detail-meta"></p>
-    <label class="altonly"><input type="checkbox" id="alt-only"> Alternative only</label>
+    <div class="controls detail-controls">
+      <label class="altonly"><input type="checkbox" id="alt-only"> Alternative only</label>
+      <label class="sortlabel" for="work-sort">Sort by</label>
+      <select id="work-sort">
+        <option value="released">Release date</option>
+        <option value="name">Card name</option>
+        <option value="set_name">Set</option>
+        <option value="printings">Printings</option>
+      </select>
+      <button type="button" id="work-dir" aria-label="Sort direction">Ascending</button>
+    </div>
     <p id="detail-status" hidden></p>
     <div id="works"></div>
   </section>
@@ -729,6 +741,7 @@
   };
 
   const state = { q: '', sort: 'illustrations', desc: true };
+  const workState = { sort: 'released', desc: false };   // artist view sort, kept across artists
   let index = null;          // { artists, folded: Map(id -> search key), byId: Map }
   let view = [];             // artists after filter + sort
   let shown = 0;             // how many of `view` are in the DOM
@@ -994,7 +1007,7 @@
 
   function renderWorks() {
     const onlyAlt = dom.altOnly.checked;
-    const items = onlyAlt ? works.filter((w) => w.alt && w.alt.length) : works;
+    const items = sortWorks(onlyAlt ? works.filter((w) => w.alt && w.alt.length) : works);
     dom.works.textContent = '';
     if (items.length === 0 && works.length) {
       dom.detailStatus.hidden = false;
@@ -1005,6 +1018,20 @@
     const frag = document.createDocumentFragment();
     for (const w of items) frag.appendChild(workEl(w));
     dom.works.appendChild(frag);
+  }
+
+  // Works arrive ordered by release date then name; the sort is stable, so ties keep that order.
+  function sortWorks(list) {
+    const key = workState.sort;
+    const dir = workState.desc ? -1 : 1;
+    return list.slice().sort((a, b) => {
+      const x = a[key], y = b[key];
+      if (key === 'printings') return dir * (x - y);
+      // Missing release dates always go last, whatever the direction.
+      if (!x || !y) return !x - !y;
+      const fx = fold(x), fy = fold(y);
+      return fx < fy ? -dir : fx > fy ? dir : 0;
+    });
   }
 
   function workEl(w) {
@@ -1078,6 +1105,13 @@
     if (index) applyList();
   });
   dom.altOnly.addEventListener('change', renderWorks);
+  const workSort = $('work-sort'), workDir = $('work-dir');
+  workSort.addEventListener('change', () => { workState.sort = workSort.value; renderWorks(); });
+  workDir.addEventListener('click', () => {
+    workState.desc = !workState.desc;
+    workDir.textContent = workState.desc ? 'Descending' : 'Ascending';
+    renderWorks();
+  });
 
   // ---------- enlarged illustration (click to open, click or Escape to close) ----------
 
