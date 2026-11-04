@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Scryfall artists</title>
+<style>
+  :root {
+    --bg: #f6f6f3;
+    --fg: #1c1c1a;
+    --muted: #66665f;
+    --line: #d9d9d2;
+    --card: #ffffff;
+    --accent: #2453a6;
+    --badge-bg: rgba(20, 20, 18, 0.82);
+    --badge-fg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413;
+      --fg: #ebebe6;
+      --muted: #9a9a92;
+      --line: #35352f;
+      --card: #1e1e1c;
+      --accent: #8fb3f0;
+      --badge-bg: rgba(0, 0, 0, 0.78);
+      --badge-fg: #ffffff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413;
+    --fg: #ebebe6;
+    --muted: #9a9a92;
+    --line: #35352f;
+    --card: #1e1e1c;
+    --accent: #8fb3f0;
+    --badge-bg: rgba(0, 0, 0, 0.78);
+    --badge-fg: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  [hidden] { display: none !important; }
+
+  header.bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+  }
+  .bar h1 { font-size: 1.2rem; margin: 0 0 8px; font-weight: 650; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .controls input[type="search"] {
+    flex: 1 1 220px;
+    min-width: 0;
+    font: inherit;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--fg);
+  }
+  .controls select, .controls button, .back {
+    font: inherit;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .controls label.sortlabel { color: var(--muted); font-size: .9rem; }
+  .count { color: var(--muted); font-size: .9rem; margin-left: auto; }
+
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  #status { color: var(--muted); margin: 24px 0; }
+  #list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+    gap: 12px;
+  }
+  .artist {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 0;
+  }
+  .artist h2 { font-size: 1.05rem; margin: 0 0 6px; font-weight: 650; overflow-wrap: anywhere; }
+  .artist h2 a { color: var(--fg); text-decoration: none; }
+  .artist h2 a:hover { text-decoration: underline; }
+
+  dl.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 4px 12px;
+    margin: 0 0 10px;
+    font-size: .85rem;
+  }
+  dl.stats div { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  dl.stats dt { color: var(--muted); }
+  dl.stats dd { margin: 0; font-weight: 600; }
+
+  .previews {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .preview {
+    position: relative;
+    display: block;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--line);
+    min-width: 0;
+  }
+  .preview img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .badges {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .badge {
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+    font-size: .7rem;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .placeholder {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6px;
+    font-size: .8rem;
+    color: var(--muted);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+  }
+
+  #detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+  #detail-head h2 { font-size: 1.3rem; margin: 0; overflow-wrap: anywhere; }
+  #detail-meta { color: var(--muted); font-size: .9rem; margin: 0 0 12px; }
+  .altonly { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; margin-bottom: 12px; }
+  #works {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+    gap: 16px;
+  }
+  .work { margin: 0; min-width: 0; }
+  .work-frame {
+    position: relative;
+    border-radius: 4.5%;
+    overflow: hidden;
+    background: var(--line);
+    aspect-ratio: 488 / 680;
+  }
+  .work-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .work-frame .placeholder { height: 100%; aspect-ratio: auto; }
+  .work figcaption { font-size: .85rem; margin-top: 6px; }
+  .work figcaption a { font-weight: 600; overflow-wrap: anywhere; }
+  .work .meta { color: var(--muted); display: block; }
+  .work .badges-inline { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+  .work .badge { background: var(--line); color: var(--fg); }
+
+  .sentinel { height: 1px; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: .85rem;
+    padding: 16px;
+    text-align: center;
+  }
+  footer p { margin: 4px 0; }
+
+  @media (max-width: 480px) {
+    header.bar { padding: 10px 12px; }
+    main { padding: 12px; }
+    .count { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <h1>Scryfall artists</h1>
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search by name" aria-label="Search artists by name" autocomplete="off">
+    <label class="sortlabel" for="sort">Sort by</label>
+    <select id="sort">
+      <option value="illustrations">Illustrations</option>
+      <option value="printings">Printings</option>
+      <option value="cards">Distinct card names</option>
+      <option value="alt_illustrations">Alternative illustrations</option>
+      <option value="name">Name</option>
+      <option value="first_year">First year</option>
+      <option value="last_year">Last year</option>
+    </select>
+    <button type="button" id="dir" aria-label="Sort direction">Descending</button>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+</header>
+
+<main>
+  <p id="status">Loading…</p>
+
+  <section id="list-view" hidden>
+    <div id="list"></div>
+    <div id="sentinel" class="sentinel" aria-hidden="true"></div>
+  </section>
+
+  <section id="detail" hidden>
+    <div id="detail-head">
+      <button type="button" class="back" id="back">Back</button>
+      <h2 id="detail-name"></h2>
+    </div>
+    <p id="detail-meta"></p>
+    <label class="altonly"><input type="checkbox" id="alt-only"> Alternative only</label>
+    <p id="detail-status" class="sentinel-status" hidden></p>
+    <div id="works"></div>
+  </section>
+</main>
+
+<footer>
+  <p id="source"></p>
+  <p>Images © their respective artists and Wizards of the Coast, via Scryfall.</p>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const BATCH = 60;
+  const DATA_INDEX = 'scryfall-artists/index.json';
+  const DATA_WORKS = (n) => 'scryfall-artists/works/' + n + '.json';
+
+  // Known alt values get a readable label; any other value is shown as-is.
+  const ALT_LABELS = {
+    full_art: 'Full art',
+    borderless: 'Borderless',
+    showcase: 'Showcase',
+    extendedart: 'Extended art',
+    textless: 'Textless',
+    japanshowcase: 'Japan showcase',
+    schinesealtart: 'Chinese alt art',
+    godzillaseries: 'Godzilla series',
+    draculaseries: 'Dracula series',
+    concept: 'Concept',
+    poster: 'Poster',
+    sourcematerial: 'Source material',
+  };
+  const altLabel = (v) => ALT_LABELS[v] || v;
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, attrs, children) => {
+    const node = document.createElement(tag);
+    if (attrs) for (const [k, v] of Object.entries(attrs)) {
+      if (v === undefined || v === null) continue;
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else node.setAttribute(k, v);
+    }
+    for (const c of children || []) if (c) node.appendChild(c);
+    return node;
+  };
+
+  // Search key: lower case, no diacritics.
+  const fold = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const plural = (n, one, many) => n.toLocaleString('en-US') + ' ' + (n === 1 ? one : many);
+  const yearsText = (a) => {
+    if (a.first_year == null && a.last_year == null) return '—';
+    if (a.first_year === a.last_year) return String(a.first_year);
+    return a.first_year + '–' + a.last_year;
+  };
+
+  const dom = {
+    bar: $('bar'), q: $('q'), sort: $('sort'), dir: $('dir'), count: $('count'),
+    status: $('status'), listView: $('list-view'), list: $('list'), sentinel: $('sentinel'),
+    detail: $('detail'), detailName: $('detail-name'), detailMeta: $('detail-meta'),
+    back: $('back'), altOnly: $('alt-only'), works: $('works'), detailStatus: $('detail-status'),
+    source: $('source'),
+  };
+
+  const state = { q: '', sort: 'illustrations', desc: true };
+  let index = null;          // parsed index.json, with search keys added
+  let view = [];             // artists after filter + sort
+  let shown = 0;             // how many of `view` are in the DOM
+  let openId = null;         // artist id shown in detail view, or null
+  let works = [];           // works of the open artist
+  let renderToken = 0;
+  let listScroll = 0;
+  let lastHash = location.hash;
+  let cameFromList = false;
+  const shardCache = new Map();
+
+  // ---------- data ----------
+
+  function loadIndex() {
+    return fetch(DATA_INDEX).then((r) => {
+      if (!r.ok) throw new Error('index.json: HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function loadShard(n) {
+    if (!shardCache.has(n)) {
+      const p = fetch(DATA_WORKS(n)).then((r) => {
+        if (!r.ok) throw new Error('works/' + n + '.json: HTTP ' + r.status);
+        return r.json();
+      });
+      p.catch(() => shardCache.delete(n));
+      shardCache.set(n, p);
+    }
+    return shardCache.get(n);
+  }
+
+  // ---------- list view ----------
+
+  function applyList() {
+    const q = fold(state.q.trim());
+    const key = state.sort;
+    const dir = state.desc ? -1 : 1;
+    let arr = q ? index.artists.filter((a) => a._f.includes(q)) : index.artists.slice();
+    arr.sort((a, b) => {
+      let r;
+      if (key === 'name') {
+        r = a._f < b._f ? -dir : a._f > b._f ? dir : 0;
+      } else {
+        const x = a[key], y = b[key];
+        // Missing values always go last, whatever the direction.
+        if (x == null || y == null) r = (x == null) - (y == null);
+        else r = dir * (x - y);
+      }
+      if (r) return r;
+      return a._f < b._f ? -1 : a._f > b._f ? 1 : 0;
+    });
+    view = arr;
+    shown = 0;
+    dom.list.textContent = '';
+    dom.count.textContent = plural(view.length, 'artist', 'artists');
+    if (view.length === 0) {
+      dom.status.hidden = false;
+      dom.status.textContent = 'No artist matches “' + state.q.trim() + '”.';
+      dom.listView.hidden = true;
+    } else {
+      dom.status.hidden = true;
+      dom.listView.hidden = false;
+      appendBatch();
+    }
+  }
+
+  function appendBatch() {
+    const end = Math.min(shown + BATCH, view.length);
+    const frag = document.createDocumentFragment();
+    for (let i = shown; i < end; i++) frag.appendChild(artistCard(view[i]));
+    dom.list.appendChild(frag);
+    shown = end;
+    // Re-observing makes the observer report the sentinel's current position,
+    // so the next batch loads while the sentinel is still on screen.
+    observer.unobserve(dom.sentinel);
+    if (shown < view.length) observer.observe(dom.sentinel);
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    if (shown < view.length) appendBatch();
+  });
+
+  function artistCard(a) {
+    const link = el('a', { href: '#artist=' + encodeURIComponent(a.id), text: a.name });
+    const stats = el('dl', { class: 'stats' }, [
+      statItem('Illustrations', a.illustrations),
+      statItem('Printings', a.printings),
+      statItem('Distinct card names', a.cards),
+      statItem('Alternative illustrations', a.alt_illustrations),
+      statItem('Years', yearsText(a)),
+    ]);
+    const previews = el('div', { class: 'previews' }, a.preview.map(previewEl));
+    return el('article', { class: 'artist' }, [el('h2', null, [link]), stats, previews]);
+  }
+
+  function statItem(label, value) {
+    return el('div', null, [el('dt', { text: label }), el('dd', { text: String(value) })]);
+  }
+
+  function badgesEl(alt, cls) {
+    if (!alt || alt.length === 0) return null;
+    return el('span', { class: cls }, alt.map((v) => el('span', { class: 'badge', text: altLabel(v) })));
+  }
+
+  function previewEl(w) {
+    const children = [];
+    if (w.art_crop) {
+      children.push(el('img', { src: w.art_crop, alt: w.name, loading: 'lazy', decoding: 'async' }));
+    } else {
+      children.push(el('span', { class: 'placeholder', text: w.name }));
+    }
+    const badges = badgesEl(w.alt, 'badges');
+    if (badges) children.push(badges);
+    return el('a', { class: 'preview', href: w.uri, target: '_blank', rel: 'noopener', title: w.name + ' · ' + w.set_name }, children);
+  }
+
+  // ---------- detail view ----------
+
+  function openArtist(id) {
+    const a = index.byId.get(id);
+    openId = id;
+    dom.listView.hidden = true;
+    dom.status.hidden = true;
+    dom.bar.hidden = true;
+    dom.detail.hidden = false;
+    dom.detailName.textContent = a ? a.name : 'Artist not found';
+    dom.detailMeta.textContent = a
+      ? [plural(a.illustrations, 'illustration', 'illustrations'),
+         plural(a.printings, 'printing', 'printings'),
+         plural(a.cards, 'distinct card name', 'distinct card names'),
+         plural(a.alt_illustrations, 'alternative illustration', 'alternative illustrations'),
+         yearsText(a)].join(' · ')
+      : '';
+    dom.works.textContent = '';
+    works = [];
+    if (!a) { dom.detailStatus.hidden = true; return; }
+
+    dom.detailStatus.hidden = false;
+    dom.detailStatus.textContent = 'Loading illustrations…';
+    const token = ++renderToken;
+    loadShard(a.shard).then((data) => {
+      if (token !== renderToken) return;
+      works = data[a.id] || [];
+      dom.detailStatus.hidden = true;
+      renderWorks();
+    }).catch((err) => {
+      if (token !== renderToken) return;
+      dom.detailStatus.textContent = 'Could not load illustrations (' + err.message + ').';
+    });
+  }
+
+  function renderWorks() {
+    const onlyAlt = dom.altOnly.checked;
+    const items = onlyAlt ? works.filter((w) => w.alt && w.alt.length) : works;
+    dom.works.textContent = '';
+    if (items.length === 0 && works.length) {
+      dom.detailStatus.hidden = false;
+      dom.detailStatus.textContent = 'No alternative illustration.';
+      return;
+    }
+    if (works.length && !onlyAlt) dom.detailStatus.hidden = true;
+    const frag = document.createDocumentFragment();
+    for (const w of items) frag.appendChild(workEl(w));
+    dom.works.appendChild(frag);
+  }
+
+  function workEl(w) {
+    const year = w.released ? w.released.slice(0, 4) : '—';
+    const frame = el('div', { class: 'work-frame' }, [
+      w.image
+        ? el('img', { src: w.image, alt: w.name, loading: 'lazy', decoding: 'async' })
+        : (w.art_crop
+            ? el('img', { src: w.art_crop, alt: w.name, loading: 'lazy', decoding: 'async' })
+            : el('span', { class: 'placeholder', text: w.name })),
+    ]);
+    const link = el('a', { href: w.uri, target: '_blank', rel: 'noopener', text: w.name });
+    const meta = el('span', { class: 'meta', text: w.set_name + ' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings') });
+    const children = [link, meta];
+    const badges = badgesEl(w.alt, 'badges-inline');
+    if (badges) children.push(badges);
+    return el('figure', { class: 'work' }, [frame, el('figcaption', null, children)]);
+  }
+
+  // ---------- routing ----------
+
+  let listScrollSaved = 0;
+
+  function showList() {
+    openId = null;
+    dom.detail.hidden = true;
+    dom.bar.hidden = false;
+    if (view.length === 0) {
+      dom.listView.hidden = true;
+    } else {
+      dom.listView.hidden = false;
+    }
+    window.scrollTo(0, listScroll);
+  }
+
+  function route() {
+    const m = location.hash.match(/^#artist=(.+)$/);
+    if (m) {
+      let id = null;
+      try { id = decodeURIComponent(m[1]); } catch (e) { id = null; }
+      if (openId === null) listScroll = window.scrollY;
+      openArtist(id);
+    } else {
+      showList();
+    }
+  }
+
+  window.addEventListener('hashchange', () => {
+    cameFromList = (lastHash === '' || lastHash === '#');
+    lastHash = location.hash;
+    route();
+  });
+
+  dom.back.addEventListener('click', () => {
+    if (cameFromList) history.back();
+    else location.hash = '';
+  });
+
+  // ---------- controls ----------
+
+  dom.q.addEventListener('input', () => {
+    state.q = dom.q.value;
+    applyList();
+  });
+  dom.sort.addEventListener('change', () => {
+    state.sort = dom.sort.value;
+    applyList();
+  });
+  dom.dir.addEventListener('click', () => {
+    state.desc = !state.desc;
+    dom.dir.textContent = state.desc ? 'Descending' : 'Ascending';
+    applyList();
+  });
+  dom.altOnly.addEventListener('change', renderWorks);
+
+  // ---------- start ----------
+
+  loadIndex().then((data) => {
+    index = data;
+    index.byId = new Map();
+    for (const a of index.artists) {
+      a._f = fold(a.name);
+      index.byId.set(a.id, a);
+    }
+    dom.source.textContent = 'Source: Scryfall bulk data (' + (data.source.bulk || 'default_cards') +
+      '), updated ' + (data.source.updated_at || '').slice(0, 10) + '.';
+    dom.status.hidden = true;
+    applyList();
+    lastHash = location.hash;
+    route();
+  }).catch((err) => {
+    dom.status.textContent = 'Could not load the artist index (' + err.message + ').';
+  });
+})();
+</script>
+</body>
+</html>
