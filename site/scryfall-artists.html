@@ -1293,7 +1293,8 @@
       : el('span', { class: 'placeholder', text: w.name });
     const hit = w.image || art
       ? el('button', { type: 'button', class: 'zoom-btn', 'aria-label': 'Enlarge ' + w.name,
-          'data-image': w.image, 'data-art': art, 'data-name': w.name, 'data-uri': w.uri }, [media])
+          'data-image': w.image, 'data-art': art, 'data-name': w.name, 'data-uri': w.uri,
+          'data-ill': w.illustration_id, 'data-set': kind === 'artist' ? w.set : detail.item.code }, [media])
       : media;
     const meta = el('span', { class: 'cap-meta' });
     if (kind === 'artist') {
@@ -1432,11 +1433,14 @@
   }
 
   function openZoom(btn) {
-    const { image, art, name, uri } = btn.dataset;
+    const { image, art, name, uri, ill } = btn.dataset;
+    // Its set, and its artists as that set lists them (all of them for a shared card).
+    const st = index.byCode.get(btn.dataset.set);
+    const sw = st && st.works.find((x) => x.illustration_id === ill);
     const formats = image
       ? FORMATS.map(([key, label, type, round]) => ({ label, type: type.toUpperCase(), url: formatUrl(image, key, type), round }))
       : [{ label: 'Art crop', type: 'JPG', url: art, round: false }];   // card without a scan
-    zoomCard = { name, uri, scanned: !!image, formats };
+    zoomCard = { name, uri, scanned: !!image, formats, set: st, artistIds: sw ? sw.artist_ids : [] };
     zoomMenu.textContent = '';
     formats.forEach((f, i) => {
       const b = el('button', { type: 'button', class: 'fmt', 'data-i': i }, [
@@ -1463,11 +1467,18 @@
   function captionZoom(size) {
     const f = zoomCard.formats[zoomAt];
     zoomCap.textContent = '';
-    zoomCap.append(
-      el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: zoomCard.name }),
-      document.createTextNode(' · ' + f.label + ' ' + f.type + (size ? ' · ' + size : '') + ' · '),
-      el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }),
-    );
+    // Line 1: the card (Scryfall), its artists and its set (pages of this site).
+    zoomCap.append(el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: zoomCard.name }));
+    zoomCard.artistIds.forEach((id, i) => {
+      zoomCap.append(text(i ? ' & ' : ' · '), el('a', { href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
+    });
+    if (zoomCard.set) {
+      zoomCap.append(text(' · '), el('a', { href: '#set=' + encodeURIComponent(zoomCard.set.code), text: zoomCard.set.name }));
+    }
+    // Line 2: the format shown.
+    zoomCap.append(el('br'),
+      text(f.label + ' ' + f.type + (size ? ' · ' + size : '') + ' · '),
+      el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }));
   }
 
   // Stage: the HD card fitted beside (or above, on narrow screens) the menu; the whole
@@ -1475,7 +1486,7 @@
   function sizeStage() {
     const narrow = innerWidth < 720;
     const maxW = innerWidth - 32 - (narrow ? 0 : 200 + 32);
-    const maxH = (narrow ? innerHeight * 0.6 : innerHeight - 32) - 48;
+    const maxH = (narrow ? innerHeight * 0.6 : innerHeight - 32) - 56;   // room for the two caption lines
     let w = maxW, h = maxH;
     if (zoomCard.scanned) {
       const k = Math.min(1, maxW / HD_SIZE[0], maxH / HD_SIZE[1]);
@@ -1499,6 +1510,11 @@
   dom.works.addEventListener('click', (e) => {
     const btn = e.target.closest('.zoom-btn');
     if (btn) openZoom(btn);
+  });
+  // An artist or set link leaves the zoom, even when it points to the page already open.
+  zoomCap.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (a) hideZoom();
   });
   zoomMenu.addEventListener('click', (e) => {
     const b = e.target.closest('.fmt');
