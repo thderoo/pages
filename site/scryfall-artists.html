@@ -333,19 +333,32 @@
   #zoom figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; cursor: default; }
   #zoom img { display: block; max-width: 100%; }
   #zoom img.round { border-radius: 4.75% / 3.4%; }  /* card corners: ~3 mm on 63 x 88 mm, hides the JPEG's white corners */
-  #zoom figcaption {
-    min-height: 2.9em;   /* two lines kept, so the menu does not move when the caption wraps */
-    color: #fff;
+  /* Right of the image: what the card is (with links), then the format menu. */
+  .zoom-side {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 32px);
+    cursor: default;
+  }
+  .zoom-info {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--fg);
     font-size: .9rem;
-    text-align: center;
+    line-height: 1.4;
     overflow-wrap: anywhere;
   }
-  #zoom figcaption a { color: #fff; }
+  .zoom-info a { color: var(--fg); }
+  .zoom-info .zi-name { display: block; font-weight: 650; font-size: 1rem; margin-bottom: 2px; }
+  .zoom-info .zi-file { margin-top: 6px; color: var(--muted); font-size: .85rem; }
+  .zoom-info .zi-file a { color: var(--muted); }
   /* Fixed-size stage (the HD card fitted to the screen): the menu beside it stays put when the format changes. */
   .zoom-stage { display: flex; align-items: center; justify-content: center; }
   #zoom-menu {
-    flex: 0 0 200px;
-    max-height: calc(100vh - 32px);
+    min-height: 0;
     overflow-y: auto;
     padding: 6px;
     border-radius: 8px;
@@ -372,7 +385,8 @@
   .fmt .fmt-type { color: var(--muted); font-size: .8rem; align-self: center; }
   @media (max-width: 719px) {
     .zoom-panel { flex-direction: column; gap: 16px; }
-    #zoom-menu { flex: none; display: flex; flex-wrap: wrap; gap: 4px; max-height: none; width: 100%; }
+    .zoom-side { flex: none; width: 100%; max-height: none; }
+    #zoom-menu { display: flex; flex-wrap: wrap; gap: 4px; }
     .fmt { width: auto; }
     .fmt[aria-current="true"] { font-weight: inherit; }   /* bold would widen the chip and rewrap the rows */
   }
@@ -546,9 +560,11 @@
   <div class="zoom-panel">
     <figure>
       <div class="zoom-stage" id="zoom-stage"><img id="zoom-img" alt=""></div>
-      <figcaption id="zoom-cap"></figcaption>
     </figure>
-    <nav id="zoom-menu" aria-label="Image formats"></nav>
+    <aside class="zoom-side">
+      <div class="zoom-info" id="zoom-cap"></div>
+      <nav id="zoom-menu" aria-label="Image formats"></nav>
+    </aside>
   </div>
 </div>
 
@@ -1629,28 +1645,33 @@
   function captionZoom(size) {
     const f = zoomCard.formats[zoomAt];
     zoomCap.textContent = '';
-    // Line 1: the card, its artists and its set (pages of this site).
-    zoomCap.append(el('a', { href: '#card=' + encodeURIComponent(zoomCard.name), text: zoomCard.name }));
-    zoomCard.artistIds.forEach((id, i) => {
-      zoomCap.append(text(i ? ' & ' : ' · '), el('a', { href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
-    });
-    if (zoomCard.set) {
-      zoomCap.append(text(' · '), el('a', { href: '#set=' + encodeURIComponent(zoomCard.set.code), text: zoomCard.set.name }));
+    // The card, its artists and its set (pages of this site), one per line.
+    zoomCap.append(el('a', { class: 'zi-name', href: '#card=' + encodeURIComponent(zoomCard.name), text: zoomCard.name }));
+    if (zoomCard.artistIds.length) {
+      const by = el('div', {}, [text('by ')]);
+      zoomCard.artistIds.forEach((id, i) => {
+        if (i) by.append(text(' & '));
+        by.append(el('a', { href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
+      });
+      zoomCap.append(by);
     }
-    // Line 2: the format shown, the file, and this print on Scryfall.
-    zoomCap.append(el('br'),
-      text(f.label + ' ' + f.type + (size ? ' · ' + size : '') + ' · '),
+    if (zoomCard.set) {
+      zoomCap.append(el('div', {}, [el('a', { href: '#set=' + encodeURIComponent(zoomCard.set.code), text: zoomCard.set.name })]));
+    }
+    // The format shown, the file, and this print on Scryfall.
+    zoomCap.append(el('div', { class: 'zi-file' }, [
+      text(f.label + ' ' + f.type + (size ? ' · ' + size : '')), el('br'),
       el('a', { href: f.url, target: '_blank', rel: 'noopener', text: 'Open file' }),
       text(' · '),
-      el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: 'Scryfall' }));
+      el('a', { href: zoomCard.uri, target: '_blank', rel: 'noopener', text: 'Scryfall' })]));
   }
 
   // Stage: the HD card fitted beside (or above, on narrow screens) the menu; the whole
   // free area for a card without a scan. Each format shows at its own size, shrunk to fit it.
   function sizeStage() {
     const narrow = innerWidth < 720;
-    const maxW = innerWidth - 32 - (narrow ? 0 : 200 + 32);
-    const maxH = (narrow ? innerHeight * 0.6 : innerHeight - 32) - 56;   // room for the two caption lines
+    const maxW = innerWidth - 32 - (narrow ? 0 : 240 + 32);
+    const maxH = narrow ? innerHeight * 0.5 : innerHeight - 32;   // narrow: the side panel goes below
     let w = maxW, h = maxH;
     if (zoomCard.scanned) {
       const k = Math.min(1, maxW / HD_SIZE[0], maxH / HD_SIZE[1]);
@@ -1685,7 +1706,7 @@
     if (b) showFormat(Number(b.dataset.i));
   });
   zoomBox.addEventListener('click', (e) => {
-    if (!e.target.closest('figure, #zoom-menu')) hideZoom();
+    if (!e.target.closest('figure, .zoom-side')) hideZoom();
   });
   document.addEventListener('keydown', (e) => {
     if (zoomBox.hidden) return;
