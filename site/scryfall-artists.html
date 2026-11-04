@@ -1352,14 +1352,12 @@
     return el('span', { class: cls }, alt.map((v) => el('span', { class: 'badge', text: altLabel(v) })));
   }
 
+  // List previews carry no alt badges (detail pages do).
   function previewEl(w) {
     const art = artCrop(w);
-    const children = [art
+    return el('div', { class: 'preview' }, [art
       ? el('img', { src: art, alt: w.name, loading: 'lazy', decoding: 'async' })
-      : el('span', { class: 'placeholder', text: w.name })];
-    const badges = badgesEl(w.alt, 'badges');
-    if (badges) children.push(badges);
-    return el('div', { class: 'preview' }, children);
+      : el('span', { class: 'placeholder', text: w.name })]);
   }
 
   // ---------- detail pages (an artist or a set) ----------
