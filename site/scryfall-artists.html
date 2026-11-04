@@ -478,6 +478,7 @@
         <label class="sortlabel" for="set-work-sort">Sort by</label>
         <select id="set-work-sort">
           <option value="number">Collector number</option>
+          <option value="released">Release date</option>
           <option value="name">Card name</option>
           <option value="artist">Artist</option>
           <option value="printings">Printings</option>
@@ -639,13 +640,13 @@
       return best;
     }
 
-    // Illustration of a set. Slim: no `released` (the set's), and `art_crop` only
-    // without `image` (otherwise its URL derives from the `image` one).
+    // Illustration of a set. Slim: `art_crop` only without `image` (otherwise its
+    // URL derives from the `image` one).
     function makeSetWork(ps) {
       const b = bestSetPrint(ps);
       const w = {
         illustration_id: b.illustration_id, name: b.name, number: b.number,
-        image: b.image, uri: b.uri, printings: ps.length, alt: b.alt,
+        released: b.released, image: b.image, uri: b.uri, printings: ps.length, alt: b.alt,
         artist_ids: [...new Set(ps.flatMap((p) => p.artist_ids))],
       };
       if (!b.image) w.art_crop = b.art_crop;
@@ -855,7 +856,7 @@
   const CACHE_KEY = 'default_cards';
   const MAX_AGE_MS = 30 * 24 * 3600 * 1000;
   const BATCH = 60;
-  const DATA_VERSION = 2;   // cached data older than this shape (no sets) is reloaded
+  const DATA_VERSION = 3;   // cached data of an older shape (no sets, no set release dates) is reloaded
 
   // Known alt values get a readable label; any other value is shown as-is.
   const ALT_LABELS = {
@@ -1305,7 +1306,8 @@
         if (i) meta.append(text(' & '));
         meta.append(el('a', { class: 'cap-link', href: '#artist=' + encodeURIComponent(id), text: artistName(id) }));
       });
-      meta.append(text((w.artist_ids.length ? ' · ' : '') + '#' + w.number + ' · ' + plural(w.printings, 'printing', 'printings')));
+      const year = w.released ? w.released.slice(0, 4) : '—';
+      meta.append(text((w.artist_ids.length ? ' · ' : '') + '#' + w.number + ' · ' + year + ' · ' + plural(w.printings, 'printing', 'printings')));
     }
     const cap = el('span', { class: 'cap' }, [
       el('a', { class: 'cap-name', href: w.uri, target: '_blank', rel: 'noopener', text: w.name }), meta,
@@ -1521,7 +1523,7 @@
   // ---------- start ----------
 
   // With a cache: show it at once; reload by itself when it is older than 30 days.
-  // Without one, with one of an older shape (no sets), or without IndexedDB: load at once.
+  // Without one, with one of an older shape (see DATA_VERSION), or without IndexedDB: load at once.
   cacheGet().then((rec) => {
     if (rec && rec.data && rec.version === DATA_VERSION) {
       showData(rec.data);
