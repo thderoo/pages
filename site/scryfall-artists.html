@@ -735,6 +735,8 @@
   let openId = null;         // artist id shown in detail view, or null
   let works = [];           // works of the open artist
   let listScroll = 0;
+  // The page restores the list scroll itself (detail view opens at the top).
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   let lastHash = location.hash;
   let cameFromList = false;
   let loading = false;
@@ -976,6 +978,7 @@
     dom.status.hidden = true;
     dom.bar.hidden = true;
     dom.detail.hidden = false;
+    window.scrollTo(0, 0);
     dom.detailName.textContent = a ? a.name : 'Artist not found';
     dom.detailMeta.textContent = a
       ? [plural(a.illustrations, 'illustration', 'illustrations'),
