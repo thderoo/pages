@@ -155,11 +155,11 @@
     background: var(--line);
     min-width: 0;
   }
-  .preview .placeholder { border: 0; border-radius: 0; }
+  .preview .placeholder { border: 0; border-radius: 0; aspect-ratio: 8 / 9; }
   .preview img {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 8 / 9;
     object-fit: cover;
   }
   .badges {
@@ -235,7 +235,7 @@
 
   @media (max-width: 480px) {
     /* Narrow cards: taller previews so the caption does not reach the badges. */
-    .preview img, .preview .placeholder { aspect-ratio: 3 / 4; }
+    .preview img, .preview .placeholder { aspect-ratio: 1 / 2; }
     header.bar { padding: 10px 12px; }
     main { padding: 12px; }
     .count { margin-left: 0; width: 100%; }
