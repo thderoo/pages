@@ -25,6 +25,14 @@ HTML statique, un fichier par page.
 `site/index.html` est une page de test indépendante de la lib : ne pas y
 toucher.
 
+Une page dont l'état vit en JS et se pilote par des contrôles de formulaire
+(recherche, menu de tri, case à cocher) lit leurs valeurs au démarrage au
+lieu de partir de ses défauts : le navigateur restaure ces contrôles quand on
+revient sur la page par l'historique. Sinon le menu affiche un choix et la
+liste en suit un autre (2026-11-04, `scryfall-artists.html` : menu sur
+« Alternative illustrations », liste triée par illustrations). Le tester par
+un aller-retour (`goto` ailleurs puis `goBack`), pas seulement un `reload`.
+
 ## Pages hors lib
 
 - `crumb-ui.html` : démo du design system fictif « Crumb UI » (biscuit &
