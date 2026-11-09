@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="torrent.css">
+<link rel="stylesheet" href="player.css">
 <style>
 :root {
   color-scheme: light dark;
@@ -266,6 +267,7 @@ body {
   <div class="tabs" role="tablist" aria-label="Page section">
     <button class="tab" id="tab-bench-btn" type="button" role="tab" aria-controls="panel-bench" aria-selected="true" data-tab="bench">Bench</button>
     <button class="tab" id="tab-torrent-btn" type="button" role="tab" aria-controls="panel-torrent" aria-selected="false" data-tab="torrent">Torrent</button>
+    <button class="tab" id="tab-player-btn" type="button" role="tab" aria-controls="panel-player" aria-selected="false" data-tab="player">Player</button>
   </div>
   <div id="panel-bench" role="tabpanel" aria-labelledby="tab-bench-btn">
   <div class="top">
@@ -329,6 +331,15 @@ body {
     </div>
     <div id="torrent-root"></div>
   </div>
+  <div id="panel-player" role="tabpanel" aria-labelledby="tab-player-btn" hidden>
+    <div class="top">
+      <div>
+        <h1>Player</h1>
+        <p>A torrent video player: Streaming window download, Hybrid player, and the pieces shown while it loads.</p>
+      </div>
+    </div>
+    <div id="player-root"></div>
+  </div>
 
   <footer class="foot">
     <p>Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/" target="_blank" rel="noopener">mango.blender.org</a></p>
@@ -344,6 +355,7 @@ body {
 import AVPlayer from './lib/avplayer.js';
 import { createHybridPlayer } from './hybrid-player.js';
 import { mountTorrentTab } from './torrent.js';
+import { mountPlayerTab } from './player.js';
 
 const DEFAULT_FPS = 24;
 const DEFAULT_AR = '1920 / 800';
@@ -908,19 +920,22 @@ bench.snapshot = () => {
 // ---- Onglets : Bench / Torrent, gardes dans l'URL (#torrent)
 let currentTab = 'bench';
 let torrentTab = null;
-const panels = { bench: $('panel-bench'), torrent: $('panel-torrent') };
+let playerTab = null;
+const panels = { bench: $('panel-bench'), torrent: $('panel-torrent'), player: $('panel-player') };
 function leaveTab(name) {
   if (name === 'bench') {
     if (S.video && !S.video.paused) S.video.pause();
     else if (S.player && !isPaused()) { try { S.player.pause(); } catch (e) { /* ignore */ } }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } else if (name === 'player') {
+    if (playerTab) playerTab.pause();
   } else if (torrentTab) {
     const r = torrentTab.getRun();
     if (r && r.video && !r.video.paused) r.video.pause();
   }
 }
 function showTab(name) {
-  if (name !== 'bench' && name !== 'torrent') name = 'bench';
+  if (name !== 'bench' && name !== 'torrent' && name !== 'player') name = 'bench';
   if (name !== currentTab) leaveTab(currentTab);
   currentTab = name;
   for (const [k, el] of Object.entries(panels)) el.hidden = k !== name;
@@ -928,22 +943,26 @@ function showTab(name) {
   if (name === 'torrent') {
     if (!torrentTab) torrentTab = mountTorrentTab($('torrent-root'), { createHybridPlayer });
     window.dispatchEvent(new Event('resize'));
+  } else if (name === 'player') {
+    if (!playerTab) playerTab = mountPlayerTab($('player-root'), { createHybridPlayer });
+    window.dispatchEvent(new Event('resize'));
   } else { render(); resizePlayer(); }
 }
 for (const b of document.querySelectorAll('.tab')) {
   b.addEventListener('click', () => {
     const t = b.dataset.tab;
-    if (t === 'torrent') location.hash = 'torrent';
+    if (t === 'torrent' || t === 'player') location.hash = t;
     else history.replaceState(null, '', location.pathname + location.search);
     showTab(t);
   });
 }
-window.addEventListener('hashchange', () => showTab(location.hash === '#torrent' ? 'torrent' : 'bench'));
+const tabFromHash = () => (location.hash === '#torrent' ? 'torrent' : location.hash === '#player' ? 'player' : 'bench');
+window.addEventListener('hashchange', () => showTab(tabFromHash()));
 bench.showTab = showTab;
 
 syncRouteUi();
 render();
-showTab(location.hash === '#torrent' ? 'torrent' : 'bench');
+showTab(tabFromHash());
 </script>
 </body>
 </html>

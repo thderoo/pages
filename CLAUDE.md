@@ -77,6 +77,32 @@ pas dans les tests) :
   stratégies d'ordre des pièces, carte des pièces, lecture native (Service
   Worker) ou hybride. Recherche : `docs/webtorrent-browser.md` de
   `global-workspace`.
+  Onglet Player (`#player`, `player.js`, `player.css`, 2026-11-09) : lecteur
+  de torrent complet, en Streaming window + lecteur hybride imposés. Le moteur
+  est partagé avec l'onglet Torrent, exporté par `torrent.js` (`createRun`,
+  `openTorrent`, `createRunVideo`, `startRun`, `attachPlayer`, `stopRun`,
+  `createVoxView`, `pieceStates`, `playheadPiece`, `pieceTime`) ; l'onglet
+  Torrent n'a pas changé de comportement. Le lecteur a ses contrôles (vidéo
+  sans contrôles natifs) : lecture, barre avec zone téléchargée (pièces
+  reçues converties en temps par l'ancrage de la fenêtre) et fenêtre de
+  2 min, aperçu du temps, volume, sous-titres, plein écran sur le conteneur,
+  panneau de stats (ⓘ), menu ⚙ (Buffer size, Request timeout, Download
+  limit), raccourcis Espace/K, ←/→ 5 s, J/L 10 s, ↑/↓, M, F, C, I.
+  Pendant le démarrage, après un seek et à chaque arrêt sur attente de
+  données, la vue voxels 3D s'affiche sur la vidéo avec « Buffering… N % of
+  the window » ; elle ne se met à jour que visible. Quitter l'onglet met la
+  vidéo en pause, le téléchargement continue. Choix faits sans
+  l'utilisateur (mandat de l'essaim) : réglages par défaut Buffer 100 MB,
+  timeout 10x, débit illimité ; fichiers listés seulement s'il y en a
+  plusieurs ; l'animation reste au moins 0,4 s après un seek, même quand les
+  données étaient là ; « démarrage terminé » = 0,25 s de lecture avec assez
+  de données ; arrêt sur attente = position immobile plus de 0,5 s alors que
+  la lecture est demandée ; contrôles masqués après 2,5 s sans mouvement en
+  lecture (un tap tactile sur contrôles masqués ne fait que les rappeler) ;
+  slider de volume masqué sous 520 px (muet et ↑/↓ restent) ; scène en 4/3
+  sous 520 px pour loger le menu ; bouton CC grisé « No subtitles »
+  (hybrid-player n'extrait pas de sous-titres d'une source torrent) ;
+  clic sur la vidéo = lecture/pause, double clic = plein écran.
 
 - `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
   Magic (2026-11-04), aperçu de 4 illustrations (2 × 2) mettant en avant les

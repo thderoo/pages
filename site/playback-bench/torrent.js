@@ -306,7 +306,187 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   // ---- piece map -------------------------------------------------------
   function cssColor(name) { return getComputedStyle(rootEl).getPropertyValue(name).trim() || '#888' }
 
-  function pieceStates() {
+  let view3d = false
+  try { view3d = localStorage.getItem('ttMapView') === '3d' } catch (e) {}
+  const voxView = createVoxView(el.vox, () => Math.max(100, el.mapbox.clientWidth))
+
+  function drawMap() {
+    const c = el.map
+    if (!run || !run.n) {
+      c.width = 0; c.height = 0; c.style.height = '0'
+      el.mapbox.classList.add('tt-empty')
+      voxView.reset(); el.vox.toggleAttribute('hidden', true)
+      return
+    }
+    el.mapbox.classList.remove('tt-empty')
+    if (view3d) { c.style.display = 'none'; el.vox.toggleAttribute('hidden', false); voxView.draw(run); return }
+    c.style.display = ''; el.vox.toggleAttribute('hidden', true); voxView.reset()
+    const w = Math.max(100, el.mapbox.clientWidth)
+    const pitch = w >= 720 ? 11 : w >= 520 ? 9 : 6
+    const gap = pitch >= 9 ? 2 : 1
+    const cell = pitch - gap
+    const cols = Math.max(1, Math.floor((w + gap) / pitch))
+    const rows = Math.ceil(run.n / cols)
+    const h = rows * pitch - gap
+    const dpr = window.devicePixelRatio || 1
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr)
+      c.style.width = w + 'px'; c.style.height = h + 'px'
+    }
+    const g = c.getContext('2d')
+    g.setTransform(dpr, 0, 0, dpr, 0, 0)
+    g.clearRect(0, 0, w, h)
+    const colors = STATE_VARS.map(cssColor)
+    const st = pieceStates(run)
+    const at = i => [(i % cols) * pitch, Math.floor(i / cols) * pitch]
+    for (let i = 0; i < run.n; i++) {
+      const [x, y] = at(i)
+      if (st[i] === S_EVICTED) { // freed: hollow square in the evicted colour (it was received, now gone)
+        const lw = Math.max(1, Math.round(cell / 4))
+        g.fillStyle = colors[S_DESELECTED]
+        g.fillRect(x, y, cell, cell)
+        g.strokeStyle = colors[S_EVICTED]
+        g.lineWidth = lw
+        g.strokeRect(x + lw / 2, y + lw / 2, cell - lw, cell - lw)
+        continue
+      }
+      g.fillStyle = colors[st[i]]
+      g.fillRect(x, y, cell, cell)
+    }
+    const ph = playheadPiece(run)
+    run.ph = ph
+    if (ph != null) {
+      const [x, y] = at(ph)
+      g.strokeStyle = cssColor('--tt-playhead')
+      g.lineWidth = 2
+      g.strokeRect(x - 1, y - 1, cell + 2, cell + 2)
+    }
+    const wi = run.strategy && run.strategy.info
+    if (wi && wi.bytes) { // streaming window: bar before its first piece and after its last
+      g.fillStyle = cssColor('--tt-window')
+      const [x0, y0] = at(wi.a), [x1, y1] = at(wi.b)
+      g.fillRect(x0 - 3, y0 - 2, 3, cell + 4)
+      g.fillRect(x1 + cell, y1 - 2, 3, cell + 4)
+    }
+  }
+
+  el.view.addEventListener('click', () => {
+    view3d = !view3d
+    try { localStorage.setItem('ttMapView', view3d ? '3d' : '2d') } catch (e) {}
+    syncView()
+    drawMap()
+  })
+  function syncView() {
+    el.view.textContent = view3d ? 'Switch to 2D' : 'Switch to 3D'
+    el.view.setAttribute('aria-pressed', String(view3d))
+  }
+  syncView()
+
+  let drawQueued = false
+  function scheduleDraw() {
+    if (drawQueued || destroyed) return
+    drawQueued = true
+    requestAnimationFrame(() => { drawQueued = false; if (!destroyed) drawMap() })
+  }
+
+  // ---- launch / stop ---------------------------------------------------
+  function torrentId() {
+    const c = el.custom.value.trim()
+    return c || el.demo.value
+  }
+
+  async function stop(message) {
+    const r = run
+    if (!r) return
+    const closing = stopRun(r)
+    el.videobox.innerHTML = '<div class="tt-video-empty">The player appears here.</div>'
+    await closing
+    el.stop.disabled = true
+    el.start.disabled = false
+    if (message) setStatus(message)
+    scheduleDraw()
+  }
+
+  async function launch(fileIndex) {
+    await stop()
+    const strat = STRATEGIES.find(s => s.id === strategyId())
+    const rate = RATES.find(x => x.id === el.rate.value)
+    const r = run = createRun({ id: torrentId(), throttle: rate.bytes, playerKind: playerKind() })
+    el.start.disabled = true; el.stop.disabled = false
+    renderStats(); drawMap()
+    try {
+      const { pool, idx } = await openTorrent(r, { strategyId: strat.id, rate: rate.bytes, fileIndex, onStatus: setStatus, onVerified: scheduleDraw })
+      if (r.stopped) return
+      el.file.innerHTML = pool.map(i => `<option value="${i}"${i === idx ? ' selected' : ''}>${r.torrent.files[i].name}</option>`).join('')
+      el.filebox.hidden = pool.length < 2
+      const v = createRunVideo(r, { controls: true })
+      el.videobox.innerHTML = ''
+      el.videobox.appendChild(v)
+      const attach = () => attachPlayer(r, { kind: playerKind(), createHybridPlayer, muted: true, onStatus: setStatus })
+      startRun(r, {
+        strategyId: strat.id,
+        bufferBytes: () => BUFFERS.find(x => x.id === el.buffer.value).bytes,
+        timeoutMult: () => TIMEOUTS.find(x => x.id === el.timeout.value).mult,
+        attach,
+        onTick() {
+          renderStats()
+          const d0 = performance.now(); drawMap(); r.drawMs = (r.drawMs || 0) + performance.now() - d0; r.draws = (r.draws || 0) + 1
+          if (r.verifiedCount >= r.n && !(r.strategy && r.strategy.info)) setStatus('Download complete.')
+        }
+      })
+      if (strat.needsStream) attach()
+      setStatus(strat.needsStream ? 'Downloading and playing.' : 'Downloading (the player starts when the file is complete).')
+    } catch (e) {
+      console.error(e)
+      setStatus('Failed: ' + (e && e.message ? e.message : e), true)
+      el.start.disabled = false
+    }
+  }
+
+  el.start.addEventListener('click', () => launch(null))
+  el.stop.addEventListener('click', () => stop('Stopped.'))
+  el.file.addEventListener('change', () => launch(Number(el.file.value)))
+  const rerate = () => { if (run && run.client) { const x = RATES.find(q => q.id === el.rate.value); run.client.throttleDownload(x.bytes); run.throttle = x.bytes } }
+  el.rate.addEventListener('change', rerate)
+  const onResize = () => scheduleDraw()
+  window.addEventListener('resize', onResize)
+  const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null
+  if (mq && mq.addEventListener) mq.addEventListener('change', onResize)
+
+  syncBufferField()
+  renderStats()
+
+  return {
+    destroy() {
+      destroyed = true
+      window.removeEventListener('resize', onResize)
+      if (mq && mq.removeEventListener) mq.removeEventListener('change', onResize)
+      stop()
+      rootEl.innerHTML = ''
+      rootEl.classList.remove('tt')
+    },
+    getRun() { return run }
+  }
+}
+
+// ======================================================================
+// Engine shared by the Torrent and Player tabs: nothing below touches the DOM of a tab.
+// A "run" is one launch (createRun); openTorrent connects and picks the file, createRunVideo
+// makes the <video>, startRun runs the Streaming window / timeout ticker, attachPlayer starts
+// playback, stopRun ends everything. pieceStates / playheadPiece / pieceTime read a run;
+// createVoxView draws the 3D view of its pieces.
+// ======================================================================
+
+export function createRun({ id, throttle, playerKind }) {
+  return {
+    id, order: [], times: [], verifiedCount: 0, stalls: 0, ttff: null, videoAttached: false,
+    t0: performance.now(), n: 0, torrent: null, file: null, client: null, video: null, stopped: false, player: null,
+    throttle, playerKind,
+    timeouts: 0, relaunched: 0, noOther: 0, evicted: new Set(), evictedTotal: 0, refetched: 0, healed: 0, anchor: null, seekAt: 0, timedOut: new Map(), reqInfo: new WeakMap(), blockTimes: [], hideTimers: new Set()
+  }
+}
+
+export function pieceStates(run) {
     const t = run.torrent, n = run.n
     const st = new Uint8Array(n) // S_DESELECTED
     const sels = (t._selections && t._selections._items) || []
@@ -341,7 +521,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     if (performance.now() - r.seekAt > ANCHOR_WAIT_MS) return // only the first reads after a seek: later ones (read-ahead, audio) are not the position
     if (Math.abs(piece - linearPiece(r)) <= Math.max(30, Math.ceil(0.15 * r.n))) r.anchor = { piece, time: r.video.currentTime }
   }
-  function playheadPiece() {
+  export function playheadPiece(run) {
     if (!run || !run.torrent || !playerReady(run)) return null
     const r = run, v = r.video
     if (!r.anchor) return linearPiece(r)
@@ -349,66 +529,17 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const p = Math.floor(r.anchor.piece + (v.currentTime - r.anchor.time) * (r.file.length / v.duration) / pl)
     return Math.max(r.file._startPiece, Math.min(r.file._endPiece, p))
   }
-
-  function drawMap() {
-    const c = el.map
-    if (!run || !run.n) {
-      c.width = 0; c.height = 0; c.style.height = '0'
-      el.mapbox.classList.add('tt-empty')
-      vox = null; el.vox.replaceChildren(); el.vox.toggleAttribute('hidden', true)
-      return
-    }
-    el.mapbox.classList.remove('tt-empty')
-    if (view3d) { c.style.display = 'none'; el.vox.toggleAttribute('hidden', false); drawVox(); return }
-    c.style.display = ''; el.vox.toggleAttribute('hidden', true); vox = null
-    const w = Math.max(100, el.mapbox.clientWidth)
-    const pitch = w >= 720 ? 11 : w >= 520 ? 9 : 6
-    const gap = pitch >= 9 ? 2 : 1
-    const cell = pitch - gap
-    const cols = Math.max(1, Math.floor((w + gap) / pitch))
-    const rows = Math.ceil(run.n / cols)
-    const h = rows * pitch - gap
-    const dpr = window.devicePixelRatio || 1
-    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
-      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr)
-      c.style.width = w + 'px'; c.style.height = h + 'px'
-    }
-    const g = c.getContext('2d')
-    g.setTransform(dpr, 0, 0, dpr, 0, 0)
-    g.clearRect(0, 0, w, h)
-    const colors = STATE_VARS.map(cssColor)
-    const st = pieceStates()
-    const at = i => [(i % cols) * pitch, Math.floor(i / cols) * pitch]
-    for (let i = 0; i < run.n; i++) {
-      const [x, y] = at(i)
-      if (st[i] === S_EVICTED) { // freed: hollow square in the evicted colour (it was received, now gone)
-        const lw = Math.max(1, Math.round(cell / 4))
-        g.fillStyle = colors[S_DESELECTED]
-        g.fillRect(x, y, cell, cell)
-        g.strokeStyle = colors[S_EVICTED]
-        g.lineWidth = lw
-        g.strokeRect(x + lw / 2, y + lw / 2, cell - lw, cell - lw)
-        continue
-      }
-      g.fillStyle = colors[st[i]]
-      g.fillRect(x, y, cell, cell)
-    }
-    const ph = playheadPiece()
-    run.ph = ph
-    if (ph != null) {
-      const [x, y] = at(ph)
-      g.strokeStyle = cssColor('--tt-playhead')
-      g.lineWidth = 2
-      g.strokeRect(x - 1, y - 1, cell + 2, cell + 2)
-    }
-    const wi = run.strategy && run.strategy.info
-    if (wi && wi.bytes) { // streaming window: bar before its first piece and after its last
-      g.fillStyle = cssColor('--tt-window')
-      const [x0, y0] = at(wi.a), [x1, y1] = at(wi.b)
-      g.fillRect(x0 - 3, y0 - 2, 3, cell + 4)
-      g.fillRect(x1 + cell, y1 - 2, 3, cell + 4)
-    }
+  // Inverse of playheadPiece: the playback time at which piece p starts (same anchor, same mean bit rate).
+  export function pieceTime(r, p) {
+    const v = r.video
+    if (!playerReady(r)) return 0
+    const pl = r.torrent.pieceLength
+    const t = r.anchor
+      ? r.anchor.time + (p - r.anchor.piece) * pl * v.duration / r.file.length
+      : (p * pl - r.file.offset) / r.file.length * v.duration
+    return Math.max(0, Math.min(v.duration, t))
   }
+
   // ---- piece map, 3D view ----------------------------------------------
   // One cube per piece on a flat surface, columns = rows ~ sqrt(n), in file order row after row. Isometric, drawn
   // in SVG as hexagons (top + two sides), back to front (increasing column + row). The DOM is built once per
@@ -427,9 +558,6 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     for (const k in attrs) e.setAttribute(k, attrs[k])
     return e
   }
-  let view3d = false
-  try { view3d = localStorage.getItem('ttMapView') === '3d' } catch (e) {}
-  let vox = null
 
   // Generalized Hilbert curve on a width x height rectangle ("gilbert", Jakub Cerveny,
   // github.com/jakubcerveny/gilbert, Copyright (c) 2018 Jakub Cerveny, BSD 2-Clause licence), rewritten here. Returns [x0, y0, x1, y1, ...].
@@ -469,7 +597,15 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     return best ? [best.c, best.r] : [Math.ceil(s), Math.ceil(n / Math.ceil(s))]
   }
 
-  function buildVox(w) {
+  /**
+   * 3D view of the pieces of a run, drawn into an <svg>. draw(run) builds the cubes once per run and width,
+   * then only touches the ones whose state changed; reset() empties it.
+   * @param {SVGElement} svg
+   * @param {() => number} getWidth width in px the view may take
+   */
+  export function createVoxView(svg, getWidth) {
+  let vox = null
+  function buildVox(run, w) {
     const n = run.n
     const [cols, rows] = voxRect(n)
     const curve = gilbert(cols, rows) // piece i sits on the i-th cell of the curve; the cells after the last piece stay empty
@@ -479,7 +615,6 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const a = Math.min(22, w / (cols + rows)) // half width of a cube
     const b = a / Math.sqrt(3), h = 2 * b // iso: top rhombus a x b, edge height h
     const e = h, M = Math.ceil(6 * e), W = (cols + rows) * a, H = M + (cols + rows) * b + h
-    const svg = el.vox
     svg.replaceChildren()
     svg.setAttribute('viewBox', `0 0 ${W.toFixed(2)} ${H.toFixed(2)}`)
     svg.style.setProperty('--vd', (5 * e).toFixed(2) + 'px')
@@ -547,10 +682,10 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     v.pend[i] = kind === 'fall' ? 1 : 0
   }
 
-  function drawVox() {
-    const w = Math.max(100, el.mapbox.clientWidth)
-    if (!vox || vox.run !== run || vox.n !== run.n || vox.w !== w) buildVox(w)
-    const v = vox, st = pieceStates(), n = run.n
+  function drawVox(run) {
+    const w = getWidth()
+    if (!vox || vox.run !== run || vox.n !== run.n || vox.w !== w) buildVox(run, w)
+    const v = vox, st = pieceStates(run), n = run.n
     const first = !v.st
     const reduce = !!(reduceMq && reduceMq.matches)
     if (first) { v.st = new Uint8Array(n); v.want = new Uint8Array(n) }
@@ -569,7 +704,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     }
     // marks on the surface: playhead, window start and end (outline on the top face of the cube)
     const wi = run.strategy && run.strategy.info
-    const ph = playheadPiece()
+    const ph = playheadPiece(run)
     run.ph = ph
     const put = (key, i) => {
       if (v.mpos[key] === i) return
@@ -584,24 +719,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     put('winA', wi && wi.bytes ? wi.a : -1)
     put('winB', wi && wi.bytes ? wi.b : -1)
   }
-
-  el.view.addEventListener('click', () => {
-    view3d = !view3d
-    try { localStorage.setItem('ttMapView', view3d ? '3d' : '2d') } catch (e) {}
-    syncView()
-    drawMap()
-  })
-  function syncView() {
-    el.view.textContent = view3d ? 'Switch to 2D' : 'Switch to 3D'
-    el.view.setAttribute('aria-pressed', String(view3d))
-  }
-  syncView()
-
-  let drawQueued = false
-  function scheduleDraw() {
-    if (drawQueued || destroyed) return
-    drawQueued = true
-    requestAnimationFrame(() => { drawQueued = false; if (!destroyed) drawMap() })
+  return { draw: drawVox, reset() { vox = null; svg.replaceChildren() } }
   }
 
   // ---- strategies ------------------------------------------------------
@@ -633,7 +751,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     }
   }
 
-  function setupStrategy(id, r) {
+  // cfg.bufferBytes() gives the buffer limit of the Streaming window.
+  function setupStrategy(id, r, cfg) {
     const t = r.torrent, n = r.n
     if (id === 'random') {
       const picked = new Uint8Array(n)
@@ -686,7 +805,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       return {
         tick() {
           // 1. window around the playback position (before metadata: from the file start)
-          const ph = playheadPiece()
+          const ph = playheadPiece(r)
           const a = Math.max(f._startPiece, ph == null ? f._startPiece : ph)
           const b = Math.min(f._endPiece, a + W)
           let changed = false
@@ -723,7 +842,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       let key = ''
       let prevA = null, seeked = false
       const len = i => (i === n - 1 ? t.lastPieceLength : plen)
-      const limitBytes = () => BUFFERS.find(x => x.id === el.buffer.value).bytes
+      const limitBytes = cfg.bufferBytes
       const heldBytes = () => { let b = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) b += len(i); return b }
       const heldPieces = () => { let c = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) c++; return c }
       // A piece a live read still has to read is never freed. Read live (not from the list `keep` made at the last
@@ -769,7 +888,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         jump() { seeked = true },
         tick() {
           const v = r.video
-          const ph = playheadPiece()
+          const ph = playheadPiece(r)
           const dur = r.videoAttached && v && isFinite(v.duration) && v.duration > 0 ? v.duration : 0
           const limit = limitBytes()
           const maxP = Math.max(2, Math.floor(limit / plen) - 2) // 2 pieces of margin for the player's own reads
@@ -904,9 +1023,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     return (t.wires || []).some(x => x !== w && !x.destroyed && x.peerPieces && x.peerPieces.get(piece) &&
       (!x.peerChoking || (x.hasFast && x.peerAllowedFastSet && x.peerAllowedFastSet.includes(piece))))
   }
-  function checkTimeouts(r) {
+  function checkTimeouts(r, mult) {
     const t = r.torrent
-    const mult = TIMEOUTS.find(x => x.id === el.timeout.value).mult
     const now = performance.now()
     if (mult && r.blockTimes.length >= MIN_BLOCKS) {
       const limit = Math.max(MIN_TIMEOUT_MS, mult * r.blockTimes.reduce((a, b) => a + b, 0) / r.blockTimes.length)
@@ -939,14 +1057,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   }
 
   // ---- launch / stop ---------------------------------------------------
-  function torrentId() {
-    const c = el.custom.value.trim()
-    return c || el.demo.value
-  }
-
-  async function stop(message) {
-    const r = run
-    if (!r) return
+  // Ends a run: ticker, timers, player, video, client. Resolves when the client is destroyed.
+  export async function stopRun(r) {
     r.stopped = true
     clearInterval(r.ticker)
     for (const h of r.hideTimers || []) clearTimeout(h)
@@ -954,21 +1066,17 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     r.player = null
     if (r.video) { r.video.removeAttribute('src'); try { r.video.load() } catch (e) {} }
     r.video = null
-    el.videobox.innerHTML = '<div class="tt-video-empty">The player appears here.</div>'
     if (r.client) await new Promise(res => { try { r.client.destroy(() => res()) } catch (e) { res() } })
     r.torrent = null; r.client = null
-    el.stop.disabled = true
-    el.start.disabled = false
-    if (message) setStatus(message)
-    scheduleDraw()
   }
 
-  function attachPlayer(r) {
+  // Starts playback of the run's file in r.video. opts: { kind: 'native' | 'hybrid', createHybridPlayer, muted, onStatus }
+  export function attachPlayer(r, { kind, createHybridPlayer, muted = true, onStatus = () => {} }) {
     if (r.videoAttached || r.stopped) return
     r.videoAttached = true
     const v = r.video
-    const kind = playerKind()
-    v.muted = true
+    const setStatus = onStatus
+    v.muted = muted
     if (kind === 'hybrid' && createHybridPlayer) {
       const src = createTorrentSource(r.file)
       const rd = src.read
@@ -983,111 +1091,75 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     v.play().catch(() => {})
   }
 
-  async function launch(fileIndex) {
-    await stop()
-    const id = torrentId()
-    const strat = STRATEGIES.find(s => s.id === strategyId())
-    const rate = RATES.find(x => x.id === el.rate.value)
-    const r = run = {
-      id, strat, order: [], times: [], verifiedCount: 0, stalls: 0, ttff: null, videoAttached: false,
-      t0: performance.now(), n: 0, torrent: null, file: null, client: null, video: null, stopped: false, player: null,
-      throttle: rate.bytes, playerKind: playerKind(),
-      timeouts: 0, relaunched: 0, noOther: 0, evicted: new Set(), evictedTotal: 0, refetched: 0, healed: 0, anchor: null, seekAt: 0, timedOut: new Map(), reqInfo: new WeakMap(), blockTimes: [], hideTimers: new Set()
-    }
-    el.start.disabled = true; el.stop.disabled = false
-    renderStats(); drawMap()
-    try {
-      setStatus('Loading WebTorrent and the Service Worker...')
-      const [WebTorrent, reg] = await Promise.all([loadWebTorrent(), registerSW()])
-      if (r.stopped) return
-      const client = r.client = new WebTorrent()
-      client.on('error', e => { if (!r.stopped) setStatus('Client error: ' + (e.message || e), true) })
-      client.createServer({ controller: reg })
-      client.throttleDownload(rate.bytes)
-      setStatus('Fetching the torrent metadata...')
-      const opts = { addUID: true, destroyStoreOnDestroy: true, strategy: strat.id === 'rarest' ? 'rarest' : 'sequential' }
-      if (OWN_SELECTION.has(strat.id)) opts.deselect = true
-      const torrent = r.torrent = client.add(id, opts)
-      torrent.on('wire', w => { trackWire(r, w); if (w.type === 'webSeed') addSecondWebSeed(r) })
-      torrent.on('infoHash', () => { torrent.announce = TRACKERS.slice() }) // before discovery starts
-      torrent.on('error', e => { if (!r.stopped) setStatus('Torrent error: ' + (e.message || e), true) })
-      torrent.on('verified', i => {
-        r.order.push(i); r.times.push(Math.round(performance.now() - r.t0)); r.verifiedCount++
-        if (r.evicted.delete(i)) r.refetched++
-        if (r.strategy && r.strategy.enforce) r.strategy.enforce() // synchronous: the buffer limit is never passed
-        scheduleDraw()
+  /**
+   * Connects: loads WebTorrent and the Service Worker, adds the torrent, waits for its metadata, picks the file.
+   * opts: { strategyId, rate (bytes/s, -1 = unlimited), fileIndex (null = largest video), onStatus(text, bad), onVerified() }
+   * @returns {Promise<{ pool: number[], idx: number } | undefined>} video files of the torrent and the chosen one
+   *   (undefined when the run was stopped meanwhile)
+   */
+  export async function openTorrent(r, { strategyId, rate, fileIndex = null, onStatus = () => {}, onVerified = () => {} }) {
+    onStatus('Loading WebTorrent and the Service Worker...')
+    const [WebTorrent, reg] = await Promise.all([loadWebTorrent(), registerSW()])
+    if (r.stopped) return
+    const client = r.client = new WebTorrent()
+    client.on('error', e => { if (!r.stopped) onStatus('Client error: ' + (e.message || e), true) })
+    client.createServer({ controller: reg })
+    client.throttleDownload(rate)
+    onStatus('Fetching the torrent metadata...')
+    const opts = { addUID: true, destroyStoreOnDestroy: true, strategy: strategyId === 'rarest' ? 'rarest' : 'sequential' }
+    if (OWN_SELECTION.has(strategyId)) opts.deselect = true
+    const torrent = r.torrent = client.add(r.id, opts)
+    torrent.on('wire', w => { trackWire(r, w); if (w.type === 'webSeed') addSecondWebSeed(r) })
+    torrent.on('infoHash', () => { torrent.announce = TRACKERS.slice() }) // before discovery starts
+    torrent.on('error', e => { if (!r.stopped) onStatus('Torrent error: ' + (e.message || e), true) })
+    torrent.on('verified', i => {
+      r.order.push(i); r.times.push(Math.round(performance.now() - r.t0)); r.verifiedCount++
+      if (r.evicted.delete(i)) r.refetched++
+      if (r.strategy && r.strategy.enforce) r.strategy.enforce() // synchronous: the buffer limit is never passed
+      onVerified(i)
+    })
+    await new Promise(res => torrent.once('ready', res))
+    if (r.stopped) return
+    r.n = torrent.pieces.length
+    // file choice: largest video, unless one is asked for
+    const files = torrent.files
+    const videos = files.map((f, i) => i).filter(i => VIDEO_EXT.test(files[i].name))
+    const pool = videos.length ? videos : files.map((f, i) => i)
+    const biggest = pool.reduce((a, b) => (files[b].length > files[a].length ? b : a), pool[0])
+    const idx = fileIndex != null ? fileIndex : biggest
+    r.file = files[idx]
+    r.fileIndex = idx
+    return { pool, idx }
+  }
+
+  // The <video> of a run (fresh per launch): counts time to first frame and stalls, notes the seeks for the playhead anchor.
+  export function createRunVideo(r, { controls = true } = {}) {
+    const v = r.video = document.createElement('video')
+    v.controls = controls; v.playsInline = true; v.muted = true; v.preload = 'auto'
+    v.addEventListener('loadeddata', () => { if (r.ttff == null) r.ttff = Math.round(performance.now() - r.t0) })
+    v.addEventListener('waiting', () => { r.stalls++ })
+    v.addEventListener('seeking', () => { r.anchor = null; r.seekAt = performance.now() })
+    r.file.on('iterator', ({ iterator }) => { try { noteRead(r, iterator._startPiece) } catch (e) { console.error(e) } }) // reads of the Service Worker (native player)
+    return v
+  }
+
+  // Sets the download strategy up and starts the 100 ms ticker (strategy, request timeouts, late player start, then onTick).
+  // cfg: { strategyId, bufferBytes(), timeoutMult(), attach(), onTick() }
+  export function startRun(r, cfg) {
+    const v = r.video
+    r.strategy = setupStrategy(cfg.strategyId, r, cfg)
+    r.ticker = setInterval(() => {
+      if (r.stopped || !r.torrent) return
+      try { r.strategy && r.strategy.tick() } catch (e) { console.error(e) }
+      try { checkTimeouts(r, cfg.timeoutMult()) } catch (e) { console.error(e) }
+      if (!r.videoAttached && r.verifiedCount >= r.n) cfg.attach()
+      cfg.onTick()
+    }, 100)
+    if (cfg.strategyId === 'stream') {
+      for (const ev of ['seeking', 'timeupdate', 'loadedmetadata']) v.addEventListener(ev, () => {
+        if (r.stopped) return // the video fires events while it is unloaded at stop
+        try { if (ev === 'seeking') r.strategy.jump(); r.strategy.tick() } catch (e) { console.error(e) }
       })
-      await new Promise(res => torrent.once('ready', res))
-      if (r.stopped) return
-      r.n = torrent.pieces.length
-      // file choice: largest video, unless the user picked one
-      const files = torrent.files
-      const videos = files.map((f, i) => i).filter(i => VIDEO_EXT.test(files[i].name))
-      const pool = videos.length ? videos : files.map((f, i) => i)
-      const biggest = pool.reduce((a, b) => (files[b].length > files[a].length ? b : a), pool[0])
-      const idx = fileIndex != null ? fileIndex : biggest
-      r.file = files[idx]
-      el.file.innerHTML = pool.map(i => `<option value="${i}"${i === idx ? ' selected' : ''}>${files[i].name}</option>`).join('')
-      el.filebox.hidden = pool.length < 2
-      r.fileIndex = idx
-
-      // video element (fresh per launch)
-      const v = r.video = document.createElement('video')
-      v.controls = true; v.playsInline = true; v.muted = true; v.preload = 'auto'
-      v.addEventListener('loadeddata', () => { if (r.ttff == null) r.ttff = Math.round(performance.now() - r.t0) })
-      v.addEventListener('waiting', () => { r.stalls++ })
-      v.addEventListener('seeking', () => { r.anchor = null; r.seekAt = performance.now() })
-      r.file.on('iterator', ({ iterator }) => { try { noteRead(r, iterator._startPiece) } catch (e) { console.error(e) } }) // reads of the Service Worker (native player)
-      el.videobox.innerHTML = ''
-      el.videobox.appendChild(v)
-
-      r.strategy = setupStrategy(strat.id, r)
-      r.ticker = setInterval(() => {
-        if (r.stopped || !r.torrent) return
-        try { r.strategy && r.strategy.tick() } catch (e) { console.error(e) }
-        try { checkTimeouts(r) } catch (e) { console.error(e) }
-        if (!r.videoAttached && r.verifiedCount >= r.n) attachPlayer(r)
-        renderStats()
-        const d0 = performance.now(); drawMap(); r.drawMs = (r.drawMs || 0) + performance.now() - d0; r.draws = (r.draws || 0) + 1
-        if (r.verifiedCount >= r.n && !(r.strategy && r.strategy.info)) setStatus('Download complete.')
-      }, 100)
-      if (strat.id === 'stream') {
-        for (const ev of ['seeking', 'timeupdate', 'loadedmetadata']) v.addEventListener(ev, () => {
-          try { if (ev === 'seeking') r.strategy.jump(); r.strategy.tick() } catch (e) { console.error(e) }
-        })
-      }
-      if (strat.needsStream) attachPlayer(r)
-      setStatus(strat.needsStream ? 'Downloading and playing.' : 'Downloading (the player starts when the file is complete).')
-    } catch (e) {
-      console.error(e)
-      setStatus('Failed: ' + (e && e.message ? e.message : e), true)
-      el.start.disabled = false
     }
   }
-
-  el.start.addEventListener('click', () => launch(null))
-  el.stop.addEventListener('click', () => stop('Stopped.'))
-  el.file.addEventListener('change', () => launch(Number(el.file.value)))
-  const rerate = () => { if (run && run.client) { const x = RATES.find(q => q.id === el.rate.value); run.client.throttleDownload(x.bytes); run.throttle = x.bytes } }
-  el.rate.addEventListener('change', rerate)
-  const onResize = () => scheduleDraw()
-  window.addEventListener('resize', onResize)
-  const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null
-  if (mq && mq.addEventListener) mq.addEventListener('change', onResize)
-
-  syncBufferField()
-  renderStats()
-
-  return {
-    destroy() {
-      destroyed = true
-      window.removeEventListener('resize', onResize)
-      if (mq && mq.removeEventListener) mq.removeEventListener('change', onResize)
-      stop()
-      rootEl.innerHTML = ''
-      rootEl.classList.remove('tt')
-    },
-    getRun() { return run }
-  }
-}
 
