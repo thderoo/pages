@@ -52,7 +52,14 @@ export const TIMEOUTS = [
 ]
 const DEFAULT_TIMEOUT = '3x'
 const BLOCK_WINDOW = 50 // blocks in the rolling mean
-const MIN_BLOCKS = 10 // no timeout before this many blocks have been measured
+// Warm-up: blocks received in the first WARMUP_MS of a launch do not count in the mean, because the request
+// pipeline is still filling (and the throttle burst is not over), so they are faster than the steady state.
+// Measured on Sintel, Sequential, 2 web seed connections, 4 rates x 3 launches: steady state reached at
+// 1.9-4.7 s after launch (rolling mean of 10 blocks within 20 % of the steady mean), so 5 s.
+const WARMUP_MS = 5000
+// No timeout before this many blocks have been measured after the warm-up: the mean of the first 4 blocks
+// after 5 s is already within 16 % of the steady mean at every measured rate; 5 leaves some margin.
+const MIN_BLOCKS = 5
 const HIDE_MS = 10000 // a piece taken away from the slow source is hidden from it this long (webconn.js RETRY_DELAY)
 const TIMEOUT_MARK_MS = 1500 // a piece whose request timed out stays marked at least this long on the map
 const WINDOW_BYTES = 4 * 1024 * 1024
@@ -235,7 +242,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     setStat('meanblock', run.blockTimes.length ? Math.round(run.blockTimes.reduce((a, b) => a + b, 0) / run.blockTimes.length) + ' ms (' + run.blockTimes.length + ' blocks)' : '-')
     setStat('timeouts', `${run.timeouts} (${run.relaunched} relaunched elsewhere, ${run.noOther} with no other source)`)
     setStat('peers', String(wires.filter(w => w.type !== 'webSeed').length))
-    setStat('webseeds', String(wires.filter(w => w.type === 'webSeed').length))
+    { const n = wires.filter(w => w.type === 'webSeed').length; setStat('webseeds', n + (n === 1 ? ' connection' : ' connections')) }
     setStat('ttff', run.ttff == null ? (run.videoAttached ? 'waiting...' : '-') : (run.ttff / 1000).toFixed(2) + ' s')
     setStat('stalls', String(run.stalls))
     const hp = run.player && run.playerKind === 'hybrid' ? run.player : null
@@ -418,12 +425,27 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       const t0 = performance.now()
       const n = w.requests.length
       const ret = orig(index, offset, length, (err, chunk) => {
-        if (!err && !r.stopped) { r.blockTimes.push(performance.now() - t0); if (r.blockTimes.length > BLOCK_WINDOW) r.blockTimes.shift() }
+        if (!err && !r.stopped) {
+          const now = performance.now()
+          if (now - r.t0 >= WARMUP_MS) { r.blockTimes.push(now - t0); if (r.blockTimes.length > BLOCK_WINDOW) r.blockTimes.shift() }
+        }
         if (cb) cb(err, chunk)
       })
       const q = w.requests[w.requests.length - 1]
       if (w.requests.length > n && q && q.piece === index && q.offset === offset) r.reqInfo.set(q, { t0, expired: false })
       return ret
+    }
+  }
+  // A second connection to each web seed (same server, variant URL base + './': addWebSeed refuses a
+  // duplicate URL), so that a request that timed out can be asked again when the web seed is the only source.
+  function addSecondWebSeed(r) {
+    const t = r.torrent
+    if (r.secondSeeds || !t || r.stopped) return
+    r.secondSeeds = true
+    for (const u of (t.urlList || []).slice()) {
+      if (typeof u !== 'string' || u.endsWith('./')) continue
+      if (!u.endsWith('/') && t.files.length < 2) continue // single-file web seed: the URL is the file itself
+      try { t.addWebSeed(u.replace(/\/?$/, '/') + './') } catch (e) { console.error(e) }
     }
   }
   function otherSource(t, w, piece) {
@@ -531,7 +553,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       const opts = { addUID: true, destroyStoreOnDestroy: true, strategy: strat.id === 'rarest' ? 'rarest' : 'sequential' }
       if (OWN_SELECTION.has(strat.id)) opts.deselect = true
       const torrent = r.torrent = client.add(id, opts)
-      torrent.on('wire', w => trackWire(r, w))
+      torrent.on('wire', w => { trackWire(r, w); if (w.type === 'webSeed') addSecondWebSeed(r) })
       torrent.on('infoHash', () => { torrent.announce = TRACKERS.slice() }) // before discovery starts
       torrent.on('error', e => { if (!r.stopped) setStatus('Torrent error: ' + (e.message || e), true) })
       torrent.on('verified', i => {
