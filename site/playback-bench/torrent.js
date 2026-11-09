@@ -216,14 +216,17 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       <div class="tt-video" data-k="videobox"><div class="tt-video-empty" data-k="videoempty">The player appears here.</div></div>
     </section>
     <section class="tt-card">
-      <h2 class="tt-h">5. Piece map</h2>
+      <div class="tt-maphead">
+        <h2 class="tt-h">5. Piece map</h2>
+        <button type="button" class="tt-btn tt-viewbtn" data-k="view" aria-pressed="false">Switch to 3D</button>
+      </div>
       <div class="tt-legend">
         ${STATE_LABELS.map(([k, l]) => `<span><i class="tt-sw tt-sw-${k}"></i>${l}</span>`).join('')}
         <span><i class="tt-sw tt-sw-head"></i>Playhead</span>
         <span><i class="tt-sw tt-sw-win"></i>Window start / end</span>
       </div>
       <p class="tt-note tt-winnote" data-k="winnote" hidden></p>
-      <div class="tt-mapbox" data-k="mapbox"><canvas data-k="map" aria-label="Piece map"></canvas></div>
+      <div class="tt-mapbox" data-k="mapbox"><canvas data-k="map" aria-label="Piece map"></canvas><svg class="tt-vox" data-k="vox" aria-label="Piece map, 3D view" role="img" hidden></svg></div>
     </section>
     <section class="tt-card">
       <h2 class="tt-h">6. Stats</h2>
@@ -234,7 +237,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   const el = {
     demo: $('demo'), custom: $('custom'), filebox: $('filebox'), file: $('file'), rate: $('rate'), timeout: $('timeout'), buffer: $('buffer'), bufferbox: $('bufferbox'), winnote: $('winnote'),
     start: $('start'), stop: $('stop'), status: $('status'), videobox: $('videobox'),
-    mapbox: $('mapbox'), map: $('map'), stats: $('stats'), hybridlabel: $('hybridlabel'), hybridnote: $('hybridnote')
+    mapbox: $('mapbox'), map: $('map'), vox: $('vox'), view: $('view'), stats: $('stats'), hybridlabel: $('hybridlabel'), hybridnote: $('hybridnote')
   }
   const strategyId = () => rootEl.querySelector(`input[name="tt-strat-${uid}"]:checked`).value
   const playerKind = () => rootEl.querySelector(`input[name="tt-player-${uid}"]:checked`).value
@@ -349,9 +352,12 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     if (!run || !run.n) {
       c.width = 0; c.height = 0; c.style.height = '0'
       el.mapbox.classList.add('tt-empty')
+      vox = null; el.vox.replaceChildren(); el.vox.toggleAttribute('hidden', true)
       return
     }
     el.mapbox.classList.remove('tt-empty')
+    if (view3d) { c.style.display = 'none'; el.vox.toggleAttribute('hidden', false); drawVox(); return }
+    c.style.display = ''; el.vox.toggleAttribute('hidden', true); vox = null
     const w = Math.max(100, el.mapbox.clientWidth)
     const pitch = w >= 720 ? 11 : w >= 520 ? 9 : 6
     const gap = pitch >= 9 ? 2 : 1
@@ -400,6 +406,188 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       g.fillRect(x1 + cell, y1 - 2, 3, cell + 4)
     }
   }
+  // ---- piece map, 3D view ----------------------------------------------
+  // One cube per piece on a flat surface, columns = rows ~ sqrt(n), in file order row after row. Isometric, drawn
+  // in SVG as hexagons (top + two sides), back to front (increasing column + row). The DOM is built once per
+  // run and size; a sample only touches the cubes whose state changed. Arrival and release are animated by a
+  // short-lived copy of the cube inside its own cell group (CSS transform / opacity, ANIM_MS, ease-in-out), so it
+  // keeps the draw order of its cell: cubes in front of it hide it. The cube in its place changes state when the
+  // fall ends (arrival) or at once (release).
+  // "Not yet arrived" = 0.5 opacity is rendered by mixing the face colour with the card background (--k): same
+  // look as opacity 0.5 over the card, but the faces of a cube hidden behind a neighbour do not show through.
+  const SVGNS = 'http://www.w3.org/2000/svg'
+  const ANIM_MS = 500, MAX_FX = 60
+  const reduceMq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null
+  const svgEl = (tag, attrs, cls) => {
+    const e = document.createElementNS(SVGNS, tag)
+    if (cls) e.setAttribute('class', cls)
+    for (const k in attrs) e.setAttribute(k, attrs[k])
+    return e
+  }
+  let view3d = false
+  try { view3d = localStorage.getItem('ttMapView') === '3d' } catch (e) {}
+  let vox = null
+
+  // Generalized Hilbert curve on a width x height rectangle ("gilbert", Jakub Cerveny,
+  // github.com/jakubcerveny/gilbert, Copyright (c) 2018 Jakub Cerveny, BSD 2-Clause licence), rewritten here. Returns [x0, y0, x1, y1, ...].
+  function gilbert(width, height) {
+    const out = []
+    const sgn = v => (v > 0) - (v < 0)
+    const gen = (x, y, ax, ay, bx, by) => {
+      const w = Math.abs(ax + ay), h = Math.abs(bx + by)
+      const dax = sgn(ax), day = sgn(ay), dbx = sgn(bx), dby = sgn(by)
+      if (h === 1) { for (let i = 0; i < w; i++) { out.push(x, y); x += dax; y += day } return }
+      if (w === 1) { for (let i = 0; i < h; i++) { out.push(x, y); x += dbx; y += dby } return }
+      let ax2 = Math.floor(ax / 2), ay2 = Math.floor(ay / 2), bx2 = Math.floor(bx / 2), by2 = Math.floor(by / 2)
+      const w2 = Math.abs(ax2 + ay2), h2 = Math.abs(bx2 + by2)
+      if (2 * w > 3 * h) { // long case: split in two along the long side
+        if (w2 % 2 && w > 2) { ax2 += dax; ay2 += day }
+        gen(x, y, ax2, ay2, bx, by)
+        gen(x + ax2, y + ay2, ax - ax2, ay - ay2, bx, by)
+      } else { // standard case: up, along, down
+        if (h2 % 2 && h > 2) { bx2 += dbx; by2 += dby }
+        gen(x, y, bx2, by2, ax2, ay2)
+        gen(x + bx2, y + by2, ax, ay, bx - bx2, by - by2)
+        gen(x + (ax - dax) + (bx2 - dbx), y + (ay - day) + (by2 - dby), -bx2, -by2, -(ax - ax2), -(ay - ay2))
+      }
+    }
+    if (width >= height) gen(0, 0, width, 0, 0, height)
+    else gen(0, 0, 0, height, width, 0)
+    return out
+  }
+  // Rectangle for n cubes: the fewest empty cells, close to a square (width : height between 0.8 and 1.25), then the closest to a square.
+  function voxRect(n) {
+    const s = Math.sqrt(n)
+    let best = null
+    for (let c = Math.max(1, Math.floor(s * 0.8)); c <= Math.ceil(s * 1.25); c++) {
+      const r = Math.ceil(n / c), k = [c * r - n, Math.abs(c - r)]
+      if (r / c >= 0.8 && r / c <= 1.25 && (!best || k[0] < best.k[0] || (k[0] === best.k[0] && k[1] < best.k[1]))) best = { c, r, k }
+    }
+    return best ? [best.c, best.r] : [Math.ceil(s), Math.ceil(n / Math.ceil(s))]
+  }
+
+  function buildVox(w) {
+    const n = run.n
+    const [cols, rows] = voxRect(n)
+    const curve = gilbert(cols, rows) // piece i sits on the i-th cell of the curve; the cells after the last piece stay empty
+    const cx = i => curve[2 * i], cy = i => curve[2 * i + 1]
+    const occ = new Uint8Array(cols * rows)
+    for (let i = 0; i < n; i++) occ[cy(i) * cols + cx(i)] = 1
+    const a = Math.min(22, w / (cols + rows)) // half width of a cube
+    const b = a / Math.sqrt(3), h = 2 * b // iso: top rhombus a x b, edge height h
+    const e = h, M = Math.ceil(6 * e), W = (cols + rows) * a, H = M + (cols + rows) * b + h
+    const svg = el.vox
+    svg.replaceChildren()
+    svg.setAttribute('viewBox', `0 0 ${W.toFixed(2)} ${H.toFixed(2)}`)
+    svg.style.setProperty('--vd', (5 * e).toFixed(2) + 'px')
+    svg.style.setProperty('--sw', Math.max(0.5, a * 0.07).toFixed(2))
+    const P = pts => pts.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' ')
+    const top = P([[0, -b], [a, 0], [0, b], [-a, 0]])
+    const left = P([[-a, 0], [0, b], [0, b + h], [-a, h]])
+    const right = P([[a, 0], [0, b], [0, b + h], [a, h]])
+    const col = P([[-a, 0], [0, b], [a, 0], [a, -5 * e], [0, -b - 5 * e], [-a, -5 * e]])
+    const floor = k => P([[0, -b * k], [a * k, 0], [0, b * k], [-a * k, 0]]) // outline on the cube's top face
+    const exists = (c, r) => c < cols && r < rows && occ[r * cols + c] === 1
+    const pos = i => { const c = cx(i), r = cy(i); return [(c - r + rows) * a, M + (c + r) * b + b] }
+    const faces = g => { // the three faces of a cube; the two sides only where nothing in front hides them
+      g.append(svgEl('polygon', { points: top }, 'ft'))
+      return g
+    }
+    const gLayer = svgEl('g'), marks = svgEl('g', {}, 'marks')
+    const cells = new Array(n)
+    const order = Array.from({ length: n }, (_, i) => i).sort((p, q) => (cx(p) + cy(p)) - (cx(q) + cy(q)) || cx(p) - cx(q))
+    for (const i of order) {
+      const c = cx(i), r = cy(i)
+      const [x, y] = pos(i)
+      const g = svgEl('g', { transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, 'v s0')
+      faces(g)
+      if (!(exists(c, r + 1) && exists(c + 1, r + 1))) g.append(svgEl('polygon', { points: left }, 'fl'))
+      if (!(exists(c + 1, r) && exists(c + 1, r + 1))) g.append(svgEl('polygon', { points: right }, 'fr'))
+      gLayer.append(g)
+      cells[i] = g
+    }
+    const mk = (cls, k) => { const m = svgEl('polygon', { points: floor(k) }, 'mk ' + cls); m.style.display = 'none'; marks.append(m); return m }
+    const mWinA = mk('mk-win', 1), mWinB = mk('mk-win', 1), mHead = mk('mk-head', .6)
+    svg.append(gLayer, marks)
+    vox = {
+      run, n, w, cells, pos, a, b, h, e, left, right, top, col, st: null, want: null, pend: new Uint8Array(n),
+      m: { winA: mWinA, winB: mWinB, head: mHead }, mpos: { winA: -1, winB: -1, head: -1 }, nfx: 0
+    }
+  }
+
+  const voxApply = (v, i, s) => {
+    const g = v.cells[i]
+    g.setAttribute('class', 'v s' + s)
+    if (s === S_INFLIGHT && !g.querySelector('.vc')) g.insertBefore(svgEl('polygon', { points: v.col }, 'vc'), g.firstChild)
+  }
+
+  function voxAnimate(v, i, s, kind) { // a copy of the cube, in state s, falls in or flies away, inside its own cell: it keeps the draw order of the cell
+    const o = svgEl('g', {}, 'v s' + s + (kind === 'fall' ? ' fx-fall' : ' fx-fly'))
+    o.append(svgEl('polygon', { points: v.left }, 'fl'), svgEl('polygon', { points: v.right }, 'fr'), svgEl('polygon', { points: v.top }, 'ft'))
+    v.cells[i].append(o)
+    v.nfx++
+    let done = false
+    const end = () => {
+      if (done) return
+      done = true
+      o.remove(); v.nfx--
+      if (kind === 'fall' && vox === v) { v.pend[i] = 0; voxApply(v, i, v.want[i]) }
+    }
+    o.addEventListener('animationend', end)
+    setTimeout(end, ANIM_MS + 400) // safety: a hidden tab does not run animations
+    v.pend[i] = kind === 'fall' ? 1 : 0
+  }
+
+  function drawVox() {
+    const w = Math.max(100, el.mapbox.clientWidth)
+    if (!vox || vox.run !== run || vox.n !== run.n || vox.w !== w) buildVox(w)
+    const v = vox, st = pieceStates(), n = run.n
+    const first = !v.st
+    const reduce = !!(reduceMq && reduceMq.matches)
+    if (first) { v.st = new Uint8Array(n); v.want = new Uint8Array(n) }
+    for (let i = 0; i < n; i++) {
+      const s = st[i], prev = v.st[i]
+      if (!first && s === prev) continue
+      v.st[i] = s; v.want[i] = s
+      if (first) { voxApply(v, i, s); continue }
+      if (v.pend[i]) continue // falling in: shows the latest state when it lands
+      const arrives = s === S_RECEIVED && prev !== S_RECEIVED, leaves = prev === S_RECEIVED && s !== S_RECEIVED
+      if (arrives && !reduce && v.nfx < MAX_FX) voxAnimate(v, i, S_RECEIVED, 'fall')
+      else {
+        if (leaves && !reduce && v.nfx < MAX_FX) voxAnimate(v, i, S_RECEIVED, 'fly')
+        voxApply(v, i, s)
+      }
+    }
+    // marks on the surface: playhead, window start and end (outline on the top face of the cube)
+    const wi = run.strategy && run.strategy.info
+    const ph = playheadPiece()
+    run.ph = ph
+    const put = (key, i) => {
+      if (v.mpos[key] === i) return
+      v.mpos[key] = i
+      const m = v.m[key]
+      if (i < 0) { m.style.display = 'none'; return }
+      const [x, y] = v.pos(i)
+      m.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`)
+      m.style.display = ''
+    }
+    put('head', ph == null ? -1 : ph)
+    put('winA', wi && wi.bytes ? wi.a : -1)
+    put('winB', wi && wi.bytes ? wi.b : -1)
+  }
+
+  el.view.addEventListener('click', () => {
+    view3d = !view3d
+    try { localStorage.setItem('ttMapView', view3d ? '3d' : '2d') } catch (e) {}
+    syncView()
+    drawMap()
+  })
+  function syncView() {
+    el.view.textContent = view3d ? 'Switch to 2D' : 'Switch to 3D'
+    el.view.setAttribute('aria-pressed', String(view3d))
+  }
+  syncView()
+
   let drawQueued = false
   function scheduleDraw() {
     if (drawQueued || destroyed) return
@@ -812,7 +1000,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         try { r.strategy && r.strategy.tick() } catch (e) { console.error(e) }
         try { checkTimeouts(r) } catch (e) { console.error(e) }
         if (!r.videoAttached && r.verifiedCount >= r.n) attachPlayer(r)
-        renderStats(); drawMap()
+        renderStats()
+        const d0 = performance.now(); drawMap(); r.drawMs = (r.drawMs || 0) + performance.now() - d0; r.draws = (r.draws || 0) + 1
         if (r.verifiedCount >= r.n && !(r.strategy && r.strategy.info)) setStatus('Download complete.')
       }, 100)
       if (strat.id === 'stream') {

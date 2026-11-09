@@ -70,12 +70,43 @@
 .tt-sw-selected { background: var(--tt-selected); }
 .tt-sw-deselected { background: var(--tt-deselected); border-color: var(--border); }
 .tt-sw-head { background: transparent; border: 2px solid var(--tt-playhead); }
+.tt-maphead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.tt-maphead .tt-h { margin: 0; }
+.tt-viewbtn { min-height: 32px; padding: 0 12px; font-size: 13px; }
 .tt-mapbox { width: 100%; min-height: 24px; }
 .tt-mapbox canvas { display: block; max-width: 100%; }
 .tt-mapbox.tt-empty::after { content: "Start a download to see the pieces."; font-size: 13px; color: var(--muted); }
 .tt-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 16px; margin: 0; }
 .tt-stats dt { font-size: 12px; color: var(--muted); }
 .tt-stats dd { margin: 2px 0 0; font: 500 14px var(--mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* 3D view: a face colour is the state colour shaded (top lighter, sides darker), then mixed with the card
+   background by --k (100 % = arrived, 50 % = not arrived yet). */
+.tt-vox { display: block; width: 100%; height: auto; overflow: hidden; }
+.tt-vox[hidden] { display: none; }
+.tt-vox .v { --k: 50%; --vs: var(--surface); --c: var(--tt-deselected); }
+.tt-vox .v polygon { stroke: var(--vs); stroke-width: calc(var(--sw) * 1px); stroke-linejoin: round; }
+.tt-vox .ft { fill: color-mix(in srgb, color-mix(in srgb, var(--c) 82%, #fff) var(--k), var(--surface)); }
+.tt-vox .fl { fill: color-mix(in srgb, color-mix(in srgb, var(--c) 68%, #000) var(--k), var(--surface)); }
+.tt-vox .fr { fill: color-mix(in srgb, color-mix(in srgb, var(--c) 52%, #000) var(--k), var(--surface)); }
+.tt-vox .s0 { --c: var(--tt-deselected); }
+.tt-vox .s1 { --c: var(--tt-selected); }
+.tt-vox .s2 { --c: var(--tt-priority); }
+.tt-vox .s3 { --c: var(--tt-inflight); }
+.tt-vox .s4 { --c: var(--tt-verifying); }
+.tt-vox .s5 { --c: var(--tt-received); --k: 100%; }
+.tt-vox .s6 { --c: var(--tt-timedout); }
+.tt-vox .s7 { --c: var(--tt-deselected); --vs: var(--tt-evicted); }
+.tt-vox .vc { display: none; }
+.tt-vox .s3 .vc { display: block; }
+.tt-vox .vc { fill: var(--c); fill-opacity: .2; stroke: none !important; }
+.tt-vox .mk { fill: none; stroke-width: 2.4px; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
+.tt-vox .mk-head { stroke: var(--tt-playhead); fill: var(--tt-playhead); fill-opacity: .25; }
+.tt-vox .mk-win { stroke: var(--tt-window); }
+.tt-vox .fx-fall { animation: tt-fall .5s ease-in-out both; }
+.tt-vox .fx-fly { animation: tt-fly .5s ease-in-out both; }
+@keyframes tt-fall { from { transform: translateY(calc(-1 * var(--vd))); opacity: 0; } 35% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes tt-fly { from { transform: none; opacity: 1; } 65% { opacity: 1; } to { transform: translateY(calc(-1 * var(--vd))); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tt-vox .fx-fall, .tt-vox .fx-fly { animation: none; } }
 @media (max-width: 520px) {
   .tt-card { padding: 12px; }
   .tt-strats { grid-template-columns: 1fr; }
