@@ -32,7 +32,9 @@ export const STRATEGIES = [
   { id: 'window', name: 'Playback window (built here)', needsStream: true,
     text: 'Only the pieces being played plus about 4 MiB ahead are downloaded. The window follows the playback position.' },
   { id: 'priority', name: 'Playback priority + fill (native with the player)', needsStream: true,
-    text: 'The player’s reads jump the queue (priority 1) and everything else fills in from the start (priority 0).' }
+    text: 'The player’s reads jump the queue (priority 1) and everything else fills in from the start (priority 0).' },
+  { id: 'stream', name: 'Streaming window (2 min ahead)', needsStream: true,
+    text: 'The pieces covering the 2 minutes after the playhead are downloaded (video bytes = mean bit rate x time); the window follows the playhead. The player’s reads stay above it. Pieces kept are capped by the buffer size: the ones furthest behind the playhead are freed and asked again if you go back.' }
 ]
 
 export const RATES = [
@@ -44,13 +46,14 @@ export const RATES = [
 const DEFAULT_RATE = '1m'
 // Request timeout: a request in flight longer than `mult` x the mean block time of this run is
 // cancelled and asked again from another source. The mean is measured live (last BLOCK_WINDOW blocks).
+// Default 5x (3x expired requests on network hiccups at unlimited rate).
 export const TIMEOUTS = [
   { id: '2x', name: '2 x mean block time', mult: 2 },
   { id: '3x', name: '3 x mean block time', mult: 3 },
   { id: '5x', name: '5 x mean block time', mult: 5 },
   { id: 'off', name: 'Off', mult: 0 }
 ]
-const DEFAULT_TIMEOUT = '3x'
+const DEFAULT_TIMEOUT = '5x'
 const BLOCK_WINDOW = 50 // blocks in the rolling mean
 // Warm-up: blocks received in the first WARMUP_MS of a launch do not count in the mean, because the request
 // pipeline is still filling (and the throttle burst is not over), so they are faster than the steady state.
@@ -67,6 +70,17 @@ const MIN_TIMEOUT_MS = 1000
 const HIDE_MS = 10000 // a piece taken away from the slow source is hidden from it this long (webconn.js RETRY_DELAY)
 const TIMEOUT_MARK_MS = 1500 // a piece whose request timed out stays marked at least this long on the map
 const WINDOW_BYTES = 4 * 1024 * 1024
+const ANCHOR_WAIT_MS = 3000
+// Streaming window strategy
+const STREAM_AHEAD_S = 120 // seconds of video kept ready after the playhead
+export const BUFFERS = [
+  { id: '20', name: '20 MB', bytes: 20e6 },
+  { id: '50', name: '50 MB', bytes: 50e6 },
+  { id: '100', name: '100 MB', bytes: 100e6 },
+  { id: '200', name: '200 MB', bytes: 200e6 },
+  { id: '500', name: '500 MB', bytes: 500e6 }
+]
+const DEFAULT_BUFFER = '100'
 const RANDOM_PARALLEL = 4
 const TAIL_BYTES = 768 * 1024
 const VIDEO_EXT = /\.(mp4|m4v|mkv|webm|mov|ogv|avi|ts)$/i
@@ -123,18 +137,26 @@ const fmtBytes = n => {
   return Math.round(n / 1e3) + ' KB'
 }
 
+const fmtDur = s => {
+  s = Math.round(s)
+  if (s < 60) return s + ' s'
+  const m = Math.floor(s / 60), r = s % 60
+  return m + ' min' + (r ? ' ' + r + ' s' : '')
+}
+
 const STATE_LABELS = [
   ['received', 'Received'],
   ['verifying', 'Verifying'],
   ['inflight', 'In flight'],
   ['priority', 'Priority'],
   ['timedout', 'Timed out'],
+  ['evicted', 'Evicted (freed)'],
   ['selected', 'Missing, selected'],
   ['deselected', 'Missing, deselected']
 ]
 // state codes in the piece map
-const S_DESELECTED = 0, S_SELECTED = 1, S_PRIORITY = 2, S_INFLIGHT = 3, S_VERIFYING = 4, S_RECEIVED = 5, S_TIMEDOUT = 6
-const STATE_VARS = ['--tt-deselected', '--tt-selected', '--tt-priority', '--tt-inflight', '--tt-verifying', '--tt-received', '--tt-timedout']
+const S_DESELECTED = 0, S_SELECTED = 1, S_PRIORITY = 2, S_INFLIGHT = 3, S_VERIFYING = 4, S_RECEIVED = 5, S_TIMEDOUT = 6, S_EVICTED = 7
+const STATE_VARS = ['--tt-deselected', '--tt-selected', '--tt-priority', '--tt-inflight', '--tt-verifying', '--tt-received', '--tt-timedout', '--tt-evicted']
 
 /**
  * Mounts the Torrent tab into rootEl.
@@ -168,7 +190,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
             <span><b>${s.name}</b><small>${s.text}</small></span>
           </label>`).join('')}
       </div>
-      <p class="tt-note" data-k="stratnote">Pure download strategies (sequential, rarest, random, head + tail) keep the player off until the file is complete, so the player’s own reads do not take over the order. Window and priority start playback at once.</p>
+      <p class="tt-note" data-k="stratnote">Pure download strategies (sequential, rarest, random, head + tail) keep the player off until the file is complete, so the player’s own reads do not take over the order. Window, priority and streaming window start playback at once.</p>
     </section>
     <section class="tt-card">
       <div class="tt-row">
@@ -176,6 +198,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
           <select data-k="rate">${RATES.map(r => `<option value="${r.id}"${r.id === DEFAULT_RATE ? ' selected' : ''}>${r.name}</option>`).join('')}</select></label>
         <label class="tt-field"><span>Request timeout</span>
           <select data-k="timeout">${TIMEOUTS.map(r => `<option value="${r.id}"${r.id === DEFAULT_TIMEOUT ? ' selected' : ''}>${r.name}</option>`).join('')}</select></label>
+        <label class="tt-field" data-k="bufferbox" hidden><span>Buffer size</span>
+          <select data-k="buffer">${BUFFERS.map(r => `<option value="${r.id}"${r.id === DEFAULT_BUFFER ? ' selected' : ''}>${r.name}</option>`).join('')}</select></label>
         <fieldset class="tt-field tt-players"><legend>4. Player</legend>
           <label><input type="radio" name="tt-player-${uid}" value="native" checked> Native video (Service Worker)</label>
           <label data-k="hybridlabel"><input type="radio" name="tt-player-${uid}" value="hybrid"> Hybrid (mode 6)<small data-k="hybridnote"></small></label>
@@ -195,7 +219,9 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       <div class="tt-legend">
         ${STATE_LABELS.map(([k, l]) => `<span><i class="tt-sw tt-sw-${k}"></i>${l}</span>`).join('')}
         <span><i class="tt-sw tt-sw-head"></i>Playhead</span>
+        <span><i class="tt-sw tt-sw-win"></i>Window start / end</span>
       </div>
+      <p class="tt-note tt-winnote" data-k="winnote" hidden></p>
       <div class="tt-mapbox" data-k="mapbox"><canvas data-k="map" aria-label="Piece map"></canvas></div>
     </section>
     <section class="tt-card">
@@ -205,12 +231,15 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
 
   const $ = k => rootEl.querySelector(`[data-k="${k}"]`)
   const el = {
-    demo: $('demo'), custom: $('custom'), filebox: $('filebox'), file: $('file'), rate: $('rate'), timeout: $('timeout'),
+    demo: $('demo'), custom: $('custom'), filebox: $('filebox'), file: $('file'), rate: $('rate'), timeout: $('timeout'), buffer: $('buffer'), bufferbox: $('bufferbox'), winnote: $('winnote'),
     start: $('start'), stop: $('stop'), status: $('status'), videobox: $('videobox'),
     mapbox: $('mapbox'), map: $('map'), stats: $('stats'), hybridlabel: $('hybridlabel'), hybridnote: $('hybridnote')
   }
   const strategyId = () => rootEl.querySelector(`input[name="tt-strat-${uid}"]:checked`).value
   const playerKind = () => rootEl.querySelector(`input[name="tt-player-${uid}"]:checked`).value
+
+  const syncBufferField = () => { el.bufferbox.hidden = strategyId() !== 'stream' }
+  rootEl.addEventListener('change', e => { if (e.target && e.target.name === `tt-strat-${uid}`) syncBufferField() })
 
   if (!createHybridPlayer) {
     el.hybridlabel.querySelector('input').disabled = true
@@ -229,6 +258,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   const statRows = [
     ['downloaded', 'Downloaded'], ['speed', 'Download speed'], ['pieces', 'Pieces received'],
     ['meanblock', 'Mean block time'], ['timeouts', 'Timed-out requests'], ['peers', 'Peers (WebRTC)'], ['webseeds', 'Web seeds'], ['ttff', 'Time to first frame'], ['stalls', 'Stalls (waiting)'],
+    ['buffer', 'Buffer held'], ['window', 'Window ahead'], ['evicted', 'Evicted pieces'],
     ['apath', 'Audio path (Hybrid)'], ['drift', 'A/V drift (Hybrid)']
   ]
   el.stats.innerHTML = statRows.map(([k, l]) => `<div><dt>${l}</dt><dd data-s="${k}">-</dd></div>`).join('')
@@ -241,7 +271,19 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     if (run.n && t.bitfield && t.bitfield.get(n - 1)) bytes += (t.lastPieceLength || 0) - t.pieceLength
     setStat('downloaded', n ? `${fmtBytes(bytes)} / ${fmtBytes(t.length)}` : '-')
     setStat('speed', fmtBytes(t.downloadSpeed) + '/s')
-    setStat('pieces', n ? `${run.verifiedCount} / ${n}` : '-')
+    const sm = run.strategy && run.strategy.info ? run.strategy : null
+    if (sm) {
+      const held = sm.heldPieces()
+      setStat('downloaded', `${fmtBytes(t.downloaded)} fetched in all`)
+      setStat('pieces', `${held} held / ${n} (${run.verifiedCount} received in all)`)
+    } else setStat('pieces', n ? `${run.verifiedCount} / ${n}` : '-')
+    setStat('buffer', sm ? `${fmtBytes(sm.heldBytes())} / ${fmtBytes(sm.info.limit)}` : '-')
+    setStat('window', sm && sm.info.bytes ? `${fmtDur(sm.info.sec)}${sm.info.limited ? ', limited by buffer' : ''} (${fmtBytes(sm.info.bytes)})` : '-')
+    setStat('evicted', sm ? `${run.evictedTotal} (${run.refetched} fetched again)` : '-')
+    if (sm && sm.info.bytes) {
+      el.winnote.hidden = false
+      el.winnote.textContent = `window: ${fmtDur(sm.info.sec)}${sm.info.limited ? ', limited by buffer' : ''}, pieces ${sm.info.a} to ${sm.info.b}`
+    } else { el.winnote.hidden = true; el.winnote.textContent = '' }
     const wires = t.wires || []
     setStat('meanblock', run.blockTimes.length ? Math.round(run.blockTimes.reduce((a, b) => a + b, 0) / run.blockTimes.length) + ' ms (' + run.blockTimes.length + ' blocks)' : '-')
     setStat('timeouts', `${run.timeouts} (${run.relaunched} relaunched elsewhere, ${run.noOther} with no other source)`)
@@ -271,16 +313,34 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       else { const p = t.pieces[i]; if (p && p.missing < p.length) st[i] = S_VERIFYING }
     }
     for (const i of run.timedOut.keys()) if (i < n && !t.bitfield.get(i)) st[i] = S_TIMEDOUT
+    for (const i of run.evicted) if (i < n && !t.bitfield.get(i) && st[i] <= S_SELECTED) st[i] = S_EVICTED
     return st
   }
 
+  // Playhead piece. At a variable bit rate "currentTime / duration x size" is off by several pieces, so the
+  // position is anchored on the bytes the player really reads: after a seek (and at the start) the first read
+  // of the player near the estimated position gives the piece where playback restarts (noteRead); from there the
+  // position advances with the playback time at the mean bit rate. Until such a read has been seen, the linear
+  // estimate is used. The first read within ANCHOR_WAIT_MS of the seek, and within 15 % of the file of the
+  // estimate (at a variable bit rate the estimate was 8 pieces off on Sintel, 62 on Big Buck Bunny), is taken.
+  const playerReady = r => { const v = r.video; return !!(r.file && v && r.videoAttached && isFinite(v.duration) && v.duration > 0) }
+  function linearPiece(r) {
+    const v = r.video
+    const bytePos = r.file.offset + Math.min(1, v.currentTime / v.duration) * r.file.length
+    return Math.min(r.n - 1, Math.floor(bytePos / r.torrent.pieceLength))
+  }
+  function noteRead(r, piece) {
+    if (r.anchor || r.stopped || !playerReady(r)) return
+    if (performance.now() - r.seekAt > ANCHOR_WAIT_MS) return // only the first reads after a seek: later ones (read-ahead, audio) are not the position
+    if (Math.abs(piece - linearPiece(r)) <= Math.max(30, Math.ceil(0.15 * r.n))) r.anchor = { piece, time: r.video.currentTime }
+  }
   function playheadPiece() {
-    const v = run.video
-    if (!run.file || !v || !isFinite(v.duration) || !(v.duration > 0)) return null
-    if (!run.videoAttached) return null
-    const t = run.torrent
-    const bytePos = run.file.offset + Math.min(1, v.currentTime / v.duration) * run.file.length
-    return Math.min(run.n - 1, Math.floor(bytePos / t.pieceLength))
+    if (!run || !run.torrent || !playerReady(run)) return null
+    const r = run, v = r.video
+    if (!r.anchor) return linearPiece(r)
+    const pl = r.torrent.pieceLength
+    const p = Math.floor(r.anchor.piece + (v.currentTime - r.anchor.time) * (r.file.length / v.duration) / pl)
+    return Math.max(r.file._startPiece, Math.min(r.file._endPiece, p))
   }
 
   function drawMap() {
@@ -315,11 +375,19 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       g.fillRect(x, y, cell, cell)
     }
     const ph = playheadPiece()
+    run.ph = ph
     if (ph != null) {
       const [x, y] = at(ph)
       g.strokeStyle = cssColor('--tt-playhead')
       g.lineWidth = 2
       g.strokeRect(x - 1, y - 1, cell + 2, cell + 2)
+    }
+    const wi = run.strategy && run.strategy.info
+    if (wi && wi.bytes) { // streaming window: bar before its first piece and after its last
+      g.fillStyle = cssColor('--tt-window')
+      const [x0, y0] = at(wi.a), [x1, y1] = at(wi.b)
+      g.fillRect(x0 - 3, y0 - 2, 3, cell + 4)
+      g.fillRect(x1 + cell, y1 - 2, 3, cell + 4)
     }
   }
   let drawQueued = false
@@ -332,7 +400,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   // ---- strategies ------------------------------------------------------
   // Each returns { tick() } or nothing. torrent was added with deselect:true when
   // the strategy builds its own selection.
-  const OWN_SELECTION = new Set(['random', 'headtail', 'window'])
+  const OWN_SELECTION = new Set(['random', 'headtail', 'window', 'stream'])
 
   function setupStrategy(id, r) {
     const t = r.torrent, n = r.n
@@ -410,7 +478,142 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         }
       }
     }
+    if (id === 'stream') {
+      // Streaming window: pieces covering STREAM_AHEAD_S after the playhead (bytes = time x mean bit rate,
+      // file size / duration) are selected at priority 0, everything else is deselected; the player's own
+      // reads (stream selections, priority 1) are clipped to the window; pieces kept are capped by the
+      // buffer: the furthest behind the playhead are freed (see evictPiece).
+      const f = r.file
+      const plen = t.pieceLength
+      const info = { a: f._startPiece, b: f._startPiece, bytes: 0, sec: 0, limited: false, limit: 0 }
+      const keep = [] // [from, to] ranges of the player's live reads: never freed
+      info.keep = keep
+      const recs = new Map() // iterator -> { sel, origFrom, origTo }
+      let key = ''
+      let prevA = null, seeked = false
+      const len = i => (i === n - 1 ? t.lastPieceLength : plen)
+      const limitBytes = () => BUFFERS.find(x => x.id === el.buffer.value).bytes
+      const heldBytes = () => { let b = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) b += len(i); return b }
+      const heldPieces = () => { let c = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) c++; return c }
+      const protectedPiece = i => (i >= info.a && i <= info.b) || keep.some(k => i >= k[0] && i <= k[1])
+      const bind = it => {
+        let rec = recs.get(it)
+        if (rec) return rec
+        const sel = ((t._selections && t._selections._items) || []).find(s =>
+          s.isStreamSelection && s.from === it._startPiece && s.to === it._endPiece && !s.__tt)
+        if (!sel) return null
+        sel.__tt = true
+        rec = { sel, origFrom: sel.from, origTo: sel.to }
+        recs.set(it, rec)
+        const destroy = it.destroy.bind(it)
+        it.destroy = (...a) => { rec.sel.from = rec.origFrom; rec.sel.to = rec.origTo; return destroy(...a) } // removal matches the original range
+        return rec
+      }
+      // Frees held pieces, furthest behind the playhead first, then (none left behind) furthest ahead of the
+      // window, until the held bytes fit the buffer. Called on each verified piece, so the limit is never passed.
+      function enforce() {
+        const limit = info.limit = limitBytes()
+        let held = heldBytes()
+        while (held > limit) {
+          let v = -1
+          for (let i = 0; i < info.a && v < 0; i++) if (t.bitfield.get(i) && !protectedPiece(i)) v = i
+          for (let i = n - 1; i > info.b && v < 0; i--) if (t.bitfield.get(i) && !protectedPiece(i)) v = i
+          if (v < 0) break
+          held -= len(v)
+          evictPiece(r, v)
+        }
+      }
+      return {
+        info, heldBytes, heldPieces, enforce,
+        jump() { seeked = true },
+        tick() {
+          const v = r.video
+          const ph = playheadPiece()
+          const dur = r.videoAttached && v && isFinite(v.duration) && v.duration > 0 ? v.duration : 0
+          const limit = limitBytes()
+          const maxP = Math.max(2, Math.floor(limit / plen) - 2) // 2 pieces of margin for the player's own reads
+          const rate = dur ? f.length / dur : 0 // mean bytes per second
+          const wantP = dur ? Math.max(1, Math.ceil(STREAM_AHEAD_S * rate / plen)) : Math.ceil(WINDOW_BYTES / plen) // before the duration is known: 4 MiB from the start
+          const P = Math.min(wantP, maxP)
+          const a = Math.max(f._startPiece, ph == null ? f._startPiece : ph)
+          const b = Math.min(f._endPiece, a + P - 1)
+          info.limit = limit
+          info.limited = !!dur && wantP > maxP
+          info.bytes = (b - a + 1) * plen
+          info.sec = dur ? Math.min(STREAM_AHEAD_S, info.bytes / rate) : 0
+          info.a = a; info.b = b
+          let changed = false
+          // The position jumped (seek, or more than a window): every priority set for the old position goes.
+          // The old window is deselected below (key change); the player's reads started for the old zone lose
+          // their stream selection. Pieces with a request in flight are not touched: they finish.
+          if (seeked || (prevA != null && Math.abs(a - prevA) > P)) {
+            seeked = false
+            for (const it of f._iterators || []) {
+              if (it.destroyed || typeof it._piece !== 'number') continue
+              const rec = recs.get(it) // reads seen before the jump (a read started after it has no record yet)
+              if (!rec || rec.dropped) continue
+              const items = t._selections._items
+              const k = items.indexOf(rec.sel)
+              if (k >= 0) items.splice(k, 1)
+              rec.dropped = true
+              changed = true
+            }
+          }
+          prevA = a
+          if (a + ':' + b !== key) {
+            key = a + ':' + b
+            t.deselect(0, n - 1)
+            t.select(a, b, 0)
+            changed = true
+          }
+          // the player's reads: from 2 pieces before their position to the window end (or P pieces past their
+          // position when they read beyond the window, e.g. the index at the end of an MP4)
+          keep.length = 0
+          for (const it of f._iterators || []) {
+            if (it.destroyed || typeof it._piece !== 'number') continue
+            const rec = bind(it)
+            if (!rec || rec.dropped) continue
+            const from = Math.min(rec.origTo, Math.max(rec.origFrom, it._piece - 2))
+            const to = Math.max(from, Math.min(rec.origTo, it._piece > b ? it._piece + P - 1 : b))
+            if (rec.sel.from !== from) { rec.sel.from = from; rec.sel.offset = 0; changed = true }
+            if (rec.sel.to !== to) { rec.sel.to = to; changed = true }
+            keep.push([it._piece - 2, it._piece + 1]) // the pieces being read now are never freed
+          }
+          if (changed) t.select(a, b, 0) // wakes the scheduler after a range change
+          enforce()
+        }
+      }
+    }
     return null
+  }
+
+  // Frees a piece already received: it becomes missing again (bitfield false, so it is asked again if
+  // something needs it) and its bytes are removed from the store. WebTorrent 3.0.21 has no API for this;
+  // _markUnverified is its own way to "unmark" a piece (torrent.js:884), the store has no delete, so the
+  // stored chunk is emptied through the layers (immediate -> cache -> fsa or memory store).
+  function evictPiece(r, i) {
+    const t = r.torrent
+    t._markUnverified(i) // synchronous: from now on readers wait for the piece instead of reading the store
+    r.evicted.add(i); r.evictedTotal++
+    dropStoredBytes(t, i).then(() => {
+      // a re-download that completed during the (asynchronous) emptying would be empty: mark it missing again
+      if (!r.stopped && r.torrent === t && t.bitfield.get(i)) { t._markUnverified(i); r.healed++ }
+    }).catch(e => console.error(e))
+  }
+  async function dropStoredBytes(t, i) {
+    let s = t.store
+    for (let depth = 0; s && depth < 4; depth++, s = s.store) {
+      if (s.mem) s.mem[i] = null
+      if (s.cache && typeof s.cache.remove === 'function') s.cache.remove(i)
+      if (Array.isArray(s.chunks)) {
+        const h = s.chunks[i]
+        if (h && typeof h.createWritable === 'function') { // fsa-chunk-store: one OPFS file per piece, emptied (reads then fail with "does not exist")
+          const w = await h.createWritable({ keepExistingData: false })
+          await w.close()
+        } else s.chunks[i] = undefined // memory-chunk-store
+        return
+      }
+    }
   }
 
   // ---- request timeout -------------------------------------------------
@@ -522,7 +725,10 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const kind = playerKind()
     v.muted = true
     if (kind === 'hybrid' && createHybridPlayer) {
-      r.player = createHybridPlayer(v, createTorrentSource(r.file))
+      const src = createTorrentSource(r.file)
+      const rd = src.read
+      src.read = (start, end) => { try { noteRead(r, Math.floor((r.file.offset + start) / r.torrent.pieceLength)) } catch (e) { console.error(e) } return rd(start, end) }
+      r.player = createHybridPlayer(v, src)
       r.player.ready.then(res => { if (res && res.unsupported && !r.stopped) setStatus('Hybrid player: ' + res.unsupported, true) },
         e => { if (!r.stopped) setStatus('Hybrid player failed: ' + (e && e.message ? e.message : e), true) })
       r.player.failed.catch(e => { if (!r.stopped) setStatus('Hybrid player failed: ' + (e && e.message ? e.message : e), true) })
@@ -541,7 +747,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       id, strat, order: [], times: [], verifiedCount: 0, stalls: 0, ttff: null, videoAttached: false,
       t0: performance.now(), n: 0, torrent: null, file: null, client: null, video: null, stopped: false, player: null,
       throttle: rate.bytes, playerKind: playerKind(),
-      timeouts: 0, relaunched: 0, noOther: 0, timedOut: new Map(), reqInfo: new WeakMap(), blockTimes: [], hideTimers: new Set()
+      timeouts: 0, relaunched: 0, noOther: 0, evicted: new Set(), evictedTotal: 0, refetched: 0, healed: 0, anchor: null, seekAt: 0, timedOut: new Map(), reqInfo: new WeakMap(), blockTimes: [], hideTimers: new Set()
     }
     el.start.disabled = true; el.stop.disabled = false
     renderStats(); drawMap()
@@ -562,6 +768,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       torrent.on('error', e => { if (!r.stopped) setStatus('Torrent error: ' + (e.message || e), true) })
       torrent.on('verified', i => {
         r.order.push(i); r.times.push(Math.round(performance.now() - r.t0)); r.verifiedCount++
+        if (r.evicted.delete(i)) r.refetched++
+        if (r.strategy && r.strategy.enforce) r.strategy.enforce() // synchronous: the buffer limit is never passed
         scheduleDraw()
       })
       await new Promise(res => torrent.once('ready', res))
@@ -583,6 +791,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       v.controls = true; v.playsInline = true; v.muted = true; v.preload = 'auto'
       v.addEventListener('loadeddata', () => { if (r.ttff == null) r.ttff = Math.round(performance.now() - r.t0) })
       v.addEventListener('waiting', () => { r.stalls++ })
+      v.addEventListener('seeking', () => { r.anchor = null; r.seekAt = performance.now() })
+      r.file.on('iterator', ({ iterator }) => { try { noteRead(r, iterator._startPiece) } catch (e) { console.error(e) } }) // reads of the Service Worker (native player)
       el.videobox.innerHTML = ''
       el.videobox.appendChild(v)
 
@@ -593,8 +803,13 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         try { checkTimeouts(r) } catch (e) { console.error(e) }
         if (!r.videoAttached && r.verifiedCount >= r.n) attachPlayer(r)
         renderStats(); drawMap()
-        if (r.verifiedCount >= r.n) setStatus('Download complete.')
+        if (r.verifiedCount >= r.n && !(r.strategy && r.strategy.info)) setStatus('Download complete.')
       }, 100)
+      if (strat.id === 'stream') {
+        for (const ev of ['seeking', 'timeupdate', 'loadedmetadata']) v.addEventListener(ev, () => {
+          try { if (ev === 'seeking') r.strategy.jump(); r.strategy.tick() } catch (e) { console.error(e) }
+        })
+      }
       if (strat.needsStream) attachPlayer(r)
       setStatus(strat.needsStream ? 'Downloading and playing.' : 'Downloading (the player starts when the file is complete).')
     } catch (e) {
@@ -614,6 +829,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null
   if (mq && mq.addEventListener) mq.addEventListener('change', onResize)
 
+  syncBufferField()
   renderStats()
 
   return {
