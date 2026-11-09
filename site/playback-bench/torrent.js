@@ -371,6 +371,15 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const at = i => [(i % cols) * pitch, Math.floor(i / cols) * pitch]
     for (let i = 0; i < run.n; i++) {
       const [x, y] = at(i)
+      if (st[i] === S_EVICTED) { // freed: hollow square in the evicted colour (it was received, now gone)
+        const lw = Math.max(1, Math.round(cell / 4))
+        g.fillStyle = colors[S_DESELECTED]
+        g.fillRect(x, y, cell, cell)
+        g.strokeStyle = colors[S_EVICTED]
+        g.lineWidth = lw
+        g.strokeRect(x + lw / 2, y + lw / 2, cell - lw, cell - lw)
+        continue
+      }
       g.fillStyle = colors[st[i]]
       g.fillRect(x, y, cell, cell)
     }
