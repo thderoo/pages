@@ -70,7 +70,13 @@ pas dans les tests) :
   AC-3/E-AC-3 décodés à part et joués par Web Audio, sous-titres ASS en
   surimpression ; `vendor/` contient mediabunny + @mediabunny/ac3 (MPL-2.0),
   web-demuxer (MIT) et JASSUB, bundlés une fois par esbuild (commande en tête
-  de chaque bundle).
+  de chaque bundle). Le lecteur hybride vit dans `hybrid-player.js`
+  (`createHybridPlayer`), partagé par le banc et l'onglet Torrent.
+  Onglet Torrent (`#torrent`, `torrent.js`, `torrent.css`, `sw.js` = copie
+  de `webtorrent@3.0.21/dist/sw.min.js`) : WebTorrent dans la page, six
+  stratégies d'ordre des pièces, carte des pièces, lecture native (Service
+  Worker) ou hybride. Recherche : `docs/webtorrent-browser.md` de
+  `global-workspace`.
 
 - `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
   Magic (2026-11-04), aperçu de 4 illustrations (2 × 2) mettant en avant les
