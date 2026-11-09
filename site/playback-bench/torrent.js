@@ -60,6 +60,10 @@ const WARMUP_MS = 5000
 // No timeout before this many blocks have been measured after the warm-up: the mean of the first 4 blocks
 // after 5 s is already within 16 % of the steady mean at every measured rate; 5 leaves some margin.
 const MIN_BLOCKS = 5
+// Floor on the timeout: at unlimited rate a block takes ~115 ms, so 3x the mean is ~350 ms and a 300 ms
+// network hiccup expired bursts of 8-11 requests for nothing (2 launches out of 9). 1 s removes them and
+// changes nothing at limited rates (1 MB/s: ~900 ms per block, limit ~2.7 s).
+const MIN_TIMEOUT_MS = 1000
 const HIDE_MS = 10000 // a piece taken away from the slow source is hidden from it this long (webconn.js RETRY_DELAY)
 const TIMEOUT_MARK_MS = 1500 // a piece whose request timed out stays marked at least this long on the map
 const WINDOW_BYTES = 4 * 1024 * 1024
@@ -457,7 +461,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const mult = TIMEOUTS.find(x => x.id === el.timeout.value).mult
     const now = performance.now()
     if (mult && r.blockTimes.length >= MIN_BLOCKS) {
-      const limit = mult * r.blockTimes.reduce((a, b) => a + b, 0) / r.blockTimes.length
+      const limit = Math.max(MIN_TIMEOUT_MS, mult * r.blockTimes.reduce((a, b) => a + b, 0) / r.blockTimes.length)
       for (const w of t.wires || []) {
         for (const q of (w.requests || []).slice()) {
           const info = r.reqInfo.get(q)
