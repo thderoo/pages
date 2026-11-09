@@ -96,6 +96,9 @@ const VIDEO_EXT = /\.(mp4|m4v|mkv|webm|mov|ogv|avi|ts)$/i
 export function createTorrentSource(file) {
   return {
     size: file.length,
+    // no read-ahead: mediabunny's default ('network') reads 8 MiB blocks ahead of what it needs, which for a torrent
+    // means pieces far outside the download window, asked for and then freed (Streaming window).
+    prefetchProfile: 'fileSystem',
     async read(start, end) {
       const last = Math.min(end, file.length - 1)
       if (start < 0 || last < start) return new Uint8Array(0)
@@ -600,6 +603,30 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
   // the strategy builds its own selection.
   const OWN_SELECTION = new Set(['random', 'headtail', 'window', 'stream'])
 
+  // The player's reads are WebTorrent stream selections; the strategies rewrite their range (clip), so two things must hold:
+  //  - a selection that WebTorrent dropped because its (clipped) range was complete is put back when its reader is still
+  //    alive and the range moves on (otherwise the reader waits for a piece nobody asks for);
+  //  - when the reader ends, its own selection is the one removed. WebTorrent removes "the first selection with the
+  //    reader's original range": with two reads of the same range (the Hybrid player reads fixed 8 MB blocks) that took
+  //    the other reader's selection and left an orphan covering the whole old range.
+  function reattach(t, rec) {
+    const items = t._selections._items
+    if (!items.includes(rec.sel)) { rec.sel.offset = 0; items.push(rec.sel); return true }
+    return false
+  }
+  function ownDestroy(t, it, rec, restore) {
+    const destroy = it.destroy.bind(it)
+    it.destroy = (...a) => {
+      restore()
+      const items = t._selections._items
+      const k = items.indexOf(rec.sel)
+      if (k >= 0) items.splice(k, 1)
+      const s0 = it._startPiece, e0 = it._endPiece
+      it._startPiece = -1; it._endPiece = -2 // so that WebTorrent's own removal by range matches nothing
+      try { return destroy(...a) } finally { it._startPiece = s0; it._endPiece = e0 }
+    }
+  }
+
   function setupStrategy(id, r) {
     const t = r.torrent, n = r.n
     if (id === 'random') {
@@ -647,8 +674,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         sel.__tt = true
         rec = { sel, orig: sel.to }
         clipped.set(it, rec)
-        const destroy = it.destroy.bind(it)
-        it.destroy = (...a) => { rec.sel.to = rec.orig; return destroy(...a) } // removal matches the original range
+        ownDestroy(t, it, rec, () => { rec.sel.to = rec.orig })
         return rec
       }
       return {
@@ -669,6 +695,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
             if (it.destroyed || typeof it._piece !== 'number') continue
             const rec = bind(it)
             if (!rec) continue
+            if (reattach(t, rec)) changed = true
             const to = Math.min(rec.orig, Math.max(it._piece, it._startPiece) + W)
             if (rec.sel.to !== to) { rec.sel.to = to; changed = true }
           }
@@ -693,7 +720,18 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       const limitBytes = () => BUFFERS.find(x => x.id === el.buffer.value).bytes
       const heldBytes = () => { let b = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) b += len(i); return b }
       const heldPieces = () => { let c = 0; for (let i = 0; i < n; i++) if (t.bitfield.get(i)) c++; return c }
-      const protectedPiece = i => (i >= info.a && i <= info.b) || keep.some(k => i >= k[0] && i <= k[1])
+      // A piece a live read still has to read is never freed. Read live (not from the list `keep` made at the last
+      // tick): a reader moves several pieces between two ticks, and freeing the piece it was about to read left it
+      // waiting for a piece nobody asks for. The Hybrid player's reads are short and cannot be cancelled: their whole
+      // range is protected; the Service Worker's reads run to the end of the file: only the pieces around the position.
+      const readerNeeds = i => {
+        for (const it of f._iterators || []) {
+          if (it.destroyed || typeof it._piece !== 'number') continue
+          if (i >= it._piece - 2 && i <= (r.playerKind === 'hybrid' ? Math.max(it._endPiece, it._piece + 1) : it._piece + 1)) return true
+        }
+        return false
+      }
+      const protectedPiece = i => (i >= info.a && i <= info.b) || keep.some(k => i >= k[0] && i <= k[1]) || readerNeeds(i)
       const bind = it => {
         let rec = recs.get(it)
         if (rec) return rec
@@ -703,8 +741,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
         sel.__tt = true
         rec = { sel, origFrom: sel.from, origTo: sel.to }
         recs.set(it, rec)
-        const destroy = it.destroy.bind(it)
-        it.destroy = (...a) => { rec.sel.from = rec.origFrom; rec.sel.to = rec.origTo; return destroy(...a) } // removal matches the original range
+        ownDestroy(t, it, rec, () => { rec.sel.from = rec.origFrom; rec.sel.to = rec.origTo })
         return rec
       }
       // Frees held pieces, furthest behind the playhead first, then (none left behind) furthest ahead of the
@@ -744,9 +781,12 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
           // The position jumped (seek, or more than a window): every priority set for the old position goes.
           // The old window is deselected below (key change); the player's reads started for the old zone lose
           // their stream selection. Pieces with a request in flight are not touched: they finish.
+          // Not for the Hybrid player: its reads cannot be cancelled, and one that lost its selection waits for a
+          // piece nobody asks for any more, which freezes its restart queue for good. They keep their selection
+          // (bounded by the size of the read) and end by themselves.
           if (seeked || (prevA != null && Math.abs(a - prevA) > P)) {
             seeked = false
-            for (const it of f._iterators || []) {
+            for (const it of r.playerKind === 'hybrid' ? [] : f._iterators || []) {
               if (it.destroyed || typeof it._piece !== 'number') continue
               const rec = recs.get(it) // reads seen before the jump (a read started after it has no record yet)
               if (!rec || rec.dropped) continue
@@ -771,6 +811,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
             if (it.destroyed || typeof it._piece !== 'number') continue
             const rec = bind(it)
             if (!rec || rec.dropped) continue
+            if (reattach(t, rec)) changed = true
             const from = Math.min(rec.origTo, Math.max(rec.origFrom, it._piece - 2))
             const to = Math.max(from, Math.min(rec.origTo, it._piece > b ? it._piece + P - 1 : b))
             if (rec.sel.from !== from) { rec.sel.from = from; rec.sel.offset = 0; changed = true }

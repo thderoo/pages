@@ -8,7 +8,8 @@
 //   player.destroy()
 //
 // `source` is a URL string, a Blob/File, or { size, read(start, end) } where `end` is INCLUSIVE and
-// read resolves a Uint8Array of exactly end - start + 1 bytes (clamped to size - 1 by the caller side).
+// read resolves a Uint8Array of exactly end - start + 1 bytes (clamped to size - 1 by the caller side). Optional
+// `prefetchProfile` ('none' | 'fileSystem' | 'network', default 'network'): how far mediabunny reads ahead of what it needs.
 // The caller owns videoEl (creation, insertion, play(), controls). The video is the clock: Web Audio is
 // anchored on video.currentTime. Seeking outside the buffered range restarts the remux from the key frame
 // before the target (SourceBuffer emptied, new muxer). ASS subtitles: Matroska files given as URL or Blob only.
@@ -67,7 +68,7 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
     let mbSource
     if (typeof source === 'string') mbSource = new MB.UrlSource(source)
     else if (source instanceof Blob) mbSource = new MB.BlobSource(source)
-    else mbSource = new MB.CustomSource({ getSize: () => source.size, read: (start, end) => source.read(start, end - 1), prefetchProfile: 'network' })
+    else mbSource = new MB.CustomSource({ getSize: () => source.size, read: (start, end) => source.read(start, end - 1), prefetchProfile: source.prefetchProfile || 'network' })
     const input = m.input = new MB.Input({ source: mbSource, formats: MB.ALL_FORMATS })
     let vt; let at
     try {
@@ -175,10 +176,13 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
       chain = chain.then(async () => {
         if (my !== m.sess || m.dead) return
         if (sb.updating && ms.readyState === 'open') { try { sb.abort() } catch (e) { /* ignore */ } }
-        if (sb.updating) await waitEnd()
+        // waitEnd resolves on ANY updateend, e.g. the one of a stale session's append finishing just before: loop until
+        // the SourceBuffer is really idle, or the next append throws InvalidStateError and the new session never plays
+        while (sb.updating) await waitEnd()
         const ended = waitEnd()
         try { sb.remove(0, Infinity) } catch (e) { return } // also reopens an ended MediaSource
         await ended
+        while (sb.updating) await waitEnd()
         if (my !== m.sess || m.dead) return
         if (ms.readyState === 'open') { try { sb.abort() } catch (e) { /* ignore */ } } // parser back to "waiting for init segment"
         await startSession(my, t)
