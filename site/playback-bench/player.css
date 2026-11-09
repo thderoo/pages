@@ -41,7 +41,7 @@
 }
 .pl-load.pl-show { opacity: 1; }
 .pl-load.pl-off { visibility: hidden; }
-.pl-load .tt-vox { width: auto; flex: none; }
+.pl-load .tt-vox { height: 60%; width: auto; max-width: 94%; flex: none; } /* 60 % of the video area's height; the width follows the viewBox */
 .pl-load p { margin: 0; font: 500 14px var(--sans); color: #e8ebf0; text-align: center; padding: 0 12px; text-shadow: 0 1px 3px #000; }
 
 .pl-flash {

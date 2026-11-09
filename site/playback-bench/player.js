@@ -124,9 +124,13 @@ export function mountPlayerTab(rootEl, { createHybridPlayer }) {
   }
 
   // ---- loading overlay ---------------------------------------------------
+  // The 3D view is 60 % of the video area's height (CSS); its on-screen width is what the cube size and the
+  // 1-px curve are computed for. Before the first build there is no viewBox yet: estimate it from the iso
+  // proportions of a near-square surface (width / height ~ 1.42).
   function voxWidth() {
-    const w = el.stage.clientWidth, h = el.stage.clientHeight
-    return Math.max(100, Math.min(0.8 * w, 0.86 * h, 460))
+    const r = el.vox.getBoundingClientRect()
+    if (el.vox.getAttribute('viewBox') && r.width > 0) return Math.round(r.width)
+    return Math.max(100, Math.round(Math.min(0.94 * el.stage.clientWidth, 0.6 * el.stage.clientHeight * 1.42)))
   }
   const windowPct = r => {
     const info = r.strategy && r.strategy.info
@@ -167,7 +171,6 @@ export function mountPlayerTab(rootEl, { createHybridPlayer }) {
       const pct = windowPct(r)
       const label = starting ? 'Starting' : 'Buffering'
       el.loadtext.textContent = pct == null ? 'Fetching the torrent…' : `${label}… ${pct} % of the window`
-      el.vox.style.width = voxWidth() + 'px'
       voxView.draw(r)
     }
   }
