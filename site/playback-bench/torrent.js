@@ -42,6 +42,19 @@ export const RATES = [
   { id: '600k', name: '600 KB/s', bytes: 600000 }
 ]
 const DEFAULT_RATE = '1m'
+// Request timeout: a request in flight longer than `mult` x the mean block time of this run is
+// cancelled and asked again from another source. The mean is measured live (last BLOCK_WINDOW blocks).
+export const TIMEOUTS = [
+  { id: '2x', name: '2 x mean block time', mult: 2 },
+  { id: '3x', name: '3 x mean block time', mult: 3 },
+  { id: '5x', name: '5 x mean block time', mult: 5 },
+  { id: 'off', name: 'Off', mult: 0 }
+]
+const DEFAULT_TIMEOUT = '3x'
+const BLOCK_WINDOW = 50 // blocks in the rolling mean
+const MIN_BLOCKS = 10 // no timeout before this many blocks have been measured
+const HIDE_MS = 10000 // a piece taken away from the slow source is hidden from it this long (webconn.js RETRY_DELAY)
+const TIMEOUT_MARK_MS = 1500 // a piece whose request timed out stays marked at least this long on the map
 const WINDOW_BYTES = 4 * 1024 * 1024
 const RANDOM_PARALLEL = 4
 const TAIL_BYTES = 768 * 1024
@@ -104,12 +117,13 @@ const STATE_LABELS = [
   ['verifying', 'Verifying'],
   ['inflight', 'In flight'],
   ['priority', 'Priority'],
+  ['timedout', 'Timed out'],
   ['selected', 'Missing, selected'],
   ['deselected', 'Missing, deselected']
 ]
 // state codes in the piece map
-const S_DESELECTED = 0, S_SELECTED = 1, S_PRIORITY = 2, S_INFLIGHT = 3, S_VERIFYING = 4, S_RECEIVED = 5
-const STATE_VARS = ['--tt-deselected', '--tt-selected', '--tt-priority', '--tt-inflight', '--tt-verifying', '--tt-received']
+const S_DESELECTED = 0, S_SELECTED = 1, S_PRIORITY = 2, S_INFLIGHT = 3, S_VERIFYING = 4, S_RECEIVED = 5, S_TIMEDOUT = 6
+const STATE_VARS = ['--tt-deselected', '--tt-selected', '--tt-priority', '--tt-inflight', '--tt-verifying', '--tt-received', '--tt-timedout']
 
 /**
  * Mounts the Torrent tab into rootEl.
@@ -149,6 +163,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       <div class="tt-row">
         <label class="tt-field"><span>3. Download limit</span>
           <select data-k="rate">${RATES.map(r => `<option value="${r.id}"${r.id === DEFAULT_RATE ? ' selected' : ''}>${r.name}</option>`).join('')}</select></label>
+        <label class="tt-field"><span>Request timeout</span>
+          <select data-k="timeout">${TIMEOUTS.map(r => `<option value="${r.id}"${r.id === DEFAULT_TIMEOUT ? ' selected' : ''}>${r.name}</option>`).join('')}</select></label>
         <fieldset class="tt-field tt-players"><legend>4. Player</legend>
           <label><input type="radio" name="tt-player-${uid}" value="native" checked> Native video (Service Worker)</label>
           <label data-k="hybridlabel"><input type="radio" name="tt-player-${uid}" value="hybrid"> Hybrid (mode 6)<small data-k="hybridnote"></small></label>
@@ -178,7 +194,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
 
   const $ = k => rootEl.querySelector(`[data-k="${k}"]`)
   const el = {
-    demo: $('demo'), custom: $('custom'), filebox: $('filebox'), file: $('file'), rate: $('rate'),
+    demo: $('demo'), custom: $('custom'), filebox: $('filebox'), file: $('file'), rate: $('rate'), timeout: $('timeout'),
     start: $('start'), stop: $('stop'), status: $('status'), videobox: $('videobox'),
     mapbox: $('mapbox'), map: $('map'), stats: $('stats'), hybridlabel: $('hybridlabel'), hybridnote: $('hybridnote')
   }
@@ -201,7 +217,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
 
   const statRows = [
     ['downloaded', 'Downloaded'], ['speed', 'Download speed'], ['pieces', 'Pieces received'],
-    ['peers', 'Peers (WebRTC)'], ['webseeds', 'Web seeds'], ['ttff', 'Time to first frame'], ['stalls', 'Stalls (waiting)'],
+    ['meanblock', 'Mean block time'], ['timeouts', 'Timed-out requests'], ['peers', 'Peers (WebRTC)'], ['webseeds', 'Web seeds'], ['ttff', 'Time to first frame'], ['stalls', 'Stalls (waiting)'],
     ['apath', 'Audio path (Hybrid)'], ['drift', 'A/V drift (Hybrid)']
   ]
   el.stats.innerHTML = statRows.map(([k, l]) => `<div><dt>${l}</dt><dd data-s="${k}">-</dd></div>`).join('')
@@ -216,6 +232,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     setStat('speed', fmtBytes(t.downloadSpeed) + '/s')
     setStat('pieces', n ? `${run.verifiedCount} / ${n}` : '-')
     const wires = t.wires || []
+    setStat('meanblock', run.blockTimes.length ? Math.round(run.blockTimes.reduce((a, b) => a + b, 0) / run.blockTimes.length) + ' ms (' + run.blockTimes.length + ' blocks)' : '-')
+    setStat('timeouts', `${run.timeouts} (${run.relaunched} relaunched elsewhere, ${run.noOther} with no other source)`)
     setStat('peers', String(wires.filter(w => w.type !== 'webSeed').length))
     setStat('webseeds', String(wires.filter(w => w.type === 'webSeed').length))
     setStat('ttff', run.ttff == null ? (run.videoAttached ? 'waiting...' : '-') : (run.ttff / 1000).toFixed(2) + ' s')
@@ -241,6 +259,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       if (t.bitfield.get(i)) st[i] = S_RECEIVED
       else { const p = t.pieces[i]; if (p && p.missing < p.length) st[i] = S_VERIFYING }
     }
+    for (const i of run.timedOut.keys()) if (i < n && !t.bitfield.get(i)) st[i] = S_TIMEDOUT
     return st
   }
 
@@ -383,6 +402,68 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     return null
   }
 
+  // ---- request timeout -------------------------------------------------
+  // WebTorrent has no per-request timeout that fits here (docs/webtorrent-browser.md): a peer wire is
+  // destroyed after 30 s without any block (lib/torrent.js:77, :1328), a web seed fetch is aborted after
+  // 60 s (lib/webconn.js:13). So every outgoing request is timed here: wire.request is wrapped to record
+  // its start and, on success, its duration (rolling mean). A request older than mult x mean:
+  //  - if another source (wire) has the piece: the piece is hidden from the slow wire (peerPieces),
+  //    wire.cancel(piece, offset, length) removes the request and runs its callback with an error, so
+  //    WebTorrent releases the reservation (piece.cancel / cancelRemaining) and the next _update asks
+  //    a wire that still has the piece; the slow wire gets the piece back after HIDE_MS;
+  //  - otherwise it is left running and counted as "no other source".
+  function trackWire(r, w) {
+    const orig = w.request.bind(w)
+    w.request = (index, offset, length, cb) => {
+      const t0 = performance.now()
+      const n = w.requests.length
+      const ret = orig(index, offset, length, (err, chunk) => {
+        if (!err && !r.stopped) { r.blockTimes.push(performance.now() - t0); if (r.blockTimes.length > BLOCK_WINDOW) r.blockTimes.shift() }
+        if (cb) cb(err, chunk)
+      })
+      const q = w.requests[w.requests.length - 1]
+      if (w.requests.length > n && q && q.piece === index && q.offset === offset) r.reqInfo.set(q, { t0, expired: false })
+      return ret
+    }
+  }
+  function otherSource(t, w, piece) {
+    return (t.wires || []).some(x => x !== w && !x.destroyed && x.peerPieces && x.peerPieces.get(piece) &&
+      (!x.peerChoking || (x.hasFast && x.peerAllowedFastSet && x.peerAllowedFastSet.includes(piece))))
+  }
+  function checkTimeouts(r) {
+    const t = r.torrent
+    const mult = TIMEOUTS.find(x => x.id === el.timeout.value).mult
+    const now = performance.now()
+    if (mult && r.blockTimes.length >= MIN_BLOCKS) {
+      const limit = mult * r.blockTimes.reduce((a, b) => a + b, 0) / r.blockTimes.length
+      for (const w of t.wires || []) {
+        for (const q of (w.requests || []).slice()) {
+          const info = r.reqInfo.get(q)
+          if (!info || info.expired || now - info.t0 <= limit) continue
+          info.expired = true
+          r.timeouts++
+          r.timedOut.set(q.piece, { at: now })
+          if (!otherSource(t, w, q.piece)) { r.noOther++; continue }
+          const had = w.peerPieces.get(q.piece)
+          if (had) {
+            w.peerPieces.set(q.piece, false)
+            if (w.peerPieces.get(q.piece)) { r.noOther++; continue } // cannot be hidden from this wire (have-all): leave it running
+            const timer = setTimeout(() => { if (!w.destroyed) w.peerPieces.set(q.piece, true) }, HIDE_MS)
+            r.hideTimers.add(timer)
+          }
+          r.relaunched++
+          try { w.cancel(q.piece, q.offset, q.length) } catch (e) { console.error(e) }
+        }
+      }
+    }
+    const live = new Set()
+    for (const w of t.wires || []) for (const q of w.requests || []) { const i = r.reqInfo.get(q); if (i && !i.expired) live.add(q.piece) }
+    for (const [i, m] of r.timedOut) {
+      // cleared once received, or once asked again (a fresh request) after the minimum display time
+      if (t.bitfield.get(i) || (now - m.at >= TIMEOUT_MARK_MS && live.has(i))) r.timedOut.delete(i)
+    }
+  }
+
   // ---- launch / stop ---------------------------------------------------
   function torrentId() {
     const c = el.custom.value.trim()
@@ -394,6 +475,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     if (!r) return
     r.stopped = true
     clearInterval(r.ticker)
+    for (const h of r.hideTimers || []) clearTimeout(h)
     try { r.player && r.player.destroy && r.player.destroy() } catch (e) {}
     r.player = null
     if (r.video) { r.video.removeAttribute('src'); try { r.video.load() } catch (e) {} }
@@ -432,7 +514,8 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     const r = run = {
       id, strat, order: [], times: [], verifiedCount: 0, stalls: 0, ttff: null, videoAttached: false,
       t0: performance.now(), n: 0, torrent: null, file: null, client: null, video: null, stopped: false, player: null,
-      throttle: rate.bytes, playerKind: playerKind()
+      throttle: rate.bytes, playerKind: playerKind(),
+      timeouts: 0, relaunched: 0, noOther: 0, timedOut: new Map(), reqInfo: new WeakMap(), blockTimes: [], hideTimers: new Set()
     }
     el.start.disabled = true; el.stop.disabled = false
     renderStats(); drawMap()
@@ -448,6 +531,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       const opts = { addUID: true, destroyStoreOnDestroy: true, strategy: strat.id === 'rarest' ? 'rarest' : 'sequential' }
       if (OWN_SELECTION.has(strat.id)) opts.deselect = true
       const torrent = r.torrent = client.add(id, opts)
+      torrent.on('wire', w => trackWire(r, w))
       torrent.on('infoHash', () => { torrent.announce = TRACKERS.slice() }) // before discovery starts
       torrent.on('error', e => { if (!r.stopped) setStatus('Torrent error: ' + (e.message || e), true) })
       torrent.on('verified', i => {
@@ -480,6 +564,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       r.ticker = setInterval(() => {
         if (r.stopped || !r.torrent) return
         try { r.strategy && r.strategy.tick() } catch (e) { console.error(e) }
+        try { checkTimeouts(r) } catch (e) { console.error(e) }
         if (!r.videoAttached && r.verifiedCount >= r.n) attachPlayer(r)
         renderStats(); drawMap()
         if (r.verifiedCount >= r.n) setStatus('Download complete.')
