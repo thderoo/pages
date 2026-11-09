@@ -106,6 +106,12 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
     let fps = 0
     try { fps = (await vt.computePacketStats(120)).averagePacketRate } catch (e) { /* unknown */ }
     m.fps = fps > 0 ? fps : 0
+    // The media starts a few ms after 0 (first packet at 0.067 s with B-frames). That gap before the first image leaves
+    // Chrome without data when the clock restarts at ~0 (seek to the start by the native bar: pause, seek, play) and a seek
+    // into the gap stays 'seeking'. So MSE time = file time - off: the first image is at 0. Everything that compares
+    // video.currentTime to file timestamps (gate, key frame lookup, Web Audio, subtitles) adds or subtracts `off`.
+    let off = 0
+    try { off = Math.max(0, await vt.getFirstTimestamp()) } catch (e) { /* keep 0 */ }
     if (m.dead) return null
 
     // 2. MediaSource on the caller's <video>
@@ -115,8 +121,9 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
     v.src = m.url
     await new Promise(r => ms.addEventListener('sourceopen', r, { once: true }))
     if (m.dead) return null
-    if (Number.isFinite(duration) && duration > 0) ms.duration = duration
+    if (Number.isFinite(duration) && duration > off) ms.duration = duration - off
     const sb = ms.addSourceBuffer(mime)
+    sb.timestampOffset = -off
 
     // 3. Remux to fragmented MP4 (no re-encoding) and feed MSE, at most AHEAD seconds ahead.
     //    One "session" per start position; a seek outside the buffer starts a new one and the old one stops.
@@ -154,7 +161,7 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
         for (let i = 0; i < b.length; i++) if (b.start(i) <= t + 0.05 && t < b.end(i)) return b.end(i) - t
         return 0
       }
-      const gate = async ts => { while (alive() && ts > v.currentTime + AHEAD && bufferedAhead() > 2) await sleep(100) }
+      const gate = async ts => { while (alive() && ts - off > v.currentTime + AHEAD && bufferedAhead() > 2) await sleep(100) }
       const pump = async (track, src, cfg, first) => {
         let isFirst = true
         for await (const p of new MB.EncodedPacketSink(track).packets(first)) {
@@ -193,15 +200,7 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
       for (let i = 0; i < b.length; i++) if (b.start(i) <= t && t < b.end(i) - 0.05) return true
       return false
     }
-    // The media starts a few ms after 0 (first packets at 0.067 s with B-frames): a seek into that gap leaves the video
-    // 'seeking' for good (nothing can be buffered before the first packet), only 0 itself works. Go to 0 instead.
-    let firstTs = 0
-    try { firstTs = Math.max(await vt.getFirstTimestamp(), at ? await at.getFirstTimestamp() : 0) } catch (e) { /* keep 0 */ }
-    on(v, 'seeking', () => {
-      if (m.dead) return
-      if (v.currentTime > 0 && v.currentTime < firstTs) { v.currentTime = 0; return }
-      if (!buffered(v.currentTime)) restart(v.currentTime)
-    })
+    on(v, 'seeking', () => { if (!m.dead && !buffered(v.currentTime)) restart(v.currentTime + off) })
     await startSession(++m.sess, 0)
 
     // 4. Audio decoded by mediabunny, played by Web Audio, anchored on the video clock
@@ -218,7 +217,7 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
         const t0 = v.currentTime; const w0 = performance.now()
         while (live() && v.currentTime <= t0 + 0.02 && performance.now() - w0 < 2000) await sleep(20)
         if (!live()) return
-        const it = asink.buffers(Math.max(0, v.currentTime - 0.05))[Symbol.asyncIterator]()
+        const it = asink.buffers(Math.max(0, v.currentTime + off - 0.05))[Symbol.asyncIterator]()
         try {
           let step = await it.next() // decoding the first buffer takes time: do it before taking the anchor
           if (!live() || step.done) return
@@ -228,9 +227,9 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
           m.anchor = a
           for (; !step.done; step = await it.next()) {
             const wb = step.value
-            while (live() && wb.timestamp > v.currentTime + AUDIO_AHEAD) await sleep(100)
+            while (live() && wb.timestamp - off > v.currentTime + AUDIO_AHEAD) await sleep(100)
             if (!live()) return
-            const when = a.ctx + (wb.timestamp - a.media)
+            const when = a.ctx + (wb.timestamp - off - a.media)
             const now = ctx.currentTime
             const s = ctx.createBufferSource()
             s.buffer = wb.buffer; s.connect(ctx.destination)
@@ -284,7 +283,7 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
           const { value, done } = await reader.read()
           if (done) break
           const p = dec.decode(value.data).split(',') // ReadOrder,Layer,Style,Name,MarginL,MarginR,MarginV,Effect,Text
-          ass += 'Dialogue: ' + p[1] + ',' + fmt(value.timestamp) + ',' + fmt(value.timestamp + value.duration) + ',' + p.slice(2).join(',') + '\n'
+          ass += 'Dialogue: ' + p[1] + ',' + fmt(value.timestamp - off) + ',' + fmt(value.timestamp - off + value.duration) + ',' + p.slice(2).join(',') + '\n'
         }
         if (m.dead) return
         m.jassub = new L.JASSUB({
