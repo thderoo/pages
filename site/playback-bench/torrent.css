@@ -96,6 +96,8 @@
 .tt-vox .s5 { --c: var(--tt-received); --k: 100%; }
 .tt-vox .s6 { --c: var(--tt-timedout); }
 .tt-vox .s7 { --c: var(--tt-deselected); --vs: var(--tt-evicted); }
+/* the Hilbert curve on the top faces: 1 screen px, neutral theme colour, low opacity */
+.tt-vox .cv { fill: none; stroke: var(--tt-playhead); stroke-opacity: .35; stroke-width: var(--lw, 1); pointer-events: none; }
 .tt-vox .vc { display: none; }
 .tt-vox .s3 .vc { display: block; }
 .tt-vox .vc { fill: var(--c); fill-opacity: .2; stroke: none !important; }

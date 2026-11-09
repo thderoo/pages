@@ -483,6 +483,7 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
     svg.replaceChildren()
     svg.setAttribute('viewBox', `0 0 ${W.toFixed(2)} ${H.toFixed(2)}`)
     svg.style.setProperty('--vd', (5 * e).toFixed(2) + 'px')
+    svg.style.setProperty('--lw', (W / w).toFixed(3)) // 1 screen px of the curve, in viewBox units
     svg.style.setProperty('--sw', Math.max(0.5, a * 0.07).toFixed(2))
     const P = pts => pts.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' ')
     const top = P([[0, -b], [a, 0], [0, b], [-a, 0]])
@@ -504,6 +505,11 @@ export function mountTorrentTab(rootEl, { createHybridPlayer } = {}) {
       const [x, y] = pos(i)
       const g = svgEl('g', { transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, 'v s0')
       faces(g)
+      // the curve on the top face: the half of the segment to the previous and to the next piece, centre to edge
+      // midpoint, drawn in the cell's own group so it keeps the draw order of the cell (the animated copy is added after it)
+      const seg = []
+      for (const j of [i - 1, i + 1]) if (j >= 0 && j < n) { const [px, py] = pos(j); seg.push([(px - x) / 2, (py - y) / 2]) }
+      if (seg.length) g.append(svgEl('path', { d: seg.length === 2 ? `M${seg[0][0].toFixed(2)} ${seg[0][1].toFixed(2)}L0 0L${seg[1][0].toFixed(2)} ${seg[1][1].toFixed(2)}` : `M${seg[0][0].toFixed(2)} ${seg[0][1].toFixed(2)}L0 0` }, 'cv'))
       if (!(exists(c, r + 1) && exists(c + 1, r + 1))) g.append(svgEl('polygon', { points: left }, 'fl'))
       if (!(exists(c + 1, r) && exists(c + 1, r + 1))) g.append(svgEl('polygon', { points: right }, 'fr'))
       gLayer.append(g)

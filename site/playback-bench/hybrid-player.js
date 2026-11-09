@@ -193,7 +193,15 @@ export function createHybridPlayer(v, source, { name = '', loop = false, fps: fp
       for (let i = 0; i < b.length; i++) if (b.start(i) <= t && t < b.end(i) - 0.05) return true
       return false
     }
-    on(v, 'seeking', () => { if (!m.dead && !buffered(v.currentTime)) restart(v.currentTime) })
+    // The media starts a few ms after 0 (first packets at 0.067 s with B-frames): a seek into that gap leaves the video
+    // 'seeking' for good (nothing can be buffered before the first packet), only 0 itself works. Go to 0 instead.
+    let firstTs = 0
+    try { firstTs = Math.max(await vt.getFirstTimestamp(), at ? await at.getFirstTimestamp() : 0) } catch (e) { /* keep 0 */ }
+    on(v, 'seeking', () => {
+      if (m.dead) return
+      if (v.currentTime > 0 && v.currentTime < firstTs) { v.currentTime = 0; return }
+      if (!buffered(v.currentTime)) restart(v.currentTime)
+    })
     await startSession(++m.sess, 0)
 
     // 4. Audio decoded by mediabunny, played by Web Audio, anchored on the video clock
