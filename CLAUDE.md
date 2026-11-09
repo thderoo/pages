@@ -66,7 +66,11 @@ pas dans les tests) :
   1080p60, 4K30 et 4K60, en H.264 et HEVC, avec stats en direct et plein
   écran. libmedia
   (`lib/`, LGPL-3.0) et ses `.wasm` (`wasm/`) sont servis depuis le dossier,
-  pas depuis un CDN.
+  pas depuis un CDN. Mode 6 : image remuxée en fMP4 vers MSE + `<video>`,
+  AC-3/E-AC-3 décodés à part et joués par Web Audio, sous-titres ASS en
+  surimpression ; `vendor/` contient mediabunny + @mediabunny/ac3 (MPL-2.0),
+  web-demuxer (MIT) et JASSUB, bundlés une fois par esbuild (commande en tête
+  de chaque bundle).
 
 - `scryfall-artists.html` : recherche et tri des artistes illustrateurs de
   Magic (2026-11-04), aperçu de 4 illustrations (2 × 2) mettant en avant les
