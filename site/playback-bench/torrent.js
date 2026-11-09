@@ -51,9 +51,10 @@ export const TIMEOUTS = [
   { id: '2x', name: '2 x mean block time', mult: 2 },
   { id: '3x', name: '3 x mean block time', mult: 3 },
   { id: '5x', name: '5 x mean block time', mult: 5 },
+  { id: '10x', name: '10 x mean block time', mult: 10 },
   { id: 'off', name: 'Off', mult: 0 }
 ]
-const DEFAULT_TIMEOUT = '5x'
+const DEFAULT_TIMEOUT = '10x'
 const BLOCK_WINDOW = 50 // blocks in the rolling mean
 // Warm-up: blocks received in the first WARMUP_MS of a launch do not count in the mean, because the request
 // pipeline is still filling (and the throttle burst is not over), so they are faster than the steady state.
