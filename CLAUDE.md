@@ -128,6 +128,25 @@ pas dans les tests) :
   l'autre, et l'équivalence se vérifie contre `artists.json`). Images servies
   par le CDN de Scryfall.
 
+- `stremio-vibe/` : page de téléchargement de stremio VIBE (2026-11-12),
+  l'application du dépôt privé `thderoo/stremio-vibe`. Un seul `index.html`
+  autonome (CSS et logo SVG dans la page, IBM Plex par Google Fonts), en
+  anglais, au thème de l'application (variables recopiées de son
+  `src/ui/theme.css`, à faire suivre à la main). Accroche et sous-titre sont
+  de l'utilisateur ; pas de capture d'écran (sa demande). Les deux fichiers
+  (AppImage Linux, exe portable Windows, plus de 100 MB chacun) ne sont pas
+  dans `site/` : ce sont les fichiers d'une **release de ce dépôt**, tag
+  `stremio-vibe-v<version>`, créée par le workflow `public-release.yml` de
+  `thderoo/stremio-vibe` (secret `PAGES_TOKEN` là-bas). La page demande à
+  l'API publique de GitHub les releases de ce dépôt, garde la plus récente
+  dont le tag commence par `stremio-vibe-v`, et remplit liens, tailles,
+  sommes SHA-256 et version : une nouvelle release met la page à jour sans
+  qu'on y touche. Aucune release : boutons éteints et « The downloads are
+  not published yet. » ; API injoignable : les boutons mènent à la liste des
+  releases. Une release d'un autre projet dans ce dépôt doit porter un autre
+  préfixe de tag. Détail : `CLAUDE.md` de `thderoo/stremio-vibe`, point 29
+  des choix tranchés.
+
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 
 Une page Juicy n'est pas un document avec des effets par-dessus : c'est une
