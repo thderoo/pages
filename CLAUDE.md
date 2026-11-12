@@ -132,8 +132,11 @@ pas dans les tests) :
   l'application du dépôt privé `thderoo/stremio-vibe`. Un seul `index.html`
   autonome (CSS et logo SVG dans la page, IBM Plex par Google Fonts), en
   anglais, au thème de l'application (variables recopiées de son
-  `src/ui/theme.css`, à faire suivre à la main). Accroche et sous-titre sont
-  de l'utilisateur ; pas de capture d'écran (sa demande). Les deux fichiers
+  `src/ui/theme.css`, à faire suivre à la main). Le texte est l'accroche de
+  l'application, donnée par l'utilisateur, sur ses deux lignes (« Portable
+  Stremio, no install needed. » en titre, « Everything happens in memory. »
+  dessous ; `src/ui/tagline.js` de stremio-vibe, à faire suivre à la main) ;
+  pas de capture d'écran (sa demande). Les deux fichiers
   (AppImage Linux, exe portable Windows, plus de 100 MB chacun) ne sont pas
   dans `site/` : ce sont les fichiers d'une **release de ce dépôt**, tag
   `stremio-vibe-v<version>`, créée par le workflow `public-release.yml` de
