@@ -25,6 +25,13 @@ export const VOICES = [
 ];
 export const DEFAULT_VOICE = 'Quartz';
 
+// Preset par défaut : voix + consigne courte d'assistant vocal.
+export const DEFAULT_PRESET = {
+  name: 'Neutre',
+  text: 'Tu es un assistant vocal concis. Réponds en français, en phrases courtes, sans liste ni mise en forme.',
+  voice: DEFAULT_VOICE,
+};
+
 // Seul `gpt-5.6-luna` est vérifié par appel réel ; les deux autres sont les
 // suggestions de la page de délégation d'OpenAI.
 export const DEFAULT_DELEGATION_MODEL = 'gpt-5.6-luna';
@@ -46,8 +53,15 @@ function str(v, fallback = '') {
   return typeof v === 'string' ? v : fallback;
 }
 
+function normalizeVoice(v) {
+  const found = VOICES.find((x) => typeof v === 'string' && x.toLowerCase() === v.trim().toLowerCase());
+  return found || DEFAULT_VOICE;
+}
+
+// Un preset = { name, text, voice }. Sans voix (ancien format) : voix par défaut.
+// Pas de liste (réglages neufs) : le preset par défaut ; une liste vide reste vide.
 function normalizePresets(raw) {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) return [{ ...DEFAULT_PRESET }];
   const seen = new Set();
   const out = [];
   for (const p of raw) {
@@ -55,7 +69,7 @@ function normalizePresets(raw) {
     const name = str(p.name).trim();
     if (!name || seen.has(name) || typeof p.text !== 'string') continue;
     seen.add(name);
-    out.push({ name, text: p.text });
+    out.push({ name, text: p.text, voice: normalizeVoice(p.voice) });
   }
   return out;
 }
@@ -75,9 +89,10 @@ function normalizeIdleTimeout(v) {
 
 export function defaultSettings() {
   return {
-    voice: DEFAULT_VOICE,
-    instructions: '',
-    presets: [],
+    voice: DEFAULT_PRESET.voice,
+    instructions: DEFAULT_PRESET.text,
+    preset: DEFAULT_PRESET.name,
+    presets: [{ ...DEFAULT_PRESET }],
     delegation: { model: DEFAULT_DELEGATION_MODEL, instructions: '' },
     standby: { enabled: false, vadThreshold: null, idleTimeoutS: DEFAULT_IDLE_TIMEOUT_S },
   };
@@ -89,12 +104,17 @@ export function normalizeSettings(raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
   const d = r.delegation && typeof r.delegation === 'object' ? r.delegation : {};
   const s = r.standby && typeof r.standby === 'object' ? r.standby : {};
-  const voice = VOICES.find((v) => typeof r.voice === 'string' && v.toLowerCase() === r.voice.trim().toLowerCase());
   const delegationModel = str(d.model).trim();
+  const presets = normalizePresets(r.presets);
+  // Preset sélectionné : doit exister ; sans réglages enregistrés, c'est « Neutre ».
+  const preset = typeof r.preset === 'string' && presets.some((p) => p.name === r.preset)
+    ? r.preset
+    : (r.preset === undefined && !Array.isArray(r.presets) ? DEFAULT_PRESET.name : '');
   return {
-    voice: voice || DEFAULT_VOICE,
-    instructions: str(r.instructions),
-    presets: normalizePresets(r.presets),
+    voice: normalizeVoice(r.voice),
+    instructions: typeof r.instructions === 'string' ? r.instructions : DEFAULT_PRESET.text,
+    preset,
+    presets,
     delegation: {
       model: delegationModel || DEFAULT_DELEGATION_MODEL,
       instructions: str(d.instructions),
@@ -137,36 +157,53 @@ export function saveSettings(storage, settings) {
 }
 
 // Presets : fonctions pures, elles rendent de nouveaux réglages (à passer à
-// saveSettings pour la persistance).
+// saveSettings pour la persistance). Le preset sélectionné est `settings.preset`
+// (nom, '' si aucun) ; la voix et les instructions courantes sont `voice` et
+// `instructions`.
 
 // Ajoute le preset ; si le nom existe déjà, ne change rien (voir replacePreset).
-export function addPreset(settings, name, text) {
+export function addPreset(settings, name, text, voice) {
   const s = normalizeSettings(settings);
   const n = str(name).trim();
   if (!n || typeof text !== 'string' || s.presets.some((p) => p.name === n)) return s;
-  return { ...s, presets: [...s.presets, { name: n, text }] };
+  return { ...s, presets: [...s.presets, { name: n, text, voice: normalizeVoice(voice) }] };
 }
 
-// Remplace le texte (et le nom si newName est donné) du preset `name`.
-export function replacePreset(settings, name, text, newName) {
+// Remplace le texte (et le nom si newName est donné, la voix si voice est donnée)
+// du preset `name`. Le preset sélectionné suit son changement de nom.
+export function replacePreset(settings, name, text, newName, voice) {
   const s = normalizeSettings(settings);
   const target = s.presets.find((p) => p.name === name);
   if (!target || typeof text !== 'string') return s;
   const n = newName === undefined ? name : str(newName).trim();
   if (!n || (n !== name && s.presets.some((p) => p.name === n))) return s;
-  return { ...s, presets: s.presets.map((p) => (p === target ? { name: n, text } : p)) };
+  const v = voice === undefined ? target.voice : normalizeVoice(voice);
+  return {
+    ...s,
+    preset: s.preset === name ? n : s.preset,
+    presets: s.presets.map((p) => (p === target ? { name: n, text, voice: v } : p)),
+  };
 }
 
+// Supprime le preset ; s'il était sélectionné, plus aucun ne l'est.
 export function removePreset(settings, name) {
   const s = normalizeSettings(settings);
-  return { ...s, presets: s.presets.filter((p) => p.name !== name) };
+  return { ...s, preset: s.preset === name ? '' : s.preset, presets: s.presets.filter((p) => p.name !== name) };
 }
 
-// Copie le texte du preset dans les instructions de la session.
+// Sélectionne le preset : règle la voix ET les instructions courantes.
 export function applyPreset(settings, name) {
   const s = normalizeSettings(settings);
   const p = s.presets.find((x) => x.name === name);
-  return p ? { ...s, instructions: p.text } : s;
+  return p ? { ...s, preset: p.name, voice: p.voice, instructions: p.text } : s;
+}
+
+// Vrai si un preset est sélectionné et que la voix ou les instructions
+// courantes en diffèrent (modifié, pas encore enregistré).
+export function isPresetModified(settings) {
+  const s = normalizeSettings(settings);
+  const p = s.presets.find((x) => x.name === s.preset);
+  return !!p && (p.voice !== s.voice || p.text !== s.instructions);
 }
 
 // --- corps de la requête de signalisation -------------------------------
@@ -223,7 +260,8 @@ async function errorDetail(resp) {
 // close() est valable à tout moment, connexion en cours comprise (ready se
 // rejette alors avec une erreur `AbortError`). Dépendances injectables :
 // fetch, RTCPeerConnection, getUserMedia(constraints) ; callbacks :
-// onEvent(événement serveur), onRemoteStream(stream), onConnectionState(état).
+// onEvent(événement serveur), onRemoteStream(stream), onLocalStream(stream du
+// micro, pour mesurer son niveau), onConnectionState(état).
 export function openLiveSession(opts) {
   const o = opts || {};
   const doFetch = o.fetch || ((...a) => globalThis.fetch(...a));
@@ -275,6 +313,7 @@ export function openLiveSession(opts) {
       const local = await getUserMedia({ audio: true });
       if (closed) { local.getTracks().forEach((t) => t.stop()); throw abortError(); }
       stream = local;
+      if (o.onLocalStream) o.onLocalStream(local);
 
       pc = new PeerConnection();
       const peer = pc;

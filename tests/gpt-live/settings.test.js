@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { fakeStorage } from './helpers.js';
 import {
   VOICES, MODEL, DELEGATION_MODEL_SUGGESTIONS, defaultSettings, normalizeSettings,
-  loadSettings, saveSettings, addPreset, replacePreset, removePreset, applyPreset, SETTINGS_KEY,
+  loadSettings, saveSettings, addPreset, replacePreset, removePreset, applyPreset, isPresetModified,
+  DEFAULT_PRESET, SETTINGS_KEY,
 } from '../../site/gpt-live/live-core.js';
 
 test('défauts', () => {
@@ -77,24 +78,85 @@ test('persistance : aller-retour, storage vide ou corrompu', () => {
   assert.doesNotThrow(() => saveSettings(throwing, {}));
 });
 
-test('presets : ajouter, remplacer, supprimer, appliquer, persister', () => {
+test('preset par défaut « Neutre » : Quartz, consigne courte en français', () => {
+  const s = defaultSettings();
+  assert.deepEqual(s.presets, [DEFAULT_PRESET]);
+  assert.equal(DEFAULT_PRESET.name, 'Neutre');
+  assert.equal(DEFAULT_PRESET.voice, 'Quartz');
+  assert.ok(DEFAULT_PRESET.text.length > 20 && DEFAULT_PRESET.text.length < 200);
+  assert.equal(s.preset, 'Neutre');
+  assert.equal(s.voice, 'Quartz');
+  assert.equal(s.instructions, DEFAULT_PRESET.text);
+  assert.equal(isPresetModified(s), false);
+});
+
+test('anciens presets sans voix : voix par défaut ; un preset devient {name, text, voice}', () => {
+  const s = normalizeSettings({ presets: [{ name: 'Vieux', text: 'abc' }, { name: 'Neuf', text: 'd', voice: 'willow' }, { name: 'Faux', text: 'e', voice: 'Nope' }] });
+  assert.deepEqual(s.presets, [
+    { name: 'Vieux', text: 'abc', voice: 'Quartz' },
+    { name: 'Neuf', text: 'd', voice: 'Willow' },
+    { name: 'Faux', text: 'e', voice: 'Quartz' },
+  ]);
+  assert.equal(s.preset, '');
+  const empty = normalizeSettings({ presets: [] });
+  assert.deepEqual(empty.presets, []);
+});
+
+test('preset sélectionné : mémorisé, doit exister', () => {
   const st = fakeStorage();
-  let s = defaultSettings();
-  s = addPreset(s, 'Pirate', 'Parle comme un pirate');
+  let s = addPreset(defaultSettings(), 'Prof', 'Sois patient', 'Willow');
+  s = applyPreset(s, 'Prof');
+  saveSettings(st, s);
+  assert.equal(loadSettings(st).preset, 'Prof');
+  assert.equal(normalizeSettings({ preset: 'Inconnu', presets: [{ name: 'A', text: 'x' }] }).preset, '');
+});
+
+test('presets : ajouter, remplacer, supprimer, appliquer (voix ET instructions), persister', () => {
+  const st = fakeStorage();
+  let s = { ...defaultSettings(), presets: [] };
+  s = addPreset(s, 'Pirate', 'Parle comme un pirate', 'Vesper');
   s = addPreset(s, 'Poli', 'Sois poli');
-  s = addPreset(s, 'Pirate', 'doublon ignoré');
-  assert.deepEqual(s.presets, [{ name: 'Pirate', text: 'Parle comme un pirate' }, { name: 'Poli', text: 'Sois poli' }]);
+  s = addPreset(s, 'Pirate', 'doublon ignoré', 'Ripple');
+  assert.deepEqual(s.presets, [
+    { name: 'Pirate', text: 'Parle comme un pirate', voice: 'Vesper' },
+    { name: 'Poli', text: 'Sois poli', voice: 'Quartz' },
+  ]);
   s = replacePreset(s, 'Pirate', 'Version 2');
   assert.equal(s.presets[0].text, 'Version 2');
+  assert.equal(s.presets[0].voice, 'Vesper');
+  s = replacePreset(s, 'Pirate', 'Version 3', undefined, 'Ripple');
+  assert.equal(s.presets[0].voice, 'Ripple');
   s = replacePreset(s, 'Pirate', 'Version 3', 'Corsaire');
   assert.equal(s.presets[0].name, 'Corsaire');
   assert.equal(replacePreset(s, 'Inconnu', 'x').presets.length, 2);
+  assert.equal(replacePreset(s, 'Corsaire', 'x', 'Poli').presets[0].name, 'Corsaire');
+  s = applyPreset(s, 'Corsaire');
+  assert.equal(s.preset, 'Corsaire');
+  assert.equal(s.voice, 'Ripple');
+  assert.equal(s.instructions, 'Version 3');
+  s = replacePreset(s, 'Corsaire', 'Version 4', 'Pirate');
+  assert.equal(s.preset, 'Pirate');
+  assert.equal(applyPreset(s, 'Inconnu').preset, 'Pirate');
   s = applyPreset(s, 'Poli');
+  assert.equal(s.voice, 'Quartz');
   assert.equal(s.instructions, 'Sois poli');
-  assert.equal(applyPreset(s, 'Inconnu').instructions, 'Sois poli');
   saveSettings(st, s);
   assert.deepEqual(loadSettings(st).presets, s.presets);
-  s = removePreset(s, 'Corsaire');
-  assert.deepEqual(s.presets, [{ name: 'Poli', text: 'Sois poli' }]);
-  assert.equal(addPreset(s, '  ', 'x').presets.length, 1);
+  assert.equal(loadSettings(st).preset, 'Poli');
+  s = removePreset(s, 'Pirate');
+  assert.equal(s.preset, 'Poli');
+  s = removePreset(s, 'Poli');
+  assert.equal(s.preset, '');
+  assert.deepEqual(s.presets, []);
+  assert.equal(addPreset(s, '  ', 'x').presets.length, 0);
+});
+
+test('modifié, pas encore enregistré : voix ou instructions différentes du preset', () => {
+  let s = applyPreset(addPreset(defaultSettings(), 'Prof', 'Patient', 'Willow'), 'Prof');
+  assert.equal(isPresetModified(s), false);
+  assert.equal(isPresetModified({ ...s, instructions: 'Autre' }), true);
+  assert.equal(isPresetModified({ ...s, voice: 'Ripple' }), true);
+  s = replacePreset({ ...s, instructions: 'Autre' }, 'Prof', 'Autre');
+  assert.equal(isPresetModified(s), false);
+  assert.equal(isPresetModified({ ...s, preset: '' }), false);
 });

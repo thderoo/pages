@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { defaultSettings, buildSignalingBody } from '../../site/gpt-live/live-core.js';
 
 test('corps par défaut : forme vérifiée, sans veille', () => {
-  const body = buildSignalingBody(defaultSettings(), 'SDP');
+  const body = buildSignalingBody({ ...defaultSettings(), instructions: '' }, 'SDP');
   assert.deepEqual(body, {
     session: {
       model: 'gpt-live-1.1',

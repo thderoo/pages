@@ -150,6 +150,22 @@ pas dans les tests) :
   préfixe de tag. Détail : `CLAUDE.md` de `thderoo/stremio-vibe`, point 29
   des choix tranchés.
 
+- `gpt-live/` : page de test de l'API GPT-Live (2026-11-23), interface en
+  français. Appel WebRTC à `gpt-live-1.1` (seul modèle), historique des
+  conversations en localStorage, presets (nom + voix + instructions),
+  délégation, mode veille ; la clé API reste dans le navigateur, jamais dans
+  l'historique. Trois colonnes (historique, appel, réglages) et un menu
+  Presets en fenêtre, d'après les maquettes validées. Thème sobre, voulu
+  différent de shadcn/tailwind : papier `#f5f4f0`, encre `#1b1b1b`, traits
+  de 1px, coins droits, ni ombre ni dégradé, polices système (`system-ui`,
+  `ui-monospace` pour les libellés), une seule couleur vive (`#e8532c`,
+  « en ligne » et Raccrocher), variables CSS sur `:root`. Fichiers :
+  `index.html`, `style.css`, `app.js` (affichage, module ES) et
+  `live-core.js` (toute la logique, sans DOM). Tests :
+  `node --test 'tests/gpt-live/*.test.js'` (sans navigateur). Sans
+  dépendance, ni CDN ni police téléchargée. Recherche :
+  `docs/openai-gpt-live-1.md` de `global-workspace`.
+
 ## La bibliothèque `site/lib/` — pages juicy sur PixiJS
 
 Une page Juicy n'est pas un document avec des effets par-dessus : c'est une

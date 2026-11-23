@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gpt-live — test</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Historique -->
+  <section class="col" aria-label="Historique">
+    <h2>Historique</h2>
+    <button type="button" id="new-conv" class="btn">+ Nouvelle conversation</button>
+    <div id="history" class="hist"></div>
+    <button type="button" id="clear-all" class="btn quiet">Tout supprimer</button>
+  </section>
+
+  <!-- Appel -->
+  <section class="col call" aria-label="Appel">
+    <header>
+      <strong class="mono">gpt-live-1.1</strong>
+      <span id="state" class="pill mono"><i class="dot"></i><span id="state-text">Prêt</span></span>
+    </header>
+    <div id="thread" class="thread" aria-live="polite"></div>
+    <div class="bar">
+      <button type="button" id="call-btn" class="btn big">Démarrer</button>
+      <div id="meter-wrap" class="meter-wrap">
+        <div class="meter" title="niveau du micro"><div id="meter-fill"></div></div>
+        <span class="mono muted">micro</span>
+      </div>
+      <p id="bar-note" class="bar-note muted" hidden></p>
+      <button type="button" id="delete-conv" class="btn" hidden>Supprimer cette conversation</button>
+    </div>
+    <audio id="remote" autoplay></audio>
+  </section>
+
+  <!-- Réglages -->
+  <section class="col settings" aria-label="Réglages">
+    <h2>Réglages</h2>
+
+    <div class="field">
+      <label for="api-key">Clé API OpenAI</label>
+      <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…">
+    </div>
+
+    <div class="field">
+      <label for="preset">Preset</label>
+      <div class="row">
+        <select id="preset" autocomplete="off" class="grow"></select>
+        <button type="button" id="manage" class="btn">Gérer…</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="voice">Voix (du preset)</label>
+      <select id="voice" autocomplete="off"></select>
+    </div>
+
+    <div class="field">
+      <label for="instructions">Instructions (du preset)</label>
+      <textarea id="instructions" autocomplete="off" rows="5" spellcheck="false"></textarea>
+      <div class="row tight">
+        <button type="button" id="save-preset" class="btn">Enregistrer dans le preset</button>
+        <button type="button" id="new-preset" class="btn">Nouveau preset</button>
+      </div>
+      <p id="modified" class="note mono muted" hidden>● modifié, pas encore enregistré</p>
+    </div>
+
+    <div class="field">
+      <label for="deleg-model">Délégation</label>
+      <input id="deleg-model" type="text" list="deleg-suggestions" autocomplete="off" spellcheck="false">
+      <datalist id="deleg-suggestions"></datalist>
+      <textarea id="deleg-instructions" autocomplete="off" rows="2" spellcheck="false" placeholder="Instructions du backend (vide = celles de la session)"></textarea>
+    </div>
+
+    <div class="field">
+      <span class="label">Mode veille</span>
+      <label class="check"><input id="standby" type="checkbox" autocomplete="off"> Réveil sur la parole</label>
+      <div class="row">
+        <label class="inline grow">Seuil <input id="vad" type="number" min="0" max="1" step="0.05" placeholder="défaut" autocomplete="off"></label>
+        <label class="inline grow">Délai <input id="idle" type="number" min="5" max="60" step="1" autocomplete="off"> <span class="mono muted">s</span></label>
+      </div>
+    </div>
+
+    <p class="note mono muted">Réglages appliqués au prochain appel.</p>
+  </section>
+</div>
+
+<!-- Menu Presets -->
+<div id="presets" class="overlay" hidden>
+  <div class="veil" data-close></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="presets-title">
+    <header>
+      <strong id="presets-title" class="mono">Presets</strong>
+      <button type="button" class="btn icon" data-close aria-label="Fermer">✕</button>
+    </header>
+    <div class="mbody">
+      <div class="plist">
+        <button type="button" id="p-new" class="btn">+ Nouveau preset</button>
+        <div id="p-list" class="plist-items"></div>
+      </div>
+      <div class="pedit">
+        <div class="field"><label for="p-name">Nom</label><input id="p-name" type="text" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="p-voice">Voix</label><select id="p-voice" autocomplete="off"></select></div>
+        <div class="field grow"><label for="p-text">Instructions</label><textarea id="p-text" autocomplete="off" spellcheck="false"></textarea></div>
+        <div class="row">
+          <button type="button" id="p-use" class="btn big">Utiliser</button>
+          <button type="button" id="p-save" class="btn">Enregistrer</button>
+          <button type="button" id="p-dup" class="btn">Dupliquer</button>
+          <button type="button" id="p-del" class="btn push">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

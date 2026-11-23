@@ -65,6 +65,16 @@ test('connexion : corps, en-tête Authorization, réponse SDP, data channel', as
   assert.equal(d.log.dcClosed, 1);
 });
 
+test('micro : le flux local est transmis au rappel onLocalStream', async () => {
+  const d = makeDoubles();
+  const local = [];
+  const h = openLiveSession({ ...d.opts, apiKey: 'k', settings: defaultSettings(), onLocalStream: (s) => local.push(s) });
+  await h.ready;
+  assert.equal(local.length, 1);
+  assert.equal(typeof local[0].getTracks, 'function');
+  h.close();
+});
+
 test('clé absente : refus sans appel réseau', async () => {
   const d = makeDoubles();
   const h = openLiveSession({ ...d.opts, apiKey: '  ', settings: defaultSettings() });
